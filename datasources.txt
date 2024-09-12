@@ -1,0 +1,38 @@
+https://data.census.gov/map/040XX00US01/ACSST1Y2022/S1901/S1901_C01_005E?layer=VT_2022_040_00_PP_D1&basemap=detailed&loc=33.3701,-86.3005,z7.0147
+
+https://data.census.gov/map?q=Greenville%20city,%20Alabama%20Income%20and%20Poverty&layer=VT_2022_160_00_PY_D1&loc=32.2185,-87.1145,z6.3352
+
+https://dataverse.harvard.edu/file.xhtml?fileId=6692618&version=1.1
+
+https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/16796
+
+https://github.com/openelections/openelections-data-al
+elections
+https://github.com/openelections/openelections-sources-al
+juridictions
+
+
+
+
+Alabama Income level census, I can't download it for some reason can soemone else try
+
+https://data.census.gov/map?q=California%20Income%20and%20Poverty&tid=ACSST1Y2022.S1902&layer=VT_2022_040_00_PP_D1&loc=39.2730,-117.9188,z4.4346
+https://en.wikipedia.org/wiki/List_of_California_locations_by_income
+(can't download)
+
+https://dataverse.harvard.edu/file.xhtml?fileId=6692574&version=1.1
+voter
+
+https://github.com/openelections/openelections-data-ca
+elections
+https://github.com/openelections/openelections-sources-ca
+juridictions
+
+California
+
+
+https://geojson.io/#map=2/0/20
+tool for creating geojson files
+
+https://electionlab.mit.edu/data
+really good for elections and precincts
