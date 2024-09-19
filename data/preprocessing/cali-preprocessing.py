@@ -13,6 +13,7 @@ import geopandas as gpd
 import maup
 import numpy as np
 
+
 working_directory = "/Users/stanleymui/Downloads/CSE 416 Preprocessing Data/"
 
 # Demographic Citizen Voting Age block data (CVAP)
@@ -94,6 +95,8 @@ gdf_income_bg.to_crs(inplace=True, crs="EPSG:3857")
 
 
 # # Function to get the column where cumulative sum equals or exceeds half of TOT_HOUSE21
+#Look at function right below
+
 # def find_median_income_column(row):
 #     if np.isnan(row['MEDN_INC21']):
 #         total_houses = row['TOT_HOUS21']
@@ -105,6 +108,18 @@ gdf_income_bg.to_crs(inplace=True, crs="EPSG:3857")
 #             if cumulative_sum >= half_houses:
 #                 return income_value
 #     return row['MEDN_INC21']
+
+# Calculates medium weighted income instead of just average
+
+# def calculate_median_income(row):
+#     cumulative_households = row[income_columns].cumsum()
+#     total_households = row['TOT_HOUS21']
+#     median_index = (cumulative_households >= total_households / 2).idxmax()
+#     return income_values[income_columns.index(median_index)]
+
+# gdf_income_bg['MEDN_INC21'] = gdf_income_bg.apply(calculate_median_income, axis=1)
+
+
 
 # # Apply the function to each row and store the result in a new column
 # gdf_income_bg['MEDN_INC21'] = gdf_income_bg.apply(find_median_income_column, axis=1)
@@ -120,3 +135,18 @@ merged_precinct_gdf[income_variables] = gdf_income_bg[income_variables].groupby(
 # rows_with_na = merged_precinct_gdf[merged_precinct_gdf.isna().any(axis=1)]
 # rows_with_na = merged_precinct_gdf[merged_precinct_gdf['TOT_POP'].isna()]
 # display(rows_with_na)
+
+
+
+
+# Population density map that we can pass on after
+# merged_precinct_gdf['POP_DENSITY'] = merged_precinct_gdf['TOT_POP'] / merged_precinct_gdf['geometry'].area
+
+
+
+
+# So the data we will be passing back is 
+# - A Population Density map (maybe?)
+# - What the precicnt average income is
+#
+#
