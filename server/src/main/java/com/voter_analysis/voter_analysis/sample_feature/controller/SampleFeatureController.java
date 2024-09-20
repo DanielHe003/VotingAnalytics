@@ -10,6 +10,9 @@ public class SampleFeatureController {
 
     @Autowired
     private SampleFeatureService samplefeatureService;
-
+    @GetMapping("/")
+    public String getServerStartMessage(){
+        return "Shitty ass server start";
+    }
     // Define your endpoints here
 }
