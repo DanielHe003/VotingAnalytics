@@ -1,39 +1,52 @@
-import geojson
-import os
+import geopandas as gpd
+from shapely.geometry import Polygon, MultiPolygon
+from shapely.ops import unary_union
+import pandas as pd
+import numpy as np
 
-def load_geojson(file_path):
-    with open(file_path, 'r') as file:
-        return geojson.load(file)
+# Define the file paths
+file1 = "data\preprocessing\AL-Data\precinct-voting.json"
+file2 = "C:\Users\danie\voter_analysis_project\data\preprocessing\AL-Data\income.json"
+file3 = "data\preprocessing\AL-Data\race.json"
 
-def combine_geojson(files):
-    features = []
-    for file in files:
-        data = load_geojson(file)
-        if data['type'] == 'FeatureCollection':
-            features.extend(data['features'])
-        elif data['type'] == 'Feature':
-            features.append(data)
-        else:
-            raise ValueError(f"Unsupported GeoJSON type: {data['type']}")
-    
-    combined = geojson.FeatureCollection(features)
-    return combined
+# Read the GeoJSON files into GeoDataFrames
+gdf1 = gpd.read_file(file1)
+gdf2 = gpd.read_file(file2)
+gdf3 = gpd.read_file(file3)
 
-def save_geojson(data, output_file):
-    # Ensure the output directory exists
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, 'w') as file:
-        geojson.dump(data, file)
+# Ensure all GeoDataFrames have the same CRS
+crs = "EPSG:4326"
+gdf1 = gdf1.to_crs(crs)
+gdf2 = gdf2.to_crs(crs)
+gdf3 = gdf3.to_crs(crs)
 
-# List of JSON files containing GeoJSON data to combine
-geojson_files = [
-    r'C:\Users\danie\voter_analysis_project\data\preprocessing\AL-Data\al_gen_20_st_prec.json', 
-    r'C:\Users\danie\voter_analysis_project\data\preprocessing\AL-Data\al_inc_2018_to_2022_income.json'
-]
+# Combine all GeoDataFrames into one
+combined_gdf = gpd.GeoDataFrame(pd.concat([gdf1, gdf2, gdf3], ignore_index=True))
 
-# Combine the GeoJSON files
-combined_geojson = combine_geojson(geojson_files)
+# Function to average attributes and merge geometries
+def average_attributes(geometries):
+    numeric_columns = geometries.select_dtypes(include=[np.number]).columns
+    avg_attributes = geometries[numeric_columns].mean()
+    merged_geometry = unary_union(geometries.geometry)
+    return avg_attributes, merged_geometry
 
-# Save the combined GeoJSON to a new file
-output_file = r'data\preprocessing\AL-Data\combined_alabama.geojson'
-save_geojson(combined_geojson, output_file)
+# Create an empty GeoDataFrame to store the results
+result_gdf = gpd.GeoDataFrame(columns=combined_gdf.columns)
+
+# Spatial join to identify overlapping geometries
+joined = gpd.sjoin(combined_gdf, combined_gdf, how="inner", op='intersects')
+
+# Group by the index of the original GeoDataFrame
+for idx, group in joined.groupby(joined.index):
+    overlapping = combined_gdf.loc[group.index_right]
+    if not overlapping.empty:
+        avg_attributes, merged_geometry = average_attributes(overlapping)
+        new_row = {col: avg_attributes[col] if col in avg_attributes else overlapping[col].iloc[0] for col in combined_gdf.columns}
+        new_row['geometry'] = merged_geometry
+        result_gdf = result_gdf.append(new_row, ignore_index=True)
+
+# Save the result to a new GeoJSON file
+output_file = "/path/to/your/combined.geojson"
+result_gdf.to_file(output_file, driver="GeoJSON")
+
+print(f"Combined GeoJSON file saved to {output_file}")
