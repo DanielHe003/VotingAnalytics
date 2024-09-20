@@ -27,7 +27,6 @@ working_directory = "/Users/stanleymui/Downloads/CSE 416 Preprocessing Data/"
 df_block = pd.read_csv(working_directory + "nhgis0015_ds258_2020_block.csv")
 df_block = df_block[['GEOID', 'U7R001', 'U7R002', 'U7R005', 'U7R006', 'U7R007', 'U7R008', 'U7R009', 'U7R010', 'U7R011']]
 df_block = df_block.rename(columns={'GEOID': 'GEOID20', 'U7R001': 'TOT_POP', 'U7R002': 'POP_HISLAT', 'U7R005': 'POP_WHT', 'U7R006': 'POP_BLK'
-                                    ,'U7R007': 'POP_AINDALK', 'U7R008': 'POP_ASN', 'U7R009': 'POP_HIPI', 'U7R010': 'POP_OTH'
                                    ,'U7R011': 'POP_TWOMOR'})
 df_block['GEOID20'] = df_block['GEOID20'].str.replace('1000000US', '', regex=False)
 # display(df_block)
@@ -136,17 +135,3 @@ merged_precinct_gdf[income_variables] = gdf_income_bg[income_variables].groupby(
 # rows_with_na = merged_precinct_gdf[merged_precinct_gdf['TOT_POP'].isna()]
 # display(rows_with_na)
 
-
-
-
-# Population density map that we can pass on after
-# merged_precinct_gdf['POP_DENSITY'] = merged_precinct_gdf['TOT_POP'] / merged_precinct_gdf['geometry'].area
-
-
-
-
-# So the data we will be passing back is 
-# - A Population Density map (maybe?)
-# - What the precicnt average income is
-#
-#
