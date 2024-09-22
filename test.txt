@@ -1,0 +1,20 @@
+
+
+
+
+
+
+
+alabama
+
+
+
+precinct
+geojson and table
+combine these - the other two
+
+
+county
+geojson and table
+
+
