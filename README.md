@@ -18,7 +18,8 @@ To run the backend server using Docker, follow these steps:
    ```bash
    docker pull eshanrand/voter_analysis_app
 2.  **Start the container and run server** 
-docker run -it eshanrand/voter_analysis_app ./gradlew bootrun
+docker run -d -p 8080:8080 eshanrand/voter_analysis_app ./gradlew bootrun
+
 
 
 3. **Access the API**
