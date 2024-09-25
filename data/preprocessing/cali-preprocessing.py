@@ -91,8 +91,6 @@ def find_median_income_column(row):
                 return income_value
     return row['MEDN_INC21']
 
-# Apply the function to each row and store the result in a new column
-gdf_income_bg['MEDN_INC21'] = gdf_income_bg.apply(find_median_income_column, axis=1)
 # display(gdf_income_bg)
 
 income_variables = ['TOT_HOUS21','LESS_10K21', '10K_15K21', '15K_20K21', '20K_25K21', '25K_30K21',
@@ -102,6 +100,15 @@ income_variables = ['TOT_HOUS21','LESS_10K21', '10K_15K21', '15K_20K21', '20K_25
 blocks_group_to_precinct_assignment = maup.assign(gdf_income_bg, merged_precinct_gdf)
 merged_precinct_gdf[income_variables] = gdf_income_bg[income_variables].groupby(blocks_group_to_precinct_assignment).sum()
 
+merged_precinct_gdf.fillna(0, inplace=True)
+
+# print(merged_precinct_gdf.columns)
+
+merged_precinct_gdf['MEDN_INC21'] = np.nan
+
+# Apply the function to each row and store the result in a new column
+merged_precinct_gdf['MEDN_INC21'] = merged_precinct_gdf.apply(find_median_income_column, axis=1)
+
 # display(merged_precinct_gdf)
 
 gdf_congressional_district = gpd.read_file(working_directory + 'CD_Final 2021-12-20.json')
@@ -109,8 +116,6 @@ gdf_congressional_district.to_crs(inplace=True, crs="EPSG:3857")
 
 precinct_to_cd_assignment = maup.assign(merged_precinct_gdf, gdf_congressional_district)
 merged_precinct_gdf['CD_ID'] = precinct_to_cd_assignment
-
-merged_precinct_gdf.fillna(0, inplace=True)
 
 # display(merged_precinct_gdf)
 # print(merged_precinct_gdf['CD_ID'].unique())
