@@ -166,10 +166,10 @@ gdf_congressional_district_income['MEDN_INC21'] = np.nan
 # Apply the function to each row and store the result in a new column
 gdf_congressional_district_income['MEDN_INC21'] = gdf_congressional_district_income.apply(find_median_income_column, axis=1)
 
-# state district voting and demographic data
-display(gdf_congressional_district)
-# state district income data
-display(gdf_congressional_district_income)
+# # state district voting and demographic data
+# display(gdf_congressional_district)
+# # state district income data
+# display(gdf_congressional_district_income)
 
 
 # read the county file for voting and demographic
