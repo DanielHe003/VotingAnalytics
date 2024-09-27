@@ -6,8 +6,9 @@ import './App.css';
 import HomePage from './components/home/HomePage';
 import StateAnalysis from './components/stateAnalysis/StateAnalysis'
 
+
 const App = () => {
-  const [activeSection, setActiveSection] = useState('home'); 
+  const [activeSection, setActiveSection] = useState('State Analysis');
 
   const navLinks = [
     { name: 'Home', href: '#home' },
@@ -15,27 +16,26 @@ const App = () => {
   ];
 
   const renderSection = () => {
-    console.log("chaning render");
     switch (activeSection) {
       case 'Home':
         return <HomePage />;
       case 'State Analysis':
-        return <StateAnalysis />; 
+        return <StateAnalysis />;
       default:
         return <HomePage />;
     }
   };
 
   return (
-    <div>
+<div>
+
       <Navbar navLinks={navLinks} activeSection={activeSection} setActiveSection={setActiveSection} />
-      <main className="container mt-4 d-flex" style={{ height: '70vh' }}>
-        <div style={{ width: '1px', backgroundColor: 'white', height: 'auto', margin: '0 20px' }} />
-        <div style={{ flexGrow: 1 }}>{renderSection()}</div>
-      </main>
+      <div style={{ padding: '20px 5%' }}>
+      {renderSection()}
     </div>
+    </div>
+
   );
-  
 };
 
 export default App;
