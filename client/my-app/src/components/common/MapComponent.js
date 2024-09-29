@@ -8,6 +8,7 @@ class MapComponent extends Component {
     super(props);
     this.initialPosition = [37.0902, -95.7129]; // Default position
     this.mapRef = createRef(); // Create a reference for the map
+    this.containerRef = createRef(); // Reference for the container div
   }
 
   geoJsonStyle = (feature) => {
@@ -19,20 +20,53 @@ class MapComponent extends Component {
     };
   };
 
+  componentDidMount() {
+    // Create a ResizeObserver to watch for changes in the container size
+    this.resizeObserver = new ResizeObserver(() => {
+      this.handleResize();
+    });
+
+    if (this.containerRef.current) {
+      this.resizeObserver.observe(this.containerRef.current);
+    }
+  }
+
   componentDidUpdate(prevProps) {
     // Check if geoJsonData has changed
     if (prevProps.geoJsonData !== this.props.geoJsonData && this.mapRef.current) {
-      const geoJsonLayer = L.geoJSON(this.props.geoJsonData);
-      const bounds = geoJsonLayer.getBounds();
-      this.mapRef.current.fitBounds(bounds); // Fit the map to the bounds of the GeoJSON
+      this.fitMapToGeoJsonData();
     }
   }
+
+  componentWillUnmount() {
+    // Clean up the resize observer
+    if (this.resizeObserver && this.containerRef.current) {
+      this.resizeObserver.unobserve(this.containerRef.current);
+    }
+  }
+
+  handleResize = () => {
+    // When the container is resized, invalidate the map size and adjust zoom
+    if (this.mapRef.current) {
+      this.mapRef.current.invalidateSize();
+      this.fitMapToGeoJsonData();
+    }
+  };
+
+  fitMapToGeoJsonData = () => {
+    if (this.props.geoJsonData && this.mapRef.current) {
+      const map = this.mapRef.current;
+      const geoJsonLayer = L.geoJSON(this.props.geoJsonData);
+      const bounds = geoJsonLayer.getBounds();
+      map.fitBounds(bounds); // Fit the map to the bounds of the GeoJSON
+    }
+  };
 
   render() {
     const { geoJsonData } = this.props;
 
     return (
-      <div style={{ display: "flex", flex: 1, height: "100%" }}>
+      <div style={{ display: "flex", flex: 1, height: "100%" }} ref={this.containerRef}>
         <LeafletMap
           center={this.initialPosition}
           zoom={4}
