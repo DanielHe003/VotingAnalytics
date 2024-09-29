@@ -17,7 +17,6 @@ class Sidebar extends React.Component {
             selectedTrend: '',
         };
 
-        // Binding methods to `this`
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleDistrictChange = this.handleDistrictChange.bind(this);
         this.handleTrendChange = this.handleTrendChange.bind(this);
@@ -28,8 +27,8 @@ class Sidebar extends React.Component {
         {
             name: 'Select State',
             options: [
-                { id: 'AL', name: 'Alabama', districtsCount: 7 },
-                { id: 'CA', name: 'California', districtsCount: 52 },
+                { id: 'Alabama', name: 'Alabama', districtsCount: 7 },
+                { id: 'California', name: 'California', districtsCount: 52 },
             ],
         },
         {
@@ -38,12 +37,11 @@ class Sidebar extends React.Component {
         {
             name: 'Select Trend',
             options: [
-                { id: 'voting', name: 'Voting Trends' },
-                { id: 'people', name: 'People Trends' },
-                { id: 'housing', name: 'Housing Trends' },
-                { id: 'socioEconomic', name: 'Socio-Economic Trends' },
-                { id: 'education', name: 'Education Trends' },
-                { id: 'business', name: 'Business Trends' },
+                { id: 'Voting', name: 'Voting Trends' },
+                { id: 'People', name: 'People' },
+                { id: 'Workers', name: 'Workers' },
+                { id: 'SocioEconomic', name: 'Socio-Economic Trends' },
+                { id: 'Business', name: 'Business Trends' },
             ],
         },
     ];
@@ -89,45 +87,62 @@ class Sidebar extends React.Component {
         const state = this.filterOptions[0].options.find(option => option.id === this.state.selectedState);
         const districts = [{ id: '0', name: 'All Districts' }];
         for (let i = 1; i <= state.districtsCount; i++) {
-            districts.push({ id: `${state.id}_District${i}`, name: `District ${i}` });
+            districts.push({ id: `District ${String(i).padStart(2, '0')} Estimate`, name: `District ${String(i).padStart(2, '0')}` });
         }
         return districts;
     }
 
     render() {
+        const spacing = '10px'; // Change this variable to adjust the space
+
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '5px', padding: '10px' }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Filters</h2>
-                
-                {this.filterOptions.map((filter, index) => (
-                    <div key={index} style={{ marginBottom: '20px', textAlign: 'center' }}>
-                        <select
-                            id={`select-${index}`}
-                            className="select-width"
-                            value={filter.name === 'Select State' ? this.state.selectedState : filter.name === 'Select District' ? this.state.selectedDistrict : this.state.selectedTrend}
-                            onChange={filter.name === 'Select State' ? this.handleStateChange : filter.name === 'Select District' ? this.handleDistrictChange : this.handleTrendChange}
-                            disabled={filter.name !== 'Select State' && !this.state.selectedState}
-                        >
-                            <option value="" disabled>{filter.name}</option>
-                            {filter.name === 'Select District' ? (
-                                this.getDistrictOptions().map((option) => (
-                                    <option key={option.id} value={option.id}>{option.name}</option>
-                                ))
-                            ) : (
-                                filter.options.map((option) => (
-                                    <option key={option.id} value={option.id}>{option.name}</option>
-                                ))
-                            )}
-                        </select>
-                    </div>
-                ))}
-                
-                <button onClick={this.handleResetFilters} style={{ backgroundColor: colors.demoBlue, borderRadius: '5px', color: '#fff', border: 'none', padding: '10px 15px', cursor: 'pointer' }}>
-                    Reset Filters
-                </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '5px', padding: '10px' }}>
+                {/* <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Filters</h2> */}
+        
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                    {this.filterOptions.map((filter, index) => (
+                        <div key={index} style={{marginRight:'20px'}}> 
+                            <select
+                                id={`select-${index}`}
+                                className="select-width"
+                                value={filter.name === 'Select State' ? this.state.selectedState : filter.name === 'Select District' ? this.state.selectedDistrict : this.state.selectedTrend}
+                                onChange={filter.name === 'Select State' ? this.handleStateChange : filter.name === 'Select District' ? this.handleDistrictChange : this.handleTrendChange}
+                                disabled={filter.name !== 'Select State' && !this.state.selectedState}
+                            >
+                                <option value="" disabled>{filter.name}</option>
+                                {filter.name === 'Select District' ? (
+                                    this.getDistrictOptions().map((option) => (
+                                        <option key={option.id} value={option.id}>{option.name}</option>
+                                    ))
+                                ) : (
+                                    filter.options.map((option) => (
+                                        <option key={option.id} value={option.id}>{option.name}</option>
+                                    ))
+                                )}
+                            </select>
+                        </div>
+                    ))}
+                    
+                    {/* Button placed right next to the last select */}
+                    <button 
+                        onClick={this.handleResetFilters} 
+                        style={{ 
+                            backgroundColor: colors.demoBlue, 
+                            borderRadius: '5px', 
+                            color: '#fff', 
+                            border: 'none', 
+                            padding: '10px 15px', 
+                            cursor: 'pointer', 
+                            marginLeft: spacing // Use spacing variable here
+                        }}>
+                        Reset Filters
+                    </button>
+                </div>
+
             </div>
         );
-    }
-}
+    }   
+
+}    
 
 export default Sidebar;

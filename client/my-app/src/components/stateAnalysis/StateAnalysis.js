@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import Sidebar from './sidebar'; 
-import geoJsonData from '../data/start.json';  
+import Sidebar from './Sidebar'; 
 import MapComponent from '../common/MapComponent'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import geoJsonData from '../data/start.json';
+import Chart from "./Chart";
 
 class StateAnalysis extends Component {
   constructor(props) {
@@ -29,21 +30,24 @@ class StateAnalysis extends Component {
   };
 
   render() {
-    const spacing = 20;
+    const spacing = 5;
 
     const sidebarStyle = {
-      width: '20%',
+      flex: '0 0 100%', // Sidebar takes full width
       backgroundColor: 'white',
       borderRadius: '15px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-      padding: '20px',
-      boxSizing: 'border-box',
-      marginRight: `${spacing}px`, 
-      height: 'auto', 
+      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
     };
-
+  
+    const containerStyle = {
+      display: "flex",
+      alignItems: 'flex-start',
+      flexWrap: 'nowrap', // Prevent wrapping to ensure side-by-side
+      width: '100%', // Ensure it takes the full width
+    };
+  
     const mapContainerStyle = {
-      width: this.state.selectedTrend ? '55%' : '75%',
+      flex: '1 1 50%', // Flexible width that starts at 50%
       backgroundColor: 'white',
       borderRadius: '15px',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
@@ -52,21 +56,21 @@ class StateAnalysis extends Component {
       height: '70vh',
       marginRight: `${spacing}px`, 
     };
-
+  
     const otherComponentStyle = {
-      width: this.state.selectedTrend ? '25%' : '0', 
+      flex: '1 1 50%', // Flexible width that starts at 50%
       backgroundColor: 'white',
       borderRadius: '15px',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
       padding: '20px',
       boxSizing: 'border-box',
-      marginRight: `${spacing}px`, 
       height: '100%',
       display: this.state.selectedTrend ? 'block' : 'none', 
     };
+    
 
     return (
-      <div style={{ display: "flex", alignItems: 'flex-start' }}> 
+      <>
         <div style={sidebarStyle}>
           <Sidebar 
             setSelectedState={this.setSelectedState} 
@@ -75,28 +79,33 @@ class StateAnalysis extends Component {
           /> 
         </div>
 
-        <div style={mapContainerStyle}>
-          <MapComponent geoJsonData={geoJsonData} />
-        </div>
+        <div style={containerStyle}> 
 
-        <div style={otherComponentStyle}>
-          <div>
-            {this.state.selectedTrend ? ( 
-              <div>
-                <h2>Selected Filters:</h2>
-                <p><strong>State:</strong> {this.state.selectedState}</p>
-                <p><strong>District:</strong> {this.state.selectedDistrict}</p>
-                <p><strong>Trend:</strong> {this.state.selectedTrend}</p>
-              </div>
-            ) : (
-              <div style={{ paddingTop: '20px', paddingBottom: '20px', textAlign: 'center' }}>
-                <FontAwesomeIcon icon={faCircleExclamation} style={{ color: 'red', fontSize: '48px' }} />
-                <h1 style={{ marginTop: '10px' }}>Select Filters</h1>
-              </div>
-            )}
+          <div style={mapContainerStyle}>
+            <MapComponent geoJsonData={geoJsonData} />
+          </div>
+
+          <div style={otherComponentStyle}>
+            <div>
+              {this.state.selectedTrend ? ( 
+                <div>
+                  <Chart selectedState={this.state.selectedState} selectedDistrict={this.state.selectedDistrict} selectedTrend={this.state.selectedTrend} />
+                  
+                  {/* <h2>Selected Filters:</h2>
+                  <p><strong>State:</strong> {this.state.selectedState}</p>
+                  <p><strong>District:</strong> {this.state.selectedDistrict}</p>
+                  <p><strong>Trend:</strong> {this.state.selectedTrend}</p> */}
+                </div>
+              ) : (
+                <div style={{ paddingTop: '20px', paddingBottom: '20px', textAlign: 'center' }}>
+                  <FontAwesomeIcon icon={faCircleExclamation} style={{ color: 'red', fontSize: '48px' }} />
+                  <h1 style={{ marginTop: '10px' }}>Select Filters</h1>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 }

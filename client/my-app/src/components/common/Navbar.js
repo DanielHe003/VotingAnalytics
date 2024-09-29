@@ -11,7 +11,7 @@ const Navbar = ({ navLinks, activeSection, setActiveSection }) => {
       <nav className="navbar navbar-expand-lg" style={{ borderBottom: '1px solid #000' }}>
         <div className="container-fluid d-flex flex-column align-items-center">
           <div className="navbar-brand d-flex align-items-center">
-            <img src={LogoIcon} alt="Logo" style={{ height: '120px' }} />
+            <img src={LogoIcon} alt="Logo" style={{ height: '90px' }} />
           </div>
 
           <button
@@ -32,7 +32,7 @@ const Navbar = ({ navLinks, activeSection, setActiveSection }) => {
                   <a
                     className={`nav-link ${activeSection === link.name ? 'active' : ''}`}
                     href={link.href}
-                    style={{ fontSize: '20px', margin: '0 15px' }}
+                    style={{ fontSize: '18px', margin: '0 10px' }}
                     onClick={() => handleSetActiveSection(link.name)}
                   >
                     {link.name}
