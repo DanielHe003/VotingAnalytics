@@ -92,7 +92,7 @@ class StateAnalysis extends Component {
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
       padding: '20px',
       boxSizing: 'border-box',
-      height: '100%',
+      maxHeight: "638px",
       display: this.state.selectedTrend ? 'block' : 'none', 
     };
 
