@@ -42,6 +42,9 @@ class Sidebar extends React.Component {
                 { id: 'Workers', name: 'Workers' },
                 { id: 'SocioEconomic', name: 'Socio-Economic Trends' },
                 { id: 'Business', name: 'Business Trends' },
+                { id: 'Gingles Test', name: 'Gingles Test'},
+                {id: 'Ecological Inference', name: 'Ecological Inference'},
+                {id: 'MCMC Analysis', name: 'MCMC'}  
             ],
         },
     ];

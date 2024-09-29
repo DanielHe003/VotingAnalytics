@@ -6,7 +6,7 @@ import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import twoStates from '../data/start.json';
 import CaliforniaJson from '../data/CaliforniaJson.json';
 import AlabamaJson from '../data/AlabamaJson.json';
-import Chart from "./Chart";
+import Chart from "../common/Chart";
 
 class StateAnalysis extends Component {
   constructor(props) {
@@ -32,7 +32,11 @@ class StateAnalysis extends Component {
     this.setState({ selectedTrend: trend });
   };
 
-  // Moved update logic to a separate method
+
+  handleFeatureClick = (value) => {
+    this.setState({ selectedState: value });
+  }
+  
   updateMapData = (state) => {
     let newMapData;
 
@@ -57,6 +61,7 @@ class StateAnalysis extends Component {
     }
   }
 
+  
   render() {
     const spacing = 5;
 
@@ -109,7 +114,10 @@ class StateAnalysis extends Component {
         <div style={containerStyle}> 
 
           <div style={mapContainerStyle}>
-            <MapComponent geoJsonData={this.state.mapData} />
+          <MapComponent 
+          geoJsonData={this.state.mapData} 
+          onFeatureClick={this.handleFeatureClick} 
+        />
           </div>
 
           <div style={otherComponentStyle}>

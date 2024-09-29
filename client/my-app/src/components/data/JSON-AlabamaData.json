@@ -32,46 +32,7 @@
             "District 07 Estimate": "188,886",
             "All Districts": "1,274,706"
         },
-        "20 to 24 years": {
-            "District 01 Estimate": "40,634",
-            "District 02 Estimate": "43,710",
-            "District 03 Estimate": "54,742",
-            "District 04 Estimate": "43,273",
-            "District 05 Estimate": "50,351",
-            "District 06 Estimate": "39,191",
-            "District 07 Estimate": "61,894",
-            "All Districts": "333,795"
-        },
-        "25 to 34 years": {
-            "District 01 Estimate": "91,166",
-            "District 02 Estimate": "89,687",
-            "District 03 Estimate": "90,506",
-            "District 04 Estimate": "83,847",
-            "District 05 Estimate": "101,697",
-            "District 06 Estimate": "94,064",
-            "District 07 Estimate": "93,550",
-            "All Districts": "644,517"
-        },
-        "35 to 44 years": {
-            "District 01 Estimate": "94,903",
-            "District 02 Estimate": "92,348",
-            "District 03 Estimate": "89,393",
-            "District 04 Estimate": "88,924",
-            "District 05 Estimate": "97,448",
-            "District 06 Estimate": "99,965",
-            "District 07 Estimate": "86,271",
-            "All Districts": "649,252"
-        },
-        "45 to 54 years": {
-            "District 01 Estimate": "89,273",
-            "District 02 Estimate": "89,483",
-            "District 03 Estimate": "89,539",
-            "District 04 Estimate": "89,394",
-            "District 05 Estimate": "93,136",
-            "District 06 Estimate": "92,528",
-            "District 07 Estimate": "76,725",
-            "All Districts": "620,078"
-        },
+        
         "55 to 59 years": {
             "District 01 Estimate": "44,034",
             "District 02 Estimate": "45,277",
@@ -246,7 +207,7 @@
             "District 07 Estimate": "16,621",
             "All Districts": "123,364"
         },
-        "Professional, scientific, and management, and administrative and waste management services": {
+        "Professional, scientific, and management, and waste management services": {
             "District 01 Estimate": "35,161",
             "District 02 Estimate": "26,732",
             "District 03 Estimate": "26,683",
@@ -593,76 +554,6 @@
             "District 06 Estimate": "139",
             "District 07 Estimate": "105",
             "All Districts": "549"
-        },
-        "Administrative and support and waste management and remediation services": {
-            "District 01 Estimate": "888",
-            "District 02 Estimate": "702",
-            "District 03 Estimate": "628",
-            "District 04 Estimate": "498",
-            "District 05 Estimate": "760",
-            "District 06 Estimate": "875",
-            "District 07 Estimate": "640",
-            "All Districts": "4,991"
-        },
-        "Educational services": {
-            "District 01 Estimate": "151",
-            "District 02 Estimate": "149",
-            "District 03 Estimate": "97",
-            "District 04 Estimate": "69",
-            "District 05 Estimate": "160",
-            "District 06 Estimate": "190",
-            "District 07 Estimate": "149",
-            "All Districts": "965"
-        },
-        "Health care and social assistance": {
-            "District 01 Estimate": "1,520",
-            "District 02 Estimate": "1,550",
-            "District 03 Estimate": "1,246",
-            "District 04 Estimate": "1,580",
-            "District 05 Estimate": "1,866",
-            "District 06 Estimate": "1,750",
-            "District 07 Estimate": "1,695",
-            "All Districts": "11,207"
-        },
-        "Arts, entertainment, and recreation": {
-            "District 01 Estimate": "223",
-            "District 02 Estimate": "191",
-            "District 03 Estimate": "133",
-            "District 04 Estimate": "144",
-            "District 05 Estimate": "206",
-            "District 06 Estimate": "253",
-            "District 07 Estimate": "194",
-            "All Districts": "1,344"
-        },
-        "Accommodation and food services": {
-            "District 01 Estimate": "1,539",
-            "District 02 Estimate": "1,488",
-            "District 03 Estimate": "1,320",
-            "District 04 Estimate": "1,249",
-            "District 05 Estimate": "1,404",
-            "District 06 Estimate": "1,334",
-            "District 07 Estimate": "1,577",
-            "All Districts": "9,911"
-        },
-        "Other services (except public administration)": {
-            "District 01 Estimate": "1,709",
-            "District 02 Estimate": "1,640",
-            "District 03 Estimate": "1,480",
-            "District 04 Estimate": "1,520",
-            "District 05 Estimate": "1,489",
-            "District 06 Estimate": "1,611",
-            "District 07 Estimate": "1,823",
-            "All Districts": "11,272"
-        },
-        "Industries not classified": {
-            "District 01 Estimate": "14",
-            "District 02 Estimate": "14",
-            "District 03 Estimate": "10",
-            "District 04 Estimate": "14",
-            "District 05 Estimate": "10",
-            "District 06 Estimate": "18",
-            "District 07 Estimate": "21",
-            "All Districts": "101"
         }
     }
 }

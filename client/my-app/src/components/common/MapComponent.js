@@ -20,6 +20,14 @@ class MapComponent extends Component {
     };
   };
 
+  onFeatureClick = (e) => {
+    const { properties } = e.target.feature; // Get the properties of the clicked feature
+    const name = properties.name; // Extract the name property
+    if (this.props.onFeatureClick) {
+      this.props.onFeatureClick(name); // Call the parent function with the name
+    }
+  };
+
   componentDidMount() {
     // Create a ResizeObserver to watch for changes in the container size
     this.resizeObserver = new ResizeObserver(() => {
@@ -77,7 +85,17 @@ class MapComponent extends Component {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {geoJsonData && <GeoJSON data={geoJsonData} style={this.geoJsonStyle} />}
+          {geoJsonData && (
+            <GeoJSON 
+              data={geoJsonData} 
+              style={this.geoJsonStyle} 
+              onEachFeature={(feature, layer) => {
+                layer.on({
+                  click: this.onFeatureClick, // Add click event
+                });
+              }} 
+            />
+          )}
         </LeafletMap>
       </div>
     );

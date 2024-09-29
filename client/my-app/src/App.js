@@ -11,8 +11,9 @@ const App = () => {
   const [activeSection, setActiveSection] = useState('State Analysis');
 
   const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'State Analysis', href: '#state-analysis' },
+    // { name: 'State Analysis', href: '#state-analysis' },
+    // { name: 'Home', href: '#home' },
+
   ];
 
   const renderSection = () => {
