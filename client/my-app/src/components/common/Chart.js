@@ -26,7 +26,7 @@ class Chart extends Component {
     this.state = {
       data: {},
       selectedOption: '',
-      isTableView: false, // Track whether to show table view
+      isTableView: false,
     };
   }
 
@@ -219,7 +219,7 @@ class Chart extends Component {
               {selectedTrend === 'SocioEconomic' && (
                 <>
                   {selectedOption === 'meanmedianincome' && this.renderChartOrTable('table', categories.meanmedianincome, 'Mean/Median Income', { width: 200, height: 200 })}
-                  {selectedOption === 'income' && this.renderChartOrTable('table', categories.income, 'Income Breakdown', { width: 200, height: 200 })}
+                  {selectedOption === 'income' && this.renderChartOrTable('pie', categories.income, 'Income Breakdown', { width: 200, height: 200 })}
                 </>
               )}
 
@@ -227,8 +227,8 @@ class Chart extends Component {
 
               {selectedTrend === 'Workers' && (
                 <>
-                  {selectedOption === 'workers2' && this.renderChartOrTable('table', categories.workers2, 'Worker Type (Industry)', { width: 200, height: 200 })}
-                  {selectedOption === 'workers1' && this.renderChartOrTable('table', categories.workers1, 'Workers (Per Industry)', { width: 200, height: 350 })}
+                  {selectedOption === 'workers2' && this.renderChartOrTable('pie', categories.workers2, 'Worker Type (Industry)', { width: 200, height: 200 })}
+                  {selectedOption === 'workers1' && this.renderChartOrTable('pie', categories.workers1, 'Workers (Per Industry)', { width: 200, height: 350 })}
                 </>
               )}
             </>
