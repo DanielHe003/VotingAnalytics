@@ -31,7 +31,7 @@ const App = () => {
 <div>
 
       <Navbar navLinks={navLinks} activeSection={activeSection} setActiveSection={setActiveSection} />
-      <div style={{ padding: '20px 5%' }}>
+      <div style={{ padding: '20px 2%' }}>
       {renderSection()}
     </div>
     </div>

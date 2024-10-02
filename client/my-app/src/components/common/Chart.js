@@ -4,9 +4,9 @@ import AlabamaData from '../data/JSON-AlabamaData.json';
 import CaliforniaData from '../data/JSON-CaliforniaData.json';
 import '../stateAnalysis/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar, faTable } from '@fortawesome/free-solid-svg-icons';
-
+import { faChartBar, faChartPie, faTable } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, ArcElement, BarElement, Tooltip, Legend, CategoryScale, LinearScale } from 'chart.js';
+
 ChartJS.register(ArcElement, BarElement, Tooltip, Legend, CategoryScale, LinearScale);
 
 const getDataByState = (selectedState) => {
@@ -20,13 +20,21 @@ const getDataByState = (selectedState) => {
   }
 };
 
+const availableChartTypes = {
+  People: ['bar', 'pie', 'table'],
+  SocioEconomic: ['bar', 'pie', 'table'],
+  Business: ['pie', 'table'],
+  Voting: ['bar', 'table'],
+  Workers: ['pie', 'table'],
+};
+
 class Chart extends Component {
   constructor(props) {
     super(props);
     this.state = {
       data: {},
       selectedOption: '',
-      isTableView: false,
+      selectedView: 'table', // Default view
     };
   }
 
@@ -84,23 +92,28 @@ class Chart extends Component {
     this.setState({ selectedOption: e.target.value });
   };
 
-  toggleView = () => {
-    this.setState(prevState => ({ isTableView: !prevState.isTableView }));
+  toggleView = (view) => {
+    this.setState({ selectedView: view });
   };
 
-  renderChartOrTable = (type, data, title, size) => (
-    <ChartContainer
-      categoryData={data}
-      title={title}
-      size={size}
-      selectedDistrict={this.props.selectedDistrict}
-      type={type}
-    />
-  );
+  renderChartOrTable = (type, data, title) => {
+    const containerWidth = window.innerWidth * 0.9 * 0.4// 90% of the viewport width
+    const containerHeight = window.innerHeight * 0.6 *0.7; // 60% of the viewport height
+
+    return (
+      <ChartContainer
+        categoryData={data}
+        title={title}
+        size={{ width: containerWidth, height: containerHeight }}
+        selectedDistrict={this.props.selectedDistrict}
+        type={type}
+      />
+    );
+  };
 
   render() {
     const { selectedTrend } = this.props;
-    const { data, selectedOption, isTableView } = this.state;
+    const { data, selectedOption, selectedView } = this.state;
 
     const categories = {
       sex: data['Sex'],
@@ -115,6 +128,7 @@ class Chart extends Component {
     };
 
     const options = this.getOptions();
+    const availableTypes = availableChartTypes[selectedTrend] || [];
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -134,101 +148,149 @@ class Chart extends Component {
           </select>
         </div>
 
-
         <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', width: 'auto', padding: '0 20px' }}>
-  <button 
-    onClick={() => this.toggleView(false)} // Set to Chart view
-    style={{
-      flex: '0 1 auto', // Allow buttons to shrink and grow based on content
-      backgroundColor: !isTableView ? '#005BA6' : 'lightgrey', // Blue if Chart view is active, light grey if not
-      color: 'white',
-      border: 'none',
-      padding: '10px 15px', // Padding for the button
-      cursor: 'pointer',
-      transition: 'background-color 0.3s',
-      outline: 'none',
-      fontSize: '13px', // Font size
-    }}
-  >
-    <FontAwesomeIcon icon={faChartBar} />
-    <span style={{ marginLeft: '5px' }}>Chart</span>
-  </button>
+          <button
+            onClick={() => this.toggleView('table')}
+            style={{
+              flex: '0 1 auto',
+              backgroundColor: selectedView === 'table' ? '#005BA6' : 'lightgrey',
+              color: 'white',
+              border: 'none',
+              padding: '10px 15px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s',
+              outline: 'none',
+              fontSize: '13px',
+            }}
+          >
+            <FontAwesomeIcon icon={faTable} />
+            <span style={{ marginLeft: '5px' }}>Table View</span>
+          </button>
 
-  <button 
-    onClick={() => this.toggleView(true)} // Set to Table view
-    style={{
-      flex: '0 1 auto', // Allow buttons to shrink and grow based on content
-      backgroundColor: isTableView ? '#005BA6' : 'lightgrey', // Blue if Table view is active, light grey if not
-      color: 'white',
-      border: 'none',
-      padding: '10px 15px', // Padding for the button
-      cursor: 'pointer',
-      transition: 'background-color 0.3s',
-      outline: 'none',
-      fontSize: '13px', // Font size
-    }}
-  >
-    <FontAwesomeIcon icon={faTable} />
-    <span style={{ marginLeft: '5px' }}>Table</span>
-  </button>
-</div>
+          <button
+            onClick={() => this.toggleView('bar')}
+            style={{
+              flex: '0 1 auto',
+              backgroundColor: selectedView === 'bar' ? '#005BA6' : 'lightgrey',
+              color: 'white',
+              border: 'none',
+              padding: '10px 15px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s',
+              outline: 'none',
+              fontSize: '13px',
+            }}
+          >
+            <FontAwesomeIcon icon={faChartBar} />
+            <span style={{ marginLeft: '5px' }}>Bar Chart View</span>
+          </button>
 
-
+          <button
+            onClick={() => this.toggleView('pie')}
+            style={{
+              flex: '0 1 auto',
+              backgroundColor: selectedView === 'pie' ? '#005BA6' : 'lightgrey',
+              color: 'white',
+              border: 'none',
+              padding: '10px 15px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s',
+              outline: 'none',
+              fontSize: '13px',
+            }}
+          >
+            <FontAwesomeIcon icon={faChartPie} />
+            <span style={{ marginLeft: '5px' }}>Pie Chart View</span>
+          </button>
+        </div>
 
         <div>
-          {isTableView ? (
+          {/* Rendering based on selected view */}
+          {selectedView === 'table' && (
             <>
-              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('table', categories.votingTrends, 'Voting Trends', { width: 400, height: 400 })}
+              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('table', categories.votingTrends, 'Voting Trends')}
 
               {selectedTrend === 'People' && (
                 <>
-                  {selectedOption === 'sex' && this.renderChartOrTable('table', categories.sex, 'People - Sex', { width: 350, height: 300 })}
-                  {selectedOption === 'age' && this.renderChartOrTable('table', categories.age, 'People - Age Distribution', { width: 350, height: 350 })}
-                  {selectedOption === 'race' && this.renderChartOrTable('table', categories.race, 'People - Race', { width: 560, height: 540 })}
+                  {selectedOption === 'sex' && this.renderChartOrTable('table', categories.sex, 'People - Sex')}
+                  {selectedOption === 'age' && this.renderChartOrTable('table', categories.age, 'People - Age Distribution')}
+                  {selectedOption === 'race' && this.renderChartOrTable('table', categories.race, 'People - Race')}
                 </>
               )}
 
               {selectedTrend === 'SocioEconomic' && (
                 <>
-                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('table', categories.meanmedianincome, 'Mean/Median Income', { width: 200, height: 200 })}
-                  {selectedOption === 'income' && this.renderChartOrTable('table', categories.income, 'Income Breakdown', { width: 200, height: 200 })}
+                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('table', categories.meanmedianincome, 'Mean/Median Income')}
+                  {selectedOption === 'income' && this.renderChartOrTable('table', categories.income, 'Income Breakdown')}
                 </>
               )}
 
-              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('table', categories.business, 'Business Types', { width: 200, height: 200 })}
+              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('table', categories.business, 'Business Types')}
 
               {selectedTrend === 'Workers' && (
                 <>
-                  {selectedOption === 'workers2' && this.renderChartOrTable('table', categories.workers2, 'Worker Type (Industry)', { width: 200, height: 200 })}
-                  {selectedOption === 'workers1' && this.renderChartOrTable('table', categories.workers1, 'Workers (Per Industry)', { width: 200, height: 350 })}
+                  {selectedOption === 'workers2' && this.renderChartOrTable('table', categories.workers2, 'Worker Type (Industry)')}
+                  {selectedOption === 'workers1' && this.renderChartOrTable('table', categories.workers1, 'Workers (Per Industry)')}
                 </>
               )}
             </>
-          ) : (
+          )}
+
+          {selectedView === 'bar' && (
             <>
-              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('bar', categories.votingTrends, 'Voting Trends', { width: 400, height: 400 })}
+              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('bar', categories.votingTrends, 'Voting Trends')}
 
               {selectedTrend === 'People' && (
                 <>
-                  {selectedOption === 'sex' && this.renderChartOrTable('pie', categories.sex, 'People - Sex', { width: 350, height: 300 })}
-                  {selectedOption === 'age' && this.renderChartOrTable('pie', categories.age, 'People - Age Distribution', { width: 350, height: 350 })}
-                  {selectedOption === 'race' && this.renderChartOrTable('bar', categories.race, 'People - Race', { width: 560, height: 540 })}
+                  {selectedOption === 'sex' && this.renderChartOrTable('bar', categories.sex, 'People - Sex')}
+                  {selectedOption === 'age' && this.renderChartOrTable('bar', categories.age, 'People - Age Distribution')}
+                  {selectedOption === 'race' && this.renderChartOrTable('bar', categories.race, 'People - Race')}
                 </>
               )}
 
               {selectedTrend === 'SocioEconomic' && (
                 <>
-                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('table', categories.meanmedianincome, 'Mean/Median Income', { width: 200, height: 200 })}
-                  {selectedOption === 'income' && this.renderChartOrTable('pie', categories.income, 'Income Breakdown', { width: 200, height: 200 })}
+                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('bar', categories.meanmedianincome, 'Mean/Median Income')}
+                  {selectedOption === 'income' && this.renderChartOrTable('bar', categories.income, 'Income Breakdown')}
                 </>
               )}
 
-              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('table', categories.business, 'Business Types', { width: 200, height: 200 })}
+              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('bar', categories.business, 'Business Types')}
 
               {selectedTrend === 'Workers' && (
                 <>
-                  {selectedOption === 'workers2' && this.renderChartOrTable('pie', categories.workers2, 'Worker Type (Industry)', { width: 200, height: 200 })}
-                  {selectedOption === 'workers1' && this.renderChartOrTable('pie', categories.workers1, 'Workers (Per Industry)', { width: 200, height: 350 })}
+                  {selectedOption === 'workers2' && this.renderChartOrTable('bar', categories.workers2, 'Worker Type (Industry)')}
+                  {selectedOption === 'workers1' && this.renderChartOrTable('bar', categories.workers1, 'Workers (Per Industry)')}
+                </>
+              )}
+            </>
+          )}
+
+          {selectedView === 'pie' && (
+            <>
+              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('pie', categories.votingTrends, 'Voting Trends')}
+
+              {selectedTrend === 'People' && (
+                <>
+                  {selectedOption === 'sex' && this.renderChartOrTable('pie', categories.sex, 'People - Sex')}
+                  {selectedOption === 'age' && this.renderChartOrTable('pie', categories.age, 'People - Age Distribution')}
+                  {selectedOption === 'race' && this.renderChartOrTable('pie', categories.race, 'People - Race')}
+                </>
+              )}
+
+              {selectedTrend === 'SocioEconomic' && (
+                <>
+                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('pie', categories.meanmedianincome, 'Mean/Median Income')}
+                  {selectedOption === 'income' && this.renderChartOrTable('pie', categories.income, 'Income Breakdown')}
+                </>
+              )}
+
+              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('pie', categories.business, 'Business Types')}
+
+              {selectedTrend === 'Workers' && (
+                <>
+                  {selectedOption === 'workers2' && this.renderChartOrTable('pie', categories.workers2, 'Worker Type (Industry)')}
+                  {selectedOption === 'workers1' && this.renderChartOrTable('pie', categories.workers1, 'Workers (Per Industry)')}
                 </>
               )}
             </>

@@ -1,14 +1,20 @@
 import React, { Component, createRef } from "react";
-import { MapContainer as LeafletMap, TileLayer, GeoJSON } from "react-leaflet";
+import { MapContainer as LeafletMap, TileLayer, GeoJSON, Tooltip } from "react-leaflet"; 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import allStatesData from '../data/start.json'
 
 class MapComponent extends Component {
   constructor(props) {
     super(props);
-    this.initialPosition = [37.0902, -95.7129]; // Default position
-    this.mapRef = createRef(); // Create a reference for the map
-    this.containerRef = createRef(); // Reference for the container div
+    this.initialPosition = [37.0902, -95.7129];
+    this.mapRef = createRef();
+    this.containerRef = createRef();
+    this.state = {
+      selectedFeature: null,
+      geoJsonLayer: null,
+      geoJsonData: props.geoJsonData || allStatesData, // Set default geoJsonData
+    };
   }
 
   geoJsonStyle = (feature) => {
@@ -21,15 +27,37 @@ class MapComponent extends Component {
   };
 
   onFeatureClick = (e) => {
-    const { properties } = e.target.feature; // Get the properties of the clicked feature
-    const name = properties.name; // Extract the name property
+    const { properties } = e.target.feature;
     if (this.props.onFeatureClick) {
-      this.props.onFeatureClick(name); // Call the parent function with the name
+      this.props.onFeatureClick(properties.name);
     }
+    this.setState({
+      selectedFeature: properties,
+    });
+  };
+
+  onFeatureMouseOver = (e) => {
+    const layer = e.target;
+    layer.setStyle({
+      fillColor: "#E6E6E6",
+    });
+
+    const properties = layer.feature.properties;
+
+    const tooltipContent = Object.entries(properties)
+      .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+      .join("<br>");
+
+    layer.bindTooltip(tooltipContent, { sticky: true }).openTooltip(); // Bind and open the tooltip
+  };
+
+  onFeatureMouseOut = (e) => {
+    const layer = e.target;
+    layer.setStyle(this.geoJsonStyle(layer.feature));
+    layer.closeTooltip(); // Close the tooltip on mouse out
   };
 
   componentDidMount() {
-    // Create a ResizeObserver to watch for changes in the container size
     this.resizeObserver = new ResizeObserver(() => {
       this.handleResize();
     });
@@ -37,66 +65,83 @@ class MapComponent extends Component {
     if (this.containerRef.current) {
       this.resizeObserver.observe(this.containerRef.current);
     }
+    this.updateGeoJsonLayer(this.state.geoJsonData); // Use state geoJsonData
   }
 
   componentDidUpdate(prevProps) {
-    // Check if geoJsonData has changed
-    if (prevProps.geoJsonData !== this.props.geoJsonData && this.mapRef.current) {
-      this.fitMapToGeoJsonData();
+    if (prevProps.geoJsonData !== this.props.geoJsonData) {
+      this.setState({
+        geoJsonData: this.props.geoJsonData || allStatesData, // Update state with new prop or default
+      }, () => {
+        this.updateGeoJsonLayer(this.state.geoJsonData); // Call update after state update
+      });
     }
   }
 
   componentWillUnmount() {
-    // Clean up the resize observer
     if (this.resizeObserver && this.containerRef.current) {
       this.resizeObserver.unobserve(this.containerRef.current);
+    }
+    if (this.state.geoJsonLayer) {
+      this.mapRef.current.removeLayer(this.state.geoJsonLayer);
     }
   }
 
   handleResize = () => {
-    // When the container is resized, invalidate the map size and adjust zoom
     if (this.mapRef.current) {
       this.mapRef.current.invalidateSize();
-      this.fitMapToGeoJsonData();
     }
   };
 
-  fitMapToGeoJsonData = () => {
-    if (this.props.geoJsonData && this.mapRef.current) {
-      const map = this.mapRef.current;
-      const geoJsonLayer = L.geoJSON(this.props.geoJsonData);
+  updateGeoJsonLayer = (geoJsonData) => {
+    if (!geoJsonData) return; // Ensure geoJsonData is valid
+    console.log("Updating GeoJSON Layer with data:", geoJsonData);
+    
+    if (this.mapRef.current) {
+      if (this.state.geoJsonLayer) {
+        this.mapRef.current.removeLayer(this.state.geoJsonLayer);
+      }
+  
+      const geoJsonLayer = L.geoJSON(geoJsonData, {
+        style: this.geoJsonStyle,
+        onEachFeature: (feature, layer) => {
+          layer.on({
+            click: this.onFeatureClick,
+            mouseover: this.onFeatureMouseOver,
+            mouseout: this.onFeatureMouseOut,
+          });
+        },
+      });
+  
+      geoJsonLayer.addTo(this.mapRef.current); // Ensure the layer is added
+      this.setState({ geoJsonLayer });
+      this.fitMapToGeoJsonData(geoJsonLayer);
+    }
+  };
+
+  fitMapToGeoJsonData = (geoJsonLayer) => {
+    if (geoJsonLayer) {
       const bounds = geoJsonLayer.getBounds();
-      map.fitBounds(bounds); // Fit the map to the bounds of the GeoJSON
+      this.mapRef.current.fitBounds(bounds);
     }
   };
 
   render() {
-    const { geoJsonData } = this.props;
-
     return (
-      <div style={{ display: "flex", flex: 1, height: "100%" }} ref={this.containerRef}>
-        <LeafletMap
-          center={this.initialPosition}
-          zoom={4}
-          style={{ flex: 1 }}
-          ref={this.mapRef} // Attach the map reference
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          {geoJsonData && (
-            <GeoJSON 
-              data={geoJsonData} 
-              style={this.geoJsonStyle} 
-              onEachFeature={(feature, layer) => {
-                layer.on({
-                  click: this.onFeatureClick, // Add click event
-                });
-              }} 
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <div style={{ display: "flex", flex: 1, height: "100%" }} ref={this.containerRef}>
+          <LeafletMap
+            center={this.initialPosition}
+            zoom={4}
+            style={{ flex: 1 }}
+            ref={this.mapRef}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             />
-          )}
-        </LeafletMap>
+          </LeafletMap>
+        </div>
       </div>
     );
   }

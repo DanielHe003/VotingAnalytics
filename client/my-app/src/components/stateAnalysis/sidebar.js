@@ -67,6 +67,24 @@ class Sidebar extends React.Component {
         this.props.setSelectedDistrict(selectedDistrict);
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.selectedState !== this.props.selectedState) {
+            // window.alert("State");
+            this.setState({ selectedState: this.props.selectedState });
+            this.props.setSelectedDistrict('All Districts');
+    
+        }
+
+        if (prevProps.selectedDistrict !== this.props.selectedDistrict) {
+            this.setState({ selectedDistrict: this.props.selectedDistrict });
+        }
+    
+        if (prevProps.selectedTrend !== this.props.selectedTrend) {
+            this.setState({ selectedTrend: this.props.selectedTrend });
+        }
+    }
+
+    
     handleTrendChange(event) {
         const selectedTrend = event.target.value;
         this.setState({ selectedTrend: selectedTrend });

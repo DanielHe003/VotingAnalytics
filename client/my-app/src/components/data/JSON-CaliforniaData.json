@@ -2099,7 +2099,7 @@
         }
     },
     "Breakdown of Worker Type (above 16)": {
-        "Private wage and salary workers": {
+        "Private wage/Salary": {
             "District 01 Estimate": "231,858",
             "District 02 Estimate": "251,783",
             "District 03 Estimate": "266,251",
@@ -2209,7 +2209,7 @@
             "District 52 Estimate": "65,164",
             "All Districts": "2,817,420"
         },
-        "Self-employed in own not incorporated business workers": {
+        "Self-employed": {
             "District 01 Estimate": "26,259",
             "District 02 Estimate": "41,716",
             "District 03 Estimate": "28,772",
