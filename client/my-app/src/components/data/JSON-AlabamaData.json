@@ -137,7 +137,7 @@
         }
     },
     "Industry Workers (Above 16)": {
-        "Agriculture, forestry, fishing and hunting, and mining": {
+        "Agriculture, hunting, and mining": {
             "District 01 Estimate": "3,582",
             "District 02 Estimate": "5,880",
             "District 03 Estimate": "2,300",
@@ -197,7 +197,7 @@
             "District 07 Estimate": "3,083",
             "All Districts": "28,134"
         },
-        "Finance and insurance, and real estate and rental and leasing": {
+        "Finance, rental and leasing": {
             "District 01 Estimate": "19,077",
             "District 02 Estimate": "15,498",
             "District 03 Estimate": "17,225",
@@ -207,7 +207,7 @@
             "District 07 Estimate": "16,621",
             "All Districts": "123,364"
         },
-        "Professional, scientific, and management, and waste management services": {
+        "Professional, waste management services": {
             "District 01 Estimate": "35,161",
             "District 02 Estimate": "26,732",
             "District 03 Estimate": "26,683",
@@ -216,46 +216,6 @@
             "District 06 Estimate": "36,993",
             "District 07 Estimate": "25,222",
             "All Districts": "236,111"
-        },
-        "Educational services, and health care and social assistance": {
-            "District 01 Estimate": "70,810",
-            "District 02 Estimate": "68,913",
-            "District 03 Estimate": "80,902",
-            "District 04 Estimate": "71,477",
-            "District 05 Estimate": "69,750",
-            "District 06 Estimate": "83,674",
-            "District 07 Estimate": "81,715",
-            "All Districts": "527,241"
-        },
-        "Arts, entertainment, and recreation, and accommodation and food services": {
-            "District 01 Estimate": "27,549",
-            "District 02 Estimate": "26,296",
-            "District 03 Estimate": "23,679",
-            "District 04 Estimate": "23,122",
-            "District 05 Estimate": "25,012",
-            "District 06 Estimate": "27,977",
-            "District 07 Estimate": "25,348",
-            "All Districts": "178,983"
-        },
-        "Other services, except public administration": {
-            "District 01 Estimate": "16,654",
-            "District 02 Estimate": "14,871",
-            "District 03 Estimate": "13,380",
-            "District 04 Estimate": "15,371",
-            "District 05 Estimate": "18,056",
-            "District 06 Estimate": "18,669",
-            "District 07 Estimate": "14,072",
-            "All Districts": "111,073"
-        },
-        "Public administration": {
-            "District 01 Estimate": "14,165",
-            "District 02 Estimate": "24,577",
-            "District 03 Estimate": "15,918",
-            "District 04 Estimate": "13,227",
-            "District 05 Estimate": "25,512",
-            "District 06 Estimate": "12,980",
-            "District 07 Estimate": "18,854",
-            "All Districts": "125,233"
         }
     },
     "Breakdown of Worker Type (above 16)": {
@@ -534,26 +494,6 @@
             "District 06 Estimate": "913",
             "District 07 Estimate": "659",
             "All Districts": "5,030"
-        },
-        "Professional, scientific, and technical services": {
-            "District 01 Estimate": "1,463",
-            "District 02 Estimate": "1,144",
-            "District 03 Estimate": "870",
-            "District 04 Estimate": "868",
-            "District 05 Estimate": "1,894",
-            "District 06 Estimate": "1,816",
-            "District 07 Estimate": "1,502",
-            "All Districts": "9,557"
-        },
-        "Management of companies and enterprises": {
-            "District 01 Estimate": "87",
-            "District 02 Estimate": "70",
-            "District 03 Estimate": "41",
-            "District 04 Estimate": "55",
-            "District 05 Estimate": "52",
-            "District 06 Estimate": "139",
-            "District 07 Estimate": "105",
-            "All Districts": "549"
         }
     }
 }

@@ -3,15 +3,15 @@ import { Bar } from 'react-chartjs-2';
 const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
   const barData = Object.entries(categoryData).map(([key, value]) => ({
     name: key,
-    value: parseInt(value[selectedDistrict].replace(/,/g, ''), 10)
+    value: parseInt(value[selectedDistrict].replace(/,/g, ''), 10),
   }));
 
   const data = {
-    labels: barData.map(entry => entry.name),
+    labels: barData.map((entry) => entry.name),
     datasets: [
       {
         label: 'Count',
-        data: barData.map(entry => entry.value),
+        data: barData.map((entry) => entry.value),
         backgroundColor: '#42A5F5',
       },
     ],
@@ -22,12 +22,12 @@ const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
     responsive: true,
     plugins: {
       legend: {
-        display: false, // Hides the legend
+        display: false,
       },
       tooltip: {
-        enabled: true, // Enables tooltips
+        enabled: true,
         callbacks: {
-          label: (context) => `Count: ${context.raw.toLocaleString()}`, // Show count on hover with commas
+          label: (context) => `Count: ${context.raw.toLocaleString()}`,
         },
       },
     },
@@ -35,10 +35,19 @@ const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
       x: {
         ticks: {
           font: {
-            weight: 'bold', // Bold labels
+            weight: 'bold',
+            size: 15,
           },
-          maxRotation: 45, // Tilted labels for better readability
+          maxRotation: 45,
           minRotation: 30,
+        },
+      },
+      y: {
+        ticks: {
+          font: {
+            weight: 'bold',
+            size: 16,
+          },
         },
       },
     },
