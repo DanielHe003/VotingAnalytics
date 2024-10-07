@@ -3,27 +3,31 @@ import Navbar from './components/common/Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
-import HomePage from './components/home/HomePage';
-import StateAnalysis from './components/stateAnalysis/StateAnalysis'
+import StateAnalysis from './components/home/StateAnalysis';
+import StateInfo from './components/stateInfo/StateInfo'
+import Value from './components/home/Value';
 
 
 const App = () => {
-  const [activeSection, setActiveSection] = useState('State Analysis');
+  const [activeSection, setActiveSection] = useState('State Insights');
 
   const navLinks = [
-    // { name: 'State Analysis', href: '#state-analysis' },
-    // { name: 'Home', href: '#home' },
+    { name: 'State Insights', href: '#state-analysis' },
+    { name: 'State Analysis', href: '#state-analysis' },
+    // {name: 'POC', href: '#sample'}
 
   ];
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'Home':
-        return <HomePage />;
+      case 'POC':
+        return <Value />;
       case 'State Analysis':
         return <StateAnalysis />;
+      case 'State Insights':
+        return <StateInfo />;
       default:
-        return <HomePage />;
+        return <StateInfo />;
     }
   };
 
@@ -40,3 +44,4 @@ const App = () => {
 };
 
 export default App;
+
