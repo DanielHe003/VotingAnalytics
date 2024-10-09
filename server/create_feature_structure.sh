@@ -26,10 +26,10 @@ FEATURE_BASE_DIR="$BASE_DIR/$FEATURE_NAME"
 # Create subdirectories under the feature directory for each layer
 mkdir -p "$FEATURE_BASE_DIR/controller"
 mkdir -p "$FEATURE_BASE_DIR/service"
-mkdir -p "$FEATURE_BASE_DIR/repository"
-mkdir -p "$FEATURE_BASE_DIR/model"
-mkdir -p "$FEATURE_BASE_DIR/dto"
-mkdir -p "$FEATURE_BASE_DIR/mapper"
+# mkdir -p "$FEATURE_BASE_DIR/repository"
+# mkdir -p "$FEATURE_BASE_DIR/model"
+# mkdir -p "$FEATURE_BASE_DIR/dto"
+# mkdir -p "$FEATURE_BASE_DIR/mapper"
 
 # Create sample Java files for each layer with correct package names
 echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.controller;
@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(\"/api/${FEATURE_NAME_CAMEL,,}\")
+@RequestMapping(\"/${FEATURE_NAME_CAMEL,,}\")
 public class ${FEATURE_NAME_CAMEL}Controller {
 
     @Autowired
@@ -50,8 +50,7 @@ public class ${FEATURE_NAME_CAMEL}Controller {
 
 echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.service;
 
-import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
-import com.voter_analysis.voter_analysis.$FEATURE_NAME.repository.${FEATURE_NAME_CAMEL}Repository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,54 +65,56 @@ public class ${FEATURE_NAME_CAMEL}Service {
     // Define your business logic here
 }" > "$FEATURE_BASE_DIR/service/${FEATURE_NAME_CAMEL}Service.java"
 
-echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.repository;
+# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.repository;
+#this goes uptop 
+# import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
+# import com.voter_analysis.voter_analysis.$FEATURE_NAME.repository.${FEATURE_NAME_CAMEL}Repository;
+# import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
+# import org.springframework.data.mongodb.repository.MongoRepository;
+# import org.springframework.stereotype.Repository;
 
-import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+# @Repository
+# public interface ${FEATURE_NAME_CAMEL}Repository extends MongoRepository<${FEATURE_NAME_CAMEL}, String> {
+#     // Define your custom queries here
+# }" > "$FEATURE_BASE_DIR/repository/${FEATURE_NAME_CAMEL}Repository.java"
 
-@Repository
-public interface ${FEATURE_NAME_CAMEL}Repository extends MongoRepository<${FEATURE_NAME_CAMEL}, String> {
-    // Define your custom queries here
-}" > "$FEATURE_BASE_DIR/repository/${FEATURE_NAME_CAMEL}Repository.java"
+# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.model;
 
-echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.model;
+# import org.springframework.data.annotation.Id;
+# import org.springframework.data.mongodb.core.mapping.Document;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+# @Document(collection = \"${FEATURE_NAME_CAMEL,,}\")
+# public class ${FEATURE_NAME_CAMEL} {
 
-@Document(collection = \"${FEATURE_NAME_CAMEL,,}\")
-public class ${FEATURE_NAME_CAMEL} {
+#     @Id
+#     private String id;
 
-    @Id
-    private String id;
+#     // Add your fields here
 
-    // Add your fields here
+#     // Constructors, getters, and setters
+# }" > "$FEATURE_BASE_DIR/model/${FEATURE_NAME_CAMEL}.java"
 
-    // Constructors, getters, and setters
-}" > "$FEATURE_BASE_DIR/model/${FEATURE_NAME_CAMEL}.java"
+# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.dto;
 
-echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.dto;
+# public class ${FEATURE_NAME_CAMEL}DTO {
 
-public class ${FEATURE_NAME_CAMEL}DTO {
+#     // Define your DTO fields here
 
-    // Define your DTO fields here
+#     // Constructors, getters, and setters
+# }" > "$FEATURE_BASE_DIR/dto/${FEATURE_NAME_CAMEL}DTO.java"
 
-    // Constructors, getters, and setters
-}" > "$FEATURE_BASE_DIR/dto/${FEATURE_NAME_CAMEL}DTO.java"
+# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.mapper;
 
-echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.mapper;
+# import com.voter_analysis.voter_analysis.$FEATURE_NAME.dto.${FEATURE_NAME_CAMEL}DTO;
+# import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
+# import org.mapstruct.Mapper;
 
-import com.voter_analysis.voter_analysis.$FEATURE_NAME.dto.${FEATURE_NAME_CAMEL}DTO;
-import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
-import org.mapstruct.Mapper;
+# @Mapper(componentModel = \"spring\")
+# public interface ${FEATURE_NAME_CAMEL}Mapper {
 
-@Mapper(componentModel = \"spring\")
-public interface ${FEATURE_NAME_CAMEL}Mapper {
+#     ${FEATURE_NAME_CAMEL}DTO toDTO(${FEATURE_NAME_CAMEL} ${FEATURE_NAME_CAMEL,,});
+#     ${FEATURE_NAME_CAMEL} toEntity(${FEATURE_NAME_CAMEL}DTO ${FEATURE_NAME_CAMEL,,}DTO);
 
-    ${FEATURE_NAME_CAMEL}DTO toDTO(${FEATURE_NAME_CAMEL} ${FEATURE_NAME_CAMEL,,});
-    ${FEATURE_NAME_CAMEL} toEntity(${FEATURE_NAME_CAMEL}DTO ${FEATURE_NAME_CAMEL,,}DTO);
-
-}" > "$FEATURE_BASE_DIR/mapper/${FEATURE_NAME_CAMEL}Mapper.java"
+# }" > "$FEATURE_BASE_DIR/mapper/${FEATURE_NAME_CAMEL}Mapper.java"
 
 echo "Feature '$FEATURE_NAME_CAMEL' structure created successfully under the directory '$FEATURE_BASE_DIR' with compliant package names!"
