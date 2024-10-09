@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ChartContainer from './ChartContainer';
 import AlabamaData from '../data/JSON-AlabamaData.json';
 import CaliforniaData from '../data/JSON-CaliforniaData.json';
-import '../stateAnalysis/Sidebar.css';
+import '../stateInfo/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartBar, faChartPie, faTable } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, ArcElement, BarElement, Tooltip, Legend, CategoryScale, LinearScale } from 'chart.js';
@@ -27,6 +27,8 @@ const availableChartTypes = {
   Voting: ['bar', 'table'],
   Workers: ['pie', 'table'],
 };
+
+
 
 class Chart extends Component {
   constructor(props) {
@@ -129,6 +131,8 @@ class Chart extends Component {
 
     const options = this.getOptions();
     const availableTypes = availableChartTypes[selectedTrend] || [];
+    console.log(availableTypes);
+    console.log(availableChartTypes);
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

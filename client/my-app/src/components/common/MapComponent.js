@@ -1,5 +1,5 @@
 import React, { Component, createRef } from "react";
-import { MapContainer as LeafletMap, TileLayer, GeoJSON, Tooltip } from "react-leaflet"; 
+import { MapContainer as LeafletMap, TileLayer } from "react-leaflet"; 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import allStatesData from '../data/start.json'
@@ -39,7 +39,9 @@ class MapComponent extends Component {
   onFeatureMouseOver = (e) => {
     const layer = e.target;
     layer.setStyle({
-      fillColor: "#E6E6E6",
+      fillColor: "white",
+      color: "#005BA6",
+      weight: 2.5
     });
 
     const properties = layer.feature.properties;
@@ -48,7 +50,7 @@ class MapComponent extends Component {
       .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
       .join("<br>");
 
-    layer.bindTooltip(tooltipContent, { sticky: true }).openTooltip(); // Bind and open the tooltip
+    layer.bindTooltip(tooltipContent, { sticky: true }).openTooltip();
   };
 
   onFeatureMouseOut = (e) => {

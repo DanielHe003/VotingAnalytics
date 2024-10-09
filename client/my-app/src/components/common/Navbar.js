@@ -11,7 +11,7 @@ const Navbar = ({ navLinks, activeSection, setActiveSection }) => {
       <nav className="navbar navbar-expand-lg" style={{ borderBottom: '1px solid #000' }}>
         <div className="container-fluid d-flex flex-column align-items-center">
           <div className="navbar-brand d-flex align-items-center">
-            <img src={LogoIcon} alt="Logo" style={{ height: '89px' }} />
+            <img src={LogoIcon} alt="Logo" style={{ height: '94px' }} />
           </div>
 
           <button
