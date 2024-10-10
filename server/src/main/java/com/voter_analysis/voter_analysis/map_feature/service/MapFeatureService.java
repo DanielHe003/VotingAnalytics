@@ -19,7 +19,7 @@ public class MapFeatureService {
         return loadJsonData("start.json");
     }
     public Map<String, Object> getStateMap(String state){
-        return loadJsonData(state + "Json.json");
+        return loadJsonData(state + "_json.json");
     }
 
     // Load state data for a specific state
@@ -29,7 +29,7 @@ public class MapFeatureService {
 
     // Load precinct map for a specific state
     public Map<String, Object> getPrecinctMap(String state) {
-        return loadJsonData(state + "Precinct.json");
+        return loadJsonData(state + "precinct.json");
     }
 
     
