@@ -25,7 +25,7 @@ public class AnalysisFeatureService {
 
     // Load demographic voting data for a given state
     public Map<String, Object> getDistrictsData(String state) {
-        return loadJsonData("JSON-" + state + "Data.json");
+        return loadJsonData("json_" + state + "_data.json");
     }
     public Map<String, Object> getIncomeData(String state) {
         state = "";
