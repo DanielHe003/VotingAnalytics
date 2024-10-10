@@ -1,11 +1,10 @@
-import PieChartComponent from './PieChartComponent';
-import BarChartComponent from './BarChartComponent';
-import TableComponent from './TableComponent';
-import ScatterChart from './ScatterChart';
+import PieChartComponent from '../charts/PieChartComponent';
+import BarChartComponent from '../charts/BarChartComponent';
+import TableComponent from '../charts/TableComponent';
+import ScatterChart from '../charts/ScatterChart';
 
 const ChartContainer = ({ categoryData, title, size, selectedDistrict, type }) => {
 
-  // Move data definition outside of the return and use it directly without 'this'
   const data = {
     "democrats": [
       { "x": 5, "y": 90 },

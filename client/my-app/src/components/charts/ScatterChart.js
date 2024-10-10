@@ -1,24 +1,42 @@
-import React, { useEffect } from "react";
+import React, { Component } from "react";
 import { Chart } from "chart.js/auto";
-import "chartjs-plugin-trendline"; // Ensure this plugin is installed
+import "chartjs-plugin-trendline";
 import regression from "regression";
 
-const ChartScatterPlot = ({ data }) => {
-  useEffect(() => {
-    const chartCanvas = document.getElementById("myChart");
-    if (chartCanvas.chartInstance) {
-      chartCanvas.chartInstance.destroy();
+class ChartScatterPlot extends Component {
+  chartInstance = null;
+
+  componentDidMount() {
+    this.renderChart();
+  }
+
+  componentDidUpdate() {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
     }
+    this.renderChart();
+  }
 
-    // Prepare data for regression
-    const democratData = data.democrats.map((d) => [d.x, d.y]);
-    const republicanData = data.republicans.map((d) => [d.x, d.y]);
+  componentWillUnmount() {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+  }
 
-    // Perform polynomial regression (2nd degree)
+  renderChart = () => {
+    
+    // console.log("hi");
+    // console.log(this.props.data);
+    // console.log(this.props.data['democrats']);
+
+
+    const chartCanvas = document.getElementById("myChart");
+    const democratData = this.props.data['democrats'].map((d) => [d.x, d.y]);
+    const republicanData = this.props.data['republicans'].map((d) => [d.x, d.y]);
+
     const democratRegression = regression.polynomial(democratData, { order: 2 });
     const republicanRegression = regression.polynomial(republicanData, { order: 2 });
 
-    // Generate points for the fitted polynomial line
     const democratFit = Array.from({ length: 101 }, (_, x) => ({
       x,
       y: democratRegression.equation[0] * Math.pow(x, 2) + democratRegression.equation[1] * x + democratRegression.equation[2],
@@ -29,25 +47,25 @@ const ChartScatterPlot = ({ data }) => {
       y: republicanRegression.equation[0] * Math.pow(x, 2) + republicanRegression.equation[1] * x + republicanRegression.equation[2],
     }));
 
-    const chartInstance = new Chart(chartCanvas, {
+    this.chartInstance = new Chart(chartCanvas, {
       type: "scatter",
       data: {
         datasets: [
           {
             label: "Democratic Votes",
-            data: data.democrats.map((d) => ({ x: d.x, y: d.y })),
+            data: this.props.data.democrats.map((d) => ({ x: d.x, y: d.y })),
             backgroundColor: "rgba(0, 0, 255, 0.05)",
             borderColor: "blue",
             pointRadius: 1,
-            showLine: false, // Points only, no line
+            showLine: false,
           },
           {
             label: "Republican Votes",
-            data: data.republicans.map((d) => ({ x: d.x, y: d.y })),
+            data: this.props.data.republicans.map((d) => ({ x: d.x, y: d.y })),
             backgroundColor: "rgba(255, 0, 0, 0.1)",
             borderColor: "red",
             pointRadius: 1,
-            showLine: false, // Points only, no line
+            showLine: false,
           },
           {
             label: "Democratic Fit",
@@ -55,8 +73,8 @@ const ChartScatterPlot = ({ data }) => {
             borderColor: "blue",
             backgroundColor: "rgba(0, 0, 255, 1)",
             borderWidth: 3,
-            pointRadius: 0, // Do not show points for the fit line
-            showLine: true, // Show trendline
+            pointRadius: 0,
+            showLine: true,
           },
           {
             label: "Republican Fit",
@@ -64,8 +82,8 @@ const ChartScatterPlot = ({ data }) => {
             borderColor: "red",
             backgroundColor: "rgba(255, 0, 0, 0.3)",
             borderWidth: 3,
-            pointRadius: 0, // Do not show points for the fit line
-            showLine: true, // Show trendline
+            pointRadius: 0,
+            showLine: true,
           },
         ],
       },
@@ -83,7 +101,7 @@ const ChartScatterPlot = ({ data }) => {
           x: {
             title: {
               display: true,
-              text: "Percentage (%) of POP_BLK Voters",
+              text: `Percentage (%) of ${this.props.populationStat} Voters`,
               font: {
                 size: 16,
                 weight: "bold",
@@ -110,19 +128,15 @@ const ChartScatterPlot = ({ data }) => {
         },
       },
     });
+  };
 
-    chartCanvas.chartInstance = chartInstance;
-
-    return () => {
-      chartInstance.destroy();
-    };
-  }, [data]);
-
-  return (
-    <div style={{ display: "flex", justifyContent: "center", padding: 20 }}>
-      <canvas id="myChart" style={{ width: "1200px", height: "520px" }}></canvas>
-    </div>
-  );
-};
+  render() {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", padding: 20 }}>
+        <canvas id="myChart" style={{ width: "1200px", height: "520px" }}></canvas>
+      </div>
+    );
+  }
+}
 
 export default ChartScatterPlot;

@@ -1,5 +1,5 @@
 import React from 'react';
-import ScatterChart from '../common/ScatterChart'
+import ScatterChart from '../charts/ScatterChart'
 
   const data = {
     "democrats": [

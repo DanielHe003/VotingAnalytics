@@ -2,7 +2,7 @@ import React, { Component, createRef } from "react";
 import { MapContainer as LeafletMap, TileLayer } from "react-leaflet"; 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import allStatesData from '../data/start.json'
+
 
 class MapComponent extends Component {
   constructor(props) {
@@ -13,7 +13,7 @@ class MapComponent extends Component {
     this.state = {
       selectedFeature: null,
       geoJsonLayer: null,
-      geoJsonData: props.geoJsonData || allStatesData, // Set default geoJsonData
+      geoJsonData: props.geoJsonData, 
     };
   }
 
@@ -56,7 +56,7 @@ class MapComponent extends Component {
   onFeatureMouseOut = (e) => {
     const layer = e.target;
     layer.setStyle(this.geoJsonStyle(layer.feature));
-    layer.closeTooltip(); // Close the tooltip on mouse out
+    layer.closeTooltip(); 
   };
 
   componentDidMount() {
@@ -67,15 +67,15 @@ class MapComponent extends Component {
     if (this.containerRef.current) {
       this.resizeObserver.observe(this.containerRef.current);
     }
-    this.updateGeoJsonLayer(this.state.geoJsonData); // Use state geoJsonData
+    this.updateGeoJsonLayer(this.state.geoJsonData); 
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.geoJsonData !== this.props.geoJsonData) {
       this.setState({
-        geoJsonData: this.props.geoJsonData || allStatesData, // Update state with new prop or default
+        geoJsonData: this.props.geoJsonData, 
       }, () => {
-        this.updateGeoJsonLayer(this.state.geoJsonData); // Call update after state update
+        this.updateGeoJsonLayer(this.state.geoJsonData); 
       });
     }
   }
@@ -96,8 +96,8 @@ class MapComponent extends Component {
   };
 
   updateGeoJsonLayer = (geoJsonData) => {
-    if (!geoJsonData) return; // Ensure geoJsonData is valid
-    console.log("Updating GeoJSON Layer with data:", geoJsonData);
+    if (!geoJsonData) return; 
+    // console.log("Updating GeoJSON Layer with data:", geoJsonData);
     
     if (this.mapRef.current) {
       if (this.state.geoJsonLayer) {
@@ -115,7 +115,7 @@ class MapComponent extends Component {
         },
       });
   
-      geoJsonLayer.addTo(this.mapRef.current); // Ensure the layer is added
+      geoJsonLayer.addTo(this.mapRef.current); 
       this.setState({ geoJsonLayer });
       this.fitMapToGeoJsonData(geoJsonLayer);
     }
@@ -134,7 +134,7 @@ class MapComponent extends Component {
         <div style={{ display: "flex", flex: 1, height: "100%" }} ref={this.containerRef}>
           <LeafletMap
             center={this.initialPosition}
-            zoom={4}
+            zoom={3}
             style={{ flex: 1 }}
             ref={this.mapRef}
           >

@@ -1,26 +1,21 @@
 import React, { Component } from "react";
-// import MapComponent from '../common/MapComponent'; 
 import TopBar from './topBar';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import twoStates from '../data/start.json';
-import CaliforniaJson from '../data/map_income_cali.json';
-import AlabamaJson from '../data/AlabamaJson.json';
-import ScatterChart from "../common/ScatterChart"; // Ensure you have this component
-import SupportDensityChart from "../common/SupportDensityChart"; // Ensure you have this component
-import ecologicalInferenceData from '../data/precinct_analysis.json'; // Ensure you have the data
+import ScatterChart from "../charts/ScatterChart";
+import SupportDensityChart from "../charts/SupportDensityChart";
+import ecologicalInferenceData from '../data/precinct_analysis.json';
+import axios from 'axios';
 
 class StateAnalysis extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      selectedState: 'California',
+      selectedState: '',
       selectedDistrict: '',
       selectedTrend: '',
       selectedPrecinct: '',
       selectedDemographic: '',
-      mapData: twoStates,
+      mapData: '',
       showPopup: false,
       isMapVisible: true,
       isDistrictDrawingVisible: false,
@@ -29,8 +24,8 @@ class StateAnalysis extends Component {
         { label: 'Asian', value: 'POP_ASN' },
         { label: 'Hispanic/Latino', value: 'POP_HISLAT' },
         { label: 'Black', value: 'POP_BLK' },
-        // Add any additional demographics here if needed
       ],
+      precinctData: null, 
     };
   }
 
@@ -51,43 +46,13 @@ class StateAnalysis extends Component {
   };
 
   setSelectedDemographic = (demographic) => {
-    this.setState({ selectedDemographic: demographic }); 
+    this.setState({ selectedDemographic: demographic }, this.fetchPrecinctAnalysis);
   };
 
   handleFeatureClick = (value) => {
     this.setState({ selectedState: value });
   };
 
-  updateMapData = (state) => {
-    let newMapData;
-
-    if (!state) {
-      newMapData = null;
-    } else {
-      switch (state) {
-        case 'Alabama':
-          newMapData = AlabamaJson;
-          break;
-        case 'California':
-          newMapData = CaliforniaJson;
-          break;
-        default:
-          newMapData = null;
-      }
-    }
-
-    this.setState({ mapData: newMapData });
-  };
-
-  componentDidMount() {
-    this.updateMapData(null);
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.selectedState !== this.state.selectedState) {
-      this.updateMapData(this.state.selectedState);
-    }
-  }
 
   togglePopup = () => {
     this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
@@ -100,23 +65,36 @@ class StateAnalysis extends Component {
     }));
   };
 
-  // Function to filter data for the ScatterChart based on selected demographic
-  getScatterChartData = () => {
-    const { selectedDemographic } = this.state;
+  fetchPrecinctAnalysis = async () => {
 
-    if (selectedDemographic && ecologicalInferenceData) {
-      // Access the demographic data from the JSON object
-      const demographicData = ecologicalInferenceData[selectedDemographic];
-
-      // Check if demographicData exists and is an array
-      if (demographicData && Array.isArray(demographicData.democrats)) {
-        return demographicData; // Return the array of democrat data
-      } else {
-        console.warn(`No data found for demographic: ${selectedDemographic}`);
-      }
+    if(this.state.precinctData != null){
+      return;
     }
 
-    return []; // Return empty array if no demographic is selected or data is not valid
+    const baseUrl = 'http://localhost:8080';
+    const url = `${baseUrl}/${this.state.selectedState}/analysis/precinct-analysis`;
+
+    if (this.state.selectedDemographic) {
+      try {
+        console.log("Request made");
+        const response = await axios.get(url);
+        const demographicData = response.data;
+
+        if (demographicData) {
+          const selectedDemographicData = demographicData[this.state.selectedDemographic];
+
+          if (selectedDemographicData) {
+            this.setState({ precinctData: selectedDemographicData });
+          } else {
+            console.error(`No data found for demographic: ${this.state.selectedDemographic}`);
+          }
+        } else {
+          console.error('No data returned from the server.');
+        }
+      } catch (error) {
+        console.error('Error fetching precinct analysis:', error);
+      }
+    }
   };
 
   render() {
@@ -125,23 +103,22 @@ class StateAnalysis extends Component {
       alignItems: "flex-start",
       flexWrap: "nowrap",
       width: "100%",
-      gap: "20px", // Add gap between the two boxes
+      gap: "20px",
     };
-    
-  
+
     const topBarStyle = {
-      flex: "0 0 20%", // Take up 20% of the width
-      backgroundColor: "white", // Optional styling
-      padding: "20px", // Add padding if needed
-      boxSizing: "border-box", // Ensure padding is within the box size
+      flex: "0 0 20%",
+      backgroundColor: "white",
+      padding: "20px",
+      boxSizing: "border-box",
       borderRadius: "15px",
       boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
       maxHeight: "70vh",
       minHeight: "70vh",
-        };
-  
+    };
+
     const otherComponentStyle = {
-      flex: "0 0 80%", // Take up the remaining 80% of the width
+      flex: "0 0 80%",
       backgroundColor: "white",
       borderRadius: "15px",
       boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
@@ -152,13 +129,12 @@ class StateAnalysis extends Component {
       display: this.state.selectedState ? "block" : "none",
       position: "relative",
     };
-  
-    const { selectedTrend, selectedDemographic, demographicOptions } = this.state;
-  
+
+    const { selectedTrend, selectedDemographic, demographicOptions, precinctData } = this.state;
+
     return (
       <>
         <div style={containerStyle}>
-          {/* TopBar on the left, taking up 20% */}
           <div style={topBarStyle}>
             <TopBar
               selectedState={this.state.selectedState}
@@ -169,28 +145,18 @@ class StateAnalysis extends Component {
               setSelectedDistrict={this.setSelectedDistrict}
               setSelectedTrend={this.setSelectedTrend}
               setSelectedPrecinct={this.setSelectedPrecinct}
-              setSelectedDemographic={this.setSelectedDemographic} // Add demographic setter
+              setSelectedDemographic={this.setSelectedDemographic}
               disablePrecincts={this.state.selectedDistrict === "All Districts"}
             />
           </div>
-  
-          {/* Other content on the right, taking up 80% */}
+
           <div style={otherComponentStyle}>
             <div>
               {selectedTrend === "Precinct Analysis" ? (
                 <>
-                  {/* Demographic Select Dropdown */}
-                  <div
-                    style={{
-                      marginBottom: "20px",
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <div style={{ marginBottom: "20px", display: "flex", justifyContent: "center" }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      {/* Number circle */}
-                      <div
-                        style={{
+                      <div style={{
                           width: "25px",
                           height: "25px",
                           borderRadius: "50%",
@@ -201,12 +167,9 @@ class StateAnalysis extends Component {
                           marginRight: "15px",
                           fontSize: "15px",
                           fontWeight: "bold",
-                        }}
-                      >
+                        }}>
                         {4}
                       </div>
-  
-                      {/* Demographic Select Dropdown */}
                       <select
                         id="demographic-select"
                         value={selectedDemographic}
@@ -214,10 +177,9 @@ class StateAnalysis extends Component {
                         style={{
                           padding: "5px 10px",
                           width: "auto",
-                          textAlign: "center", // Center the text inside the dropdown
-                          textAlignLast: "center", // Ensures the selected text is also centered
-                        }}
-                      >
+                          textAlign: "center",
+                          textAlignLast: "center",
+                        }}>
                         <option value="">Choose Demographic</option>
                         {demographicOptions.map(({ label, value }) => (
                           <option key={value} value={value}>
@@ -227,33 +189,32 @@ class StateAnalysis extends Component {
                       </select>
                     </div>
                   </div>
-  
+
                   {selectedDemographic ? (
-                    <ScatterChart data={this.getScatterChartData()} size={10} />
+                    precinctData ? (
+                      <ScatterChart 
+                      populationStat={this.state.selectedDemographic}
+                      data={precinctData} 
+
+                    />
+                    
+                    ) : (
+                      <div><center>Loading data...</center></div>
+                    )
                   ) : (
                     <div></div>
                   )}
                 </>
               ) : selectedTrend === "Ecological Inference" ? (
                 <>
-                  {/* Ecological Inference Analysis */}
                   <SupportDensityChart data={ecologicalInferenceData} />
                 </>
               ) : selectedTrend ? (
-                // Placeholder for other trends
                 <div>
                   <h2>Other Chart Component Placeholder</h2>
                 </div>
               ) : (
-                <div
-                  style={{
-                    paddingTop: "20px",
-                    paddingBottom: "20px",
-                    textAlign: "center",
-                  }}
-                >
-                  {/* Placeholder for default message */}
-                </div>
+                <div style={{ paddingTop: "20px", paddingBottom: "20px", textAlign: "center" }}></div>
               )}
             </div>
           </div>
@@ -261,7 +222,6 @@ class StateAnalysis extends Component {
       </>
     );
   }
-  
 }
 
 export default StateAnalysis;

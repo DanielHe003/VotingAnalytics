@@ -7,6 +7,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/map")
+@CrossOrigin(origins = "*")
 public class MapFeatureController {
 
     @Autowired

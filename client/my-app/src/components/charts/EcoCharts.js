@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import ChartContainer from './ChartContainer';
+import ChartContainer from '../common/ChartContainer';
 import AlabamaData from '../data/JSON-AlabamaData.json';
 import CaliforniaData from '../data/JSON-CaliforniaData.json';
 import '../stateInfo/Sidebar.css';
@@ -24,7 +24,7 @@ class Chart extends Component {
     this.state = {
       data: {},
       selectedOption: '',
-      selectedView: 'table', // default view
+      selectedView: 'table',
     };
   }
 
@@ -71,8 +71,8 @@ class Chart extends Component {
   };
 
   renderChartOrTable = (type, data, title) => {
-    const containerWidth = window.innerWidth * 0.9 * 0.4; // 90% of the viewport width
-    const containerHeight = window.innerHeight * 0.6 * 0.7; // 60% of the viewport height
+    const containerWidth = window.innerWidth * 0.9 * 0.4;
+    const containerHeight = window.innerHeight * 0.6 * 0.7; 
 
     return (
       <ChartContainer

@@ -3,10 +3,9 @@ import Sidebar from './Sidebar';
 import MapComponent from '../common/MapComponent'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import twoStates from '../data/start.json';
-import CaliforniaJson from '../data/map_income_cali.json';
-import AlabamaJson from '../data/AlabamaJson.json';
 import Chart from "../common/Chart";
+import axios from 'axios';
+import Popup from '../common/Popup';
 
 class StateInfo extends Component {
   constructor(props) {
@@ -16,10 +15,10 @@ class StateInfo extends Component {
       selectedState: '',
       selectedDistrict: '',
       selectedTrend: '',
-      mapData: twoStates,
+      mapData: '',
       showPopup: false,
       isMapVisible: true,
-      isDistrictDrawingVisible: false, // New state for district drawing
+      isDistrictDrawingVisible: false,
     };
   }
 
@@ -39,26 +38,35 @@ class StateInfo extends Component {
     this.setState({ selectedState: value });
   };
 
-  updateMapData = (state) => {
-    let newMapData;
-
-    if (!state) {
-      newMapData = null;
-    } else {
-      switch (state) {
-        case 'Alabama':
-          newMapData = AlabamaJson;
-          break;
-        case 'California':
-          newMapData = CaliforniaJson;
-          break;
-        default:
-          newMapData = null;
+  updateMapData = async (state) => {
+    const baseUrl = 'http://localhost:8080';
+  
+    const urlMap = {
+      Alabama: `${baseUrl}/map/alabama`,
+      California: `${baseUrl}/map/california`,
+      // Alabama: `${baseUrl}/alabama/map/congressional-district`,
+      // California: `${baseUrl}/california/map/congressional-district`,
+    };
+  
+    this.setState({ mapData: null });
+  
+    const fetchMapData = async (url) => {
+      try {
+        const response = await axios.get(url);
+        this.setState({ mapData: response.data });
+      } catch (error) {
+        console.error("Error fetching map data:", error);
+        this.setState({ mapData: null });
       }
+    };
+  
+    if (!state) {
+      await fetchMapData('http://localhost:8080/map');
+    } else if (urlMap[state]) {
+      await fetchMapData(urlMap[state]);
     }
-
-    this.setState({ mapData: newMapData });
   };
+  
 
   componentDidMount() {
     this.updateMapData(null);
@@ -72,13 +80,6 @@ class StateInfo extends Component {
 
   togglePopup = () => {
     this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
-  };
-
-  toggleVisibility = () => {
-    this.setState((prevState) => ({
-      isMapVisible: !prevState.isMapVisible,
-      isDistrictDrawingVisible: !prevState.isDistrictDrawingVisible, // Toggle both
-    }));
   };
 
   renderStateDescription(selectedState) {
@@ -145,56 +146,16 @@ class StateInfo extends Component {
       position: 'relative',
     };
 
-    const popupStyle = {
-      display: this.state.showPopup ? 'block' : 'none',
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: 'white',
-      borderRadius: '10px',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-      padding: '30px',
-      zIndex: 1000,
-      maxWidth: '400px',
-      width: '90%',
-    };
-
-    const overlayStyle = {
-      display: this.state.showPopup ? 'block' : 'none',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      zIndex: 999,
-    };
-
     const buttonStyle = {
       backgroundColor: "#005BA6", 
       borderRadius: '5px', 
       color: '#fff', 
       border: 'none', 
-      padding: '8px 15px', // Reduced padding for smaller buttons
+      padding: '8px 15px',
       cursor: 'pointer', 
       transition: 'background-color 0.3s ease',
-      width: '150px', // Reduced width
-      fontSize: '14px', // Reduced font size
-    };
-
-    const closeButtonStyle = {
-      ...buttonStyle,
-      marginLeft: "10px",
-    };
-
-    const buttonContainerStyle = {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '8px 15px',
-      flexWrap: 'wrap', // Prevent overflow
-      gap: '10px', // Add space between buttons
+      width: '150px',
+      fontSize: '14px',
     };
 
     return (
@@ -237,23 +198,7 @@ class StateInfo extends Component {
               )}
             </div>
 
-            {/* Popup Overlay */}
-            <div style={overlayStyle} onClick={this.togglePopup} />
-            <div style={popupStyle}>
-              <h2>{this.state.selectedState} Redistricting Process</h2>
-              <div>{this.renderStateDescription(this.state.selectedState)}</div>
-              <div style={{ textAlign: 'right', marginTop: '20px' }}>
-                <button 
-                  onClick={this.togglePopup} 
-                  style={closeButtonStyle}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
-            {/* Button Container */}
-            <div style={buttonContainerStyle}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '8px 15px', flexWrap: 'wrap', gap: '10px' }}>
               {this.state.selectedState && (
                 <button 
                   onClick={this.togglePopup} 
@@ -264,11 +209,18 @@ class StateInfo extends Component {
               )}
               <button 
                 onClick={this.toggleVisibility}
-                style={buttonStyle} // Use the same style for consistency
+                style={buttonStyle} 
               >
                 {this.state.isMapVisible ? "Hide Map" : "Show Map"}
               </button>
             </div>
+
+            <Popup
+              isVisible={this.state.showPopup}
+              title={`${this.state.selectedState} Redistricting Process`}
+              description={this.renderStateDescription(this.state.selectedState)}
+              onClose={this.togglePopup}
+            />
           </div>
         </div>
       </>

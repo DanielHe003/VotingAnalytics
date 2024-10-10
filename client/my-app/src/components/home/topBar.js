@@ -40,7 +40,7 @@ class TopBar extends React.Component {
             name: 'Select Trend',
             options: [
                 { id: 'Precinct Analysis', name: 'Precinct Analysis' },
-                { id: 'Ecological Inference', name: 'Ecological Inference' },
+                // { id: 'Ecological Inference', name: 'Ecological Inference' },
                 { id: 'MCMC Analysis', name: 'MCMC' },
             ],
         },
