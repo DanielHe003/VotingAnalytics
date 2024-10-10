@@ -22,26 +22,6 @@ public class MapFeatureService {
         return loadJsonData(state + "_json.json");
     }
 
-    // Load state data for a specific state
-    public Map<String, Object> getDistrictMap(String state) {
-        return loadJsonData(state +  ".json");
-    }
-
-    // Load precinct map for a specific state
-    public Map<String, Object> getPrecinctMap(String state) {
-        return loadJsonData(state + "precinct.json");
-    }
-
-    
-
-    // Load precinct data for overlaying on map
-    public Map<String, Object> getPrecinctsData(String state) {
-        return loadJsonData(state + "_precincts.json");
-    }
-
-
-
-    // Helper method to load JSON data from resources
     private Map<String, Object> loadJsonData(String fileName) {
         try {
             Resource resource = resourceLoader.getResource("classpath:data/" + fileName);
