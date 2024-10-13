@@ -1,0 +1,48 @@
+#%RAML 1.0
+title: CSE 416 API
+version: v1
+
+/map:
+  get:
+    description: Retrieve the general map for the front home page.
+
+/{state}/map/congressional-districts:
+  get:
+    description: Retrieve congressional district map for the specified state.
+
+/{state}/map/precincts:
+  get:
+    description: Retrieve precinct map for the specified state.
+
+/{state}/map/congressional-district/{districtId}:
+  get:
+    description: Get precinct specific map for a given congressional district.
+
+/{state}/map/precincts:
+  get:
+    description: Get specific information to overlay on map for precincts.
+
+/{state}/analysis/precinct-analysis/{criteria}:
+  get:
+    description: Get precinct analysis based on the criteria.
+
+/{state}/analysis/ecological-inference/{criteria}:
+  get:
+    description: Get ecological inference data based on the criteria.
+
+/{state}/analysis/mcmc:
+  get:
+    description: Get MCMC, more specific data type TBD.
+
+/{state}/data/:
+  get:
+    description: Retrieve all data for the specified state.
+
+/{state}/data/precincts/{precinctId}:
+  get:
+    description: Retrieve precinct data for specified precinct-ID.
+
+/{state}/data/congressional-district/{districtId}:
+  get:
+    description: Retrieve data for a given congressional district.
+
