@@ -1,10 +1,27 @@
 import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 
-const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler);
+
+const BarChartComponent = ({ categoryData, selectedDistrict }) => {
   const barData = Object.entries(categoryData).map(([key, value]) => ({
     name: key,
     value: parseInt(value[selectedDistrict].replace(/,/g, ''), 10),
   }));
+
+  const colors = [
+    '#FF6384',
+    '#36A2EB',
+    '#FFCE56',
+    '#4BC0C0',
+    '#9966FF',
+    '#FF9F40',
+    '#FF5733',
+    '#FFC300',
+    '#DAF7A6',
+    '#900C3F',
+    '#581845',
+  ];
 
   const data = {
     labels: barData.map((entry) => entry.name),
@@ -12,7 +29,12 @@ const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
       {
         label: 'Count',
         data: barData.map((entry) => entry.value),
-        backgroundColor: '#42A5F5',
+        backgroundColor: barData.map((_, index) => colors[index % colors.length]),
+        // borderColor: '#1E88E5',
+        // borderWidth: 2,
+        hoverBackgroundColor: '#90CAF9',
+        hoverBorderColor: '#0D47A1',
+        hoverBorderWidth: 3,
       },
     ],
   };
@@ -20,12 +42,21 @@ const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
   const options = {
     maintainAspectRatio: false,
     responsive: true,
+    animation: {
+      duration: 1000,
+    },
     plugins: {
       legend: {
         display: false,
+        position: 'top',
       },
       tooltip: {
         enabled: true,
+        backgroundColor: '#fff',
+        titleColor: '#1E88E5',
+        bodyColor: '#000',
+        // borderColor: '#1E88E5',
+        // borderWidth: 1,
         callbacks: {
           label: (context) => `Count: ${context.raw.toLocaleString()}`,
         },
@@ -49,13 +80,16 @@ const BarChartComponent = ({ categoryData, selectedDistrict, size }) => {
             size: 16,
           },
         },
+        grid: {
+          color: '#e0e0e0',
+        },
       },
     },
   };
 
   return (
-    <div>
-      <Bar data={data} options={options} width={size.width} height={size.height} />
+    <div style={{ height: '400px', width: '600px' }}>
+      <Bar data={data} options={options} />
     </div>
   );
 };

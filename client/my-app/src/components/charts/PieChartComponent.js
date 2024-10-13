@@ -48,10 +48,10 @@ const PieChartComponent = ({ categoryData, selectedDistrict, size }) => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'right',
+        position: 'bottom',
       },
       tooltip: {
-        enabled: true, // Ensure tooltips are enabled
+        enabled: true,
         callbacks: {
           label: (tooltipItem) => {
             return `${tooltipItem.label}: ${tooltipItem.raw}`;
@@ -62,7 +62,7 @@ const PieChartComponent = ({ categoryData, selectedDistrict, size }) => {
   };
 
   return (
-    <div style={{ width: size.width, height: size.height }}>
+    <div style={{ width: '350px', height: "400px" }}>
       <Pie data={data} options={options} />
     </div>
   );

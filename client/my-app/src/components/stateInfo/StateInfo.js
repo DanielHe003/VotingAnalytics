@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import Sidebar from './Sidebar'; 
+import TopBar from './TopBar'; 
 import MapComponent from '../common/MapComponent'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import Chart from "../common/Chart";
+import Chart from "../stateInfo/ChartSwitch";
 import axios from 'axios';
 import Popup from '../common/Popup';
 
@@ -44,8 +44,6 @@ class StateInfo extends Component {
     const urlMap = {
       Alabama: `${baseUrl}/map/alabama`,
       California: `${baseUrl}/map/california`,
-      // Alabama: `${baseUrl}/alabama/map/congressional-district`,
-      // California: `${baseUrl}/california/map/congressional-district`,
     };
   
     this.setState({ mapData: null });
@@ -67,7 +65,6 @@ class StateInfo extends Component {
     }
   };
   
-
   componentDidMount() {
     this.updateMapData(null);
   }
@@ -82,28 +79,9 @@ class StateInfo extends Component {
     this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
   };
 
-  renderStateDescription(selectedState) {
-    switch (selectedState) {
-      case 'Alabama':
-        return (
-          <span>
-            In Alabama, the redistricting process is primarily controlled by the state legislature, 
-            with some opportunity for public input. The governor also plays a significant role in 
-            approving the maps, and they may be subject to judicial review.
-          </span>
-        );
-      case 'California':
-        return (
-          <span>
-            California uses an independent commission for redistricting, emphasizing public input 
-            and transparency in the process. The California Citizens Redistricting Commission 
-            draws district maps, and these can be challenged in court to prevent gerrymandering.
-          </span>
-        );
-      default:
-        return <span>Please select a state to see its redistricting process.</span>;
-    }
-  }
+  toggleVisibility = () => {
+    this.setState((prevState) => ({ isMapVisible: !prevState.isMapVisible }));
+  };
 
   render() {
     const spacing = 5;
@@ -144,7 +122,20 @@ class StateInfo extends Component {
       minHeight: "70vh",
       display: this.state.selectedState ? 'block' : 'none',
       position: 'relative',
+      textAlign: 'center', 
     };
+
+    const buttonContainerStyle = {
+      position: 'absolute',
+      bottom: '10px',
+      right: '50%',
+      transform: 'translateX(50%)', 
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '10px',
+    };
+
 
     const buttonStyle = {
       backgroundColor: "#005BA6", 
@@ -161,7 +152,7 @@ class StateInfo extends Component {
     return (
       <>
         <div style={sidebarStyle}>
-          <Sidebar 
+          <TopBar 
             selectedState={this.state.selectedState}
             selectedDistrict={this.state.selectedDistrict}
             selectedTrend={this.state.selectedTrend}
@@ -182,23 +173,25 @@ class StateInfo extends Component {
           )}
 
           <div style={otherComponentStyle}>
-            <div>
-              {this.state.selectedTrend ? ( 
-                <Chart 
-                  selectedState={this.state.selectedState} 
-                  selectedDistrict={this.state.selectedDistrict} 
-                  selectedTrend={this.state.selectedTrend} 
-                  style={{}} 
-                />
-              ) : (
-                <div style={{ paddingTop: '20px', paddingBottom: '20px', textAlign: 'center' }}>
-                  <FontAwesomeIcon icon={faCircleExclamation} style={{ color: 'red', fontSize: '48px' }} />
-                  <h1 style={{ marginTop: '10px' }}>Select Trend Above</h1>
-                </div>
-              )}
+            <div style={{ flex: '0 0 100%', padding: '10px' }}>
+              <div>
+                {this.state.selectedTrend ? ( 
+                  <Chart 
+                    selectedState={this.state.selectedState} 
+                    selectedDistrict={this.state.selectedDistrict} 
+                    selectedTrend={this.state.selectedTrend} 
+                    style={{}} 
+                  />
+                ) : (
+                  <div style={{ paddingTop: '20px', paddingBottom: '20px', textAlign: 'center' }}>
+                    <FontAwesomeIcon icon={faCircleExclamation} style={{ color: 'red', fontSize: '48px' }} />
+                    <h1 style={{ marginTop: '10px' }}>Select Trend Above</h1>
+                  </div>
+                )}
+              </div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '8px 15px', flexWrap: 'wrap', gap: '10px' }}>
+            
+            <div style={buttonContainerStyle}>
               {this.state.selectedState && (
                 <button 
                   onClick={this.togglePopup} 
@@ -214,11 +207,9 @@ class StateInfo extends Component {
                 {this.state.isMapVisible ? "Hide Map" : "Show Map"}
               </button>
             </div>
-
             <Popup
               isVisible={this.state.showPopup}
-              title={`${this.state.selectedState} Redistricting Process`}
-              description={this.renderStateDescription(this.state.selectedState)}
+              state={(this.state.selectedState)}
               onClose={this.togglePopup}
             />
           </div>

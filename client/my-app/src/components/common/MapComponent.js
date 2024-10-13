@@ -3,7 +3,6 @@ import { MapContainer as LeafletMap, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-
 class MapComponent extends Component {
   constructor(props) {
     super(props);
@@ -17,14 +16,12 @@ class MapComponent extends Component {
     };
   }
 
-  geoJsonStyle = (feature) => {
-    return {
-      color: "black",
-      weight: 1,
-      fillColor: "#005BA6",
-      fillOpacity: 0.6,
-    };
-  };
+  geoJsonStyle = (feature) => ({
+    color: "black",
+    weight: 1,
+    fillColor: "#005BA6",
+    fillOpacity: 0.6,
+  });
 
   onFeatureClick = (e) => {
     const { properties } = e.target.feature;
@@ -41,7 +38,7 @@ class MapComponent extends Component {
     layer.setStyle({
       fillColor: "white",
       color: "#005BA6",
-      weight: 2.5
+      weight: 2.5,
     });
 
     const properties = layer.feature.properties;
@@ -97,13 +94,12 @@ class MapComponent extends Component {
 
   updateGeoJsonLayer = (geoJsonData) => {
     if (!geoJsonData) return; 
-    // console.log("Updating GeoJSON Layer with data:", geoJsonData);
     
     if (this.mapRef.current) {
       if (this.state.geoJsonLayer) {
         this.mapRef.current.removeLayer(this.state.geoJsonLayer);
       }
-  
+
       const geoJsonLayer = L.geoJSON(geoJsonData, {
         style: this.geoJsonStyle,
         onEachFeature: (feature, layer) => {
@@ -114,7 +110,7 @@ class MapComponent extends Component {
           });
         },
       });
-  
+
       geoJsonLayer.addTo(this.mapRef.current); 
       this.setState({ geoJsonLayer });
       this.fitMapToGeoJsonData(geoJsonLayer);
@@ -124,7 +120,7 @@ class MapComponent extends Component {
   fitMapToGeoJsonData = (geoJsonLayer) => {
     if (geoJsonLayer) {
       const bounds = geoJsonLayer.getBounds();
-      this.mapRef.current.fitBounds(bounds);
+      this.mapRef.current.fitBounds(bounds, { padding: [20, 20] });
     }
   };
 
@@ -137,8 +133,10 @@ class MapComponent extends Component {
             zoom={3}
             style={{ flex: 1 }}
             ref={this.mapRef}
+            zoomControl={false} 
+            attributionControl={false} 
           >
-            <TileLayer
+             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             />

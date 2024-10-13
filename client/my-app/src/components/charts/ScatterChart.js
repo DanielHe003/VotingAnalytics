@@ -25,17 +25,10 @@ class ChartScatterPlot extends Component {
 
   renderChart = () => {
     
-    // console.log("hi");
-    // console.log(this.props.data);
-    // console.log(this.props.data['democrats']);
-
-
     const chartCanvas = document.getElementById("myChart");
-    const democratData = this.props.data['democrats'].map((d) => [d.x, d.y]);
-    const republicanData = this.props.data['republicans'].map((d) => [d.x, d.y]);
-
-    const democratRegression = regression.polynomial(democratData, { order: 2 });
-    const republicanRegression = regression.polynomial(republicanData, { order: 2 });
+    
+    const democratRegression = regression.polynomial(this.props.data['democrats'].map((d) => [d.x, d.y]), { order: 2 });
+    const republicanRegression = regression.polynomial(this.props.data['republicans'].map((d) => [d.x, d.y]), { order: 2 });
 
     const democratFit = Array.from({ length: 101 }, (_, x) => ({
       x,

@@ -3,9 +3,9 @@ import Navbar from './components/common/Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
-import StateAnalysis from './components/home/StateAnalysis';
+import StateAnalysis from './components/stateAnalysis/StateAnalysis';
 import StateInfo from './components/stateInfo/StateInfo'
-import Value from './components/home/Value';
+import Value from './components/stateAnalysis/Value';
 
 
 const App = () => {

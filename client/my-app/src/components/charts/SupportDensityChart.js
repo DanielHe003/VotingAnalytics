@@ -1,3 +1,4 @@
+// Pending on Data
 import React from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -22,26 +23,7 @@ ChartJS.register(
 );
 
 const SupportDensityChart = ({data}) => {
-  // const colors = {
-  //   White: {
-  //     border: "orange",
-  //     background: "rgba(255, 165, 0, 0.3)"
-  //   },
-  //   Black: {
-  //     border: "purple",
-  //     background: "rgba(128, 0, 128, 0.3)"
-  //   },
-  //   Hispanic: {
-  //     border: "green",
-  //     background: "rgba(0, 255, 0, 0.3)"
-  //   },
-  //   Asian: {
-  //     border: "red",
-  //     background: "rgba(255, 0, 0, 0.3)"
-  //   }
-  // };
-
-  const options = {
+    const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {

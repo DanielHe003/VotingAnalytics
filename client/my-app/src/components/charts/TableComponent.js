@@ -9,16 +9,16 @@ const TableComponent = ({ categoryData, selectedDistrict }) => {
         width: '100%',
         margin: '10px 20px',
         fontSize: '16px',
-        textAlign: 'center',
-        alignItems: 'center',
+        textAlign: 'left',
+        alignItems: 'left',
         padding: '20px',
       },
       header: {
         backgroundColor: '#005BA6',
         color: 'white',
         fontWeight: 'bold',
-        padding: '5px',
-        textAlign: 'center', 
+        padding: '10px',
+        textAlign: 'left', 
       },
       oddRow: {
         backgroundColor: '#f2f2f2',
@@ -27,9 +27,9 @@ const TableComponent = ({ categoryData, selectedDistrict }) => {
         backgroundColor: '#ffffff',
       },
       cell: {
-        padding: '4px', 
-        textAlign: 'center',
-        borderBottom: '2px solid #ddd', 
+        padding: '10px', 
+        textAlign: 'left',
+        borderBottom: '1px solid #ddd', 
       },
       rowHover: {
         backgroundColor: '#d9edf7',

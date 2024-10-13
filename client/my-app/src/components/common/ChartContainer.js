@@ -64,8 +64,8 @@ const ChartContainer = ({ categoryData, title, size, selectedDistrict, type }) =
       {type === 'pie' && <PieChartComponent categoryData={categoryData} size={size} selectedDistrict={selectedDistrict} />}
       {type === 'bar' && <BarChartComponent categoryData={categoryData} size={size} selectedDistrict={selectedDistrict} />}
       {type === 'table' && <TableComponent categoryData={categoryData} selectedDistrict={selectedDistrict} />}
-      {type === 'scatter' && <ScatterChart data={data} />}  {/* Pass data correctly here */}
-    </div>
+      {type === 'scatter' && <ScatterChart data={data} />}
+      </div>
   );
 };
 
