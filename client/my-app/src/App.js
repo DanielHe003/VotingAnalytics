@@ -5,8 +5,6 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
 import StateAnalysis from './components/stateAnalysis/StateAnalysis';
 import StateInfo from './components/stateInfo/StateInfo'
-import Value from './components/stateAnalysis/Value';
-
 
 const App = () => {
   const [activeSection, setActiveSection] = useState('State Insights');
@@ -20,8 +18,6 @@ const App = () => {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'POC':
-        return <Value />;
       case 'State Analysis':
         return <StateAnalysis />;
       case 'State Insights':
@@ -44,4 +40,3 @@ const App = () => {
 };
 
 export default App;
-

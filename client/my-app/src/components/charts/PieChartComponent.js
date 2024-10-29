@@ -1,33 +1,36 @@
+// Example Usage:
+// {
+//   "Category A": {
+//     "District 1": "1,200",
+//     "District 2": "1,500",
+//     "District 3": "800"
+//   },
+//   "Category B": {
+//     "District 1": "2,300",
+//     "District 2": "2,000",
+//     "District 3": "1,100"
+//   },
+//   "Category C": {
+//     "District 1": "700",
+//     "District 2": "1,400",
+//     "District 3": "950"
+//   }
+// }
+// <PieChartComponent categoryData={categoryData} selectedDistrict="District 1" />
+
 import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const getUniqueColor = (index) => {
   const colors = [
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-    '#FF4500',
-    '#32CD32',
-    '#FFD700',
-    '#7B68EE',
-    '#FF1493',
-    '#00BFFF',
-    '#ADFF2F',
-    '#FF8C00',
-    '#8A2BE2',
-    '#20B2AA',
-    '#FF6347',
-    '#FFDAB9',
-    '#4682B4',
-    '#DDA0DD',
-    '#B22222',
+    "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
+    "#FF9F40", "#FF5733", "#FFC300", "#DAF7A6", "#900C3F", "#581845"
   ];
   return colors[index % colors.length];
 };
 
-const PieChartComponent = ({ categoryData, selectedDistrict, size }) => {
+const PieChartComponent = ({ categoryData, selectedDistrict, width = 400, height = 400 }) => {
   const pieData = Object.entries(categoryData).map(([key, value]) => ({
     name: key,
     value: parseInt(value[selectedDistrict].replace(/,/g, ''), 10),
@@ -62,7 +65,7 @@ const PieChartComponent = ({ categoryData, selectedDistrict, size }) => {
   };
 
   return (
-    <div style={{ width: '350px', height: "400px" }}>
+    <div style={{ width: `${width}px`, height: `${height}px` }}>
       <Pie data={data} options={options} />
     </div>
   );

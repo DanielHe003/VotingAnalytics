@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import TopBar from './topBar';
-import ScatterChart from "../charts/ScatterChart";
-import SupportDensityChart from "../charts/SupportDensityChart";
 import axios from 'axios';
 
 class StateAnalysis extends Component {
@@ -191,12 +189,13 @@ class StateAnalysis extends Component {
 
                   {selectedDemographic ? (
                     precinctData ? (
-                      <ScatterChart 
-                      populationStat={this.state.selectedDemographic}
-                      data={precinctData} 
+                    //   <ScatterChart 
+                    //   populationStat={this.state.selectedDemographic}
+                    //   data={precinctData} 
 
-                    />
-                    
+                    // />
+                    <>
+                    </>
                     ) : (
                       <div><center>Loading data...</center></div>
                     )
@@ -206,7 +205,7 @@ class StateAnalysis extends Component {
                 </>
               ) : selectedTrend === "Ecological Inference" ? (
                 <>
-                  <SupportDensityChart data={null} />
+                  {/* <SupportDensityChart data={null} /> */}
                 </>
               ) : selectedTrend ? (
                 <div>
