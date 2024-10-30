@@ -6,48 +6,28 @@ import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import Chart from "../stateInfo/ChartSwitch";
 import axios from 'axios';
 import Popup from '../common/Popup';
+import './stateInfo.css';
 
 class StateInfo extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
-      selectedState: '',
-      selectedDistrict: '',
-      selectedTrend: '',
       mapData: '',
       showPopup: false,
       isMapVisible: true,
-      isDistrictDrawingVisible: false,
     };
   }
 
-  setSelectedState = (state) => {
-    this.setState({ selectedState: state });
-  };
-
-  setSelectedDistrict = (district) => {
-    this.setState({ selectedDistrict: district });
-  };
-
-  setSelectedTrend = (trend) => {
-    this.setState({ selectedTrend: trend });
-  };
-
-  handleFeatureClick = (value) => {
-    this.setState({ selectedState: value });
-  };
-
+  // ----------------------------------------------------API Calls---------------------------------------------------------------------
   updateMapData = async (state) => {
     const baseUrl = 'http://localhost:8080';
-  
     const urlMap = {
       Alabama: `${baseUrl}/map/alabama`,
       California: `${baseUrl}/map/california`,
     };
-  
+
     this.setState({ mapData: null });
-  
+
     const fetchMapData = async (url) => {
       try {
         const response = await axios.get(url);
@@ -57,21 +37,31 @@ class StateInfo extends Component {
         this.setState({ mapData: null });
       }
     };
-  
+
     if (!state) {
       await fetchMapData('http://localhost:8080/map');
     } else if (urlMap[state]) {
       await fetchMapData(urlMap[state]);
     }
   };
-  
+
+  updateNumericalData = async (state) => {
+    // const baseUrl = 'http://localhost:8080';
+    // const urlMap = {
+    //   Alabama: `${baseUrl}/map/alabama`,
+    //   California: `${baseUrl}/map/california`,
+    // };
+  };
+
+  // -------------------------------------------------------------------------------------------------------------------------
+
   componentDidMount() {
-    this.updateMapData(null);
+    this.updateMapData(this.props.selectedState);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.selectedState !== this.state.selectedState) {
-      this.updateMapData(this.state.selectedState);
+  componentDidUpdate(prevProps) {
+    if (prevProps.selectedState !== this.props.selectedState) {
+      this.updateMapData(this.props.selectedState);
     }
   }
 
@@ -84,134 +74,69 @@ class StateInfo extends Component {
   };
 
   render() {
-    const spacing = 5;
-
-    const sidebarStyle = {
-      flex: '0 0 100%',
-      backgroundColor: 'white',
-      borderRadius: '15px',
-      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-    };
-
-    const containerStyle = {
-      display: "flex",
-      alignItems: 'flex-start',
-      flexWrap: 'nowrap',
-      width: '100%',
-    };
-
-    const mapContainerStyle = {
-      flex: '1 1 50%',
-      backgroundColor: 'white',
-      borderRadius: '15px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-      padding: '20px',
-      boxSizing: 'border-box', 
-      height: '70vh',
-      marginRight: `${spacing}px`, 
-    };
-
-    const otherComponentStyle = {
-      flex: '1 1 50%',
-      backgroundColor: 'white',
-      borderRadius: '15px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-      padding: '20px',
-      boxSizing: 'border-box',
-      maxHeight: "70vh",
-      minHeight: "70vh",
-      display: this.state.selectedState ? 'block' : 'none',
-      position: 'relative',
-      textAlign: 'center', 
-    };
-
-    const buttonContainerStyle = {
-      position: 'absolute',
-      bottom: '10px',
-      right: '50%',
-      transform: 'translateX(50%)', 
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '10px',
-    };
-
-
-    const buttonStyle = {
-      backgroundColor: "#005BA6", 
-      borderRadius: '5px', 
-      color: '#fff', 
-      border: 'none', 
-      padding: '8px 15px',
-      cursor: 'pointer', 
-      transition: 'background-color 0.3s ease',
-      width: '150px',
-      fontSize: '14px',
-    };
 
     return (
       <>
-        <div style={sidebarStyle}>
+        <div className="sidebar-container">
+
+          {/* TopBar for Selection */}
           <TopBar 
-            selectedState={this.state.selectedState}
-            selectedDistrict={this.state.selectedDistrict}
-            selectedTrend={this.state.selectedTrend}
-            setSelectedState={this.setSelectedState}
-            setSelectedDistrict={this.setSelectedDistrict}
-            setSelectedTrend={this.setSelectedTrend}
+            selectedState={this.props.selectedState}
+            selectedDistrict={this.props.selectedDistrict}
+            selectedTrend={this.props.selectedTrend}
+            setSelectedState={this.props.setSelectedState}
+            setSelectedDistrict={this.props.setSelectedDistrict}
+            setSelectedTrend={this.props.setSelectedTrend}
           />
         </div>
 
-        <div style={containerStyle}> 
+        <div className="content-container"> 
+          
+          {/* Toggle the Map */}
           {this.state.isMapVisible && (
-            <div style={mapContainerStyle}>
+            <div className="map-container">
               <MapComponent 
                 geoJsonData={this.state.mapData} 
-                onFeatureClick={this.handleFeatureClick} 
+                onFeatureClick={this.props.setSelectedState} 
               />
             </div>
           )}
 
-          <div style={otherComponentStyle}>
-            <div style={{ flex: '0 0 100%', padding: '10px' }}>
+          <div className="chart-container">
+
+            {/* Chart Container */}
+            <div className="chart-inner-container">
               <div>
-                {this.state.selectedTrend ? ( 
+                {this.props.selectedTrend ? ( 
                   <Chart 
-                    selectedState={this.state.selectedState} 
-                    selectedDistrict={this.state.selectedDistrict} 
-                    selectedTrend={this.state.selectedTrend} 
-                    style={{}} 
+                    selectedState={this.props.selectedState} 
+                    selectedDistrict={this.props.selectedDistrict} 
+                    selectedTrend={this.props.selectedTrend} 
                   />
                 ) : (
-                  <div style={{ paddingTop: '20px', paddingBottom: '20px', textAlign: 'center' }}>
-                    <FontAwesomeIcon icon={faCircleExclamation} style={{ color: 'red', fontSize: '48px' }} />
-                    <h1 style={{ marginTop: '10px' }}>Select Trend Above</h1>
+                  <div className="no-trend-selected">
+                    <FontAwesomeIcon icon={faCircleExclamation} className="exclamation-icon" />
+                    <h1 className="no-trend-text">Select Trend Above</h1>
                   </div>
                 )}
               </div>
             </div>
             
-            <div style={buttonContainerStyle}>
-              {this.state.selectedState && (
-                <button 
-                  onClick={this.togglePopup} 
-                  style={buttonStyle}
-                >
+            {/* Buttons at the Bottom */}
+            <div className="button-container">
+              {this.props.selectedState && (
+                <button onClick={this.togglePopup} className="action-button">
                   Drawing Process
                 </button>
               )}
-              <button 
-                onClick={this.toggleVisibility}
-                style={buttonStyle} 
-              >
+              <button onClick={this.toggleVisibility} className="action-button">
                 {this.state.isMapVisible ? "Hide Map" : "Show Map"}
               </button>
             </div>
-            <Popup
-              isVisible={this.state.showPopup}
-              state={(this.state.selectedState)}
-              onClose={this.togglePopup}
-            />
+            
+            {/* Popup Component */}
+            <Popup  isVisible={this.state.showPopup} state={this.props.selectedState} onClose={this.togglePopup} />
+
           </div>
         </div>
       </>

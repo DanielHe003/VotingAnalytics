@@ -30,6 +30,7 @@ const Navbar = ({ navLinks, activeSection, setActiveSection }) => {
               {navLinks.map((link, index) => (
                 <li className="nav-item" key={index}>
                   <a
+                  
                     className={`nav-link ${activeSection === link.name ? 'active' : ''}`}
                     href={link.href}
                     style={{ fontSize: '18px', margin: '0 3px' }}
