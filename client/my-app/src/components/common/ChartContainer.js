@@ -3,7 +3,7 @@ import BarChartComponent from '../charts/BarChartComponent';
 import TableComponent from '../charts/TableComponent';
 import ChartScatterComponent from '../charts/ChartScatterComponent';
 import DensityChartComponent from '../charts/DensityChartComponent';
-import BoxPlotComponent from '../charts/BoxPlotComponent';
+import BoxandWhiskerComponent from '../charts/BoxandWhiskerComponent';
 
 const ChartContainer = ({ data, title, height, width, selectedDistrict, type }) => {
 
@@ -15,7 +15,8 @@ const ChartContainer = ({ data, title, height, width, selectedDistrict, type }) 
       {type === 'table' && <TableComponent categoryData={null} height={null} width={null} selectedDistrict={null} />}
       {type === 'scatter' && <ChartScatterComponent data={null} height={null} width={null} dataSets={null} populationStat={null} />}
       {type === "density" && <DensityChartComponent  title={null} data={null} height={null} width={null} xLabel={null} yLabel={null} />}
-      {type === "boxplot" && <BoxPlotComponent data={null} height={null} width={null} />}
+      {type === "boxandwhisker" &&<BoxandWhiskerComponent data={data} xAxisTitle={null} yAxisTitle={null} height={null} width={null} />
+    }
       </div>
   );
 };
