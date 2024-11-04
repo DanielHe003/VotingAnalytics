@@ -14,7 +14,7 @@ To get the latest version of the MongoDB image for the voter analysis database, 
 docker pull eshanrand/voter_database:latest
 
 ### 2. Run the MongoDB container
-docker run -p 27017:27017 --name voter_analysis_database eshanrand/voter_database:latest
+docker run --name voter_analysis_database eshanrand/voter_database:latest
 ### 3 Accessing mongosh shell in the container 
 docker exec -it voter_analysis_database mongosh
 You can use this to check the structure of the datbase/insertion deletion
