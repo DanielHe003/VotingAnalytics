@@ -1,0 +1,6 @@
+merged_precincts.geojson
+merged_congressional_districts.geojson
+merged_state.geojson
+.venv/
+.pytest_cache/
+tests/__pycache__
