@@ -1,0 +1,6 @@
+Alabama state data - 
+https://data.census.gov/table?g=040XX00US01
+2022 for voting data https://www.sos.alabama.gov/alabama-votes/voter/election-data
+suburban vs urban https://news.ua.edu/2012/04/alabama-rural-or-urban-it-depends-according-to-ua-analyst/#:~:text=In%20fact%2C%2095.64%20percent%20of,lives%20in%20a%20rural%20area.
+Income data https://data.census.gov/table/ACSST1Y2023.S1901?g=040XX00US01
+State party data https://ballotpedia.org/Alabama_House_of_Representatives
