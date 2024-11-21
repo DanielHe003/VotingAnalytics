@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ChartContainer from '../common/ChartContainer';
-import '../stateInfo/TopBar.css';
+import '../stateInfo/topBar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartBar, faChartPie, faTable } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, ArcElement, BarElement, Tooltip, Legend, CategoryScale, LinearScale } from 'chart.js';

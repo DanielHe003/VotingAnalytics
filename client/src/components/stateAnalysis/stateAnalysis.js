@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import TopBar from './topBar';
+import TopBar from './sideBar';
 import axios from 'axios';
 
 class StateAnalysis extends Component {

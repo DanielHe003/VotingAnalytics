@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import TopBar from './TopBar'; 
+import TopBar from './topBar'; 
 import MapComponent from '../common/MapComponent'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
-import Chart from "../stateInfo/ChartSwitch";
+import Chart from "./ChartSwitch";
 import axios from 'axios';
 import Popup from '../common/Popup';
 import './stateInfo.css';
