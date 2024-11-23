@@ -7,31 +7,10 @@ import { Chart as ChartJS, ArcElement, BarElement, Tooltip, Legend, CategoryScal
 
 ChartJS.register(ArcElement, BarElement, Tooltip, Legend, CategoryScale, LinearScale);
 
-const getDataByState = (selectedState) => {
-  switch (selectedState) {
-    case 'Alabama':
-      return null;
-    case 'California':
-      return null;
-    default:
-      return null;
-  }
-};
-
-const availableChartTypes = {
-  People: ['bar', 'pie', 'table'],
-  SocioEconomic: ['bar', 'pie', 'table'],
-  Business: ['pie', 'table'],
-  Voting: ['bar', 'table'],
-  Workers: ['pie', 'table'],
-};
-
-
 class Chart extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: {},
       selectedOption: '',
       selectedView: 'table', 
     };
@@ -51,9 +30,9 @@ class Chart extends Component {
     }
   }
 
-  fetchData = (selectedState) => {
-    const fetchedData = getDataByState(selectedState);
-    this.setState({ data: fetchedData || {} }, this.setAutoSelect);
+  fetchData = () => {
+    const fetchedData = null; 
+    this.setState({ data: fetchedData });
   };
 
   setAutoSelect = () => {
@@ -107,25 +86,57 @@ class Chart extends Component {
   };
 
   render() {
-    const { selectedTrend } = this.props;
-    const { data, selectedOption, selectedView } = this.state;
-
     const categories = {
-      sex: data['Sex'],
-      age: data['Age Distribution'],
-      race: data['Race'],
-      income: data['Income and Benefits'],
-      business: data['Total Establishments'],
-      workers1: data['Industry Workers (Above 16)'],
-      workers2: data['Breakdown of Worker Type (above 16)'],
-      meanmedianincome: data['Mean/Median Income'],
-      votingTrends: data['Voting'],
+      sex: this.props.data['Sex'],
+      age: this.props.data['Age Distribution'],
+      race: this.props.data['Race'],
+      income: this.props.data['Income and Benefits'],
+      business: this.props.data['Total Establishments'],
+      workers1: this.props.data['Industry Workers (Above 16)'],
+      workers2: this.props.data['Breakdown of Worker Type (above 16)'],
+      meanmedianincome: this.props.data['Mean/Median Income'],
+      votingTrends: this.props.data['Voting'],
     };
 
     const options = this.getOptions();
-    const availableTypes = availableChartTypes[selectedTrend] || [];
-    console.log(availableTypes);
-    console.log(availableChartTypes);
+    const { selectedOption, selectedView } = this.state;
+    const selectedTrend = this.props.selectedTrend;
+
+    const chartData = {
+      table: {
+        'voting': categories.votingTrends,
+        'sex': categories.sex,
+        'age': categories.age,
+        'race': categories.race,
+        'meanmedianincome': categories.meanmedianincome,
+        'income': categories.income,
+        'business': categories.business,
+        'workers2': categories.workers2,
+        'workers1': categories.workers1,
+      },
+      bar: {
+        'voting': categories.votingTrends,
+        'sex': categories.sex,
+        'age': categories.age,
+        'race': categories.race,
+        'meanmedianincome': categories.meanmedianincome,
+        'income': categories.income,
+        'business': categories.business,
+        'workers2': categories.workers2,
+        'workers1': categories.workers1,
+      },
+      pie: {
+        'voting': categories.votingTrends,
+        'sex': categories.sex,
+        'age': categories.age,
+        'race': categories.race,
+        'meanmedianincome': categories.meanmedianincome,
+        'income': categories.income,
+        'business': categories.business,
+        'workers2': categories.workers2,
+        'workers1': categories.workers1,
+      }
+    };
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -146,152 +157,38 @@ class Chart extends Component {
         </div>
 
         <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', width: 'auto', padding: '0 20px' }}>
-          <button
-            onClick={() => this.toggleView('table')}
-            style={{
-              flex: '0 1 auto',
-              backgroundColor: selectedView === 'table' ? '#005BA6' : 'lightgrey',
-              color: 'white',
-              border: 'none',
-              padding: '10px 15px',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s',
-              outline: 'none',
-              fontSize: '13px',
-            }}
-          >
-            <FontAwesomeIcon icon={faTable} />
-            <span style={{ marginLeft: '5px' }}>Table View</span>
-          </button>
-
-          <button
-            onClick={() => this.toggleView('bar')}
-            style={{
-              flex: '0 1 auto',
-              backgroundColor: selectedView === 'bar' ? '#005BA6' : 'lightgrey',
-              color: 'white',
-              border: 'none',
-              padding: '10px 15px',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s',
-              outline: 'none',
-              fontSize: '13px',
-            }}
-          >
-            <FontAwesomeIcon icon={faChartBar} />
-            <span style={{ marginLeft: '5px' }}>Bar Chart View</span>
-          </button>
-
-          <button
-            onClick={() => this.toggleView('pie')}
-            style={{
-              flex: '0 1 auto',
-              backgroundColor: selectedView === 'pie' ? '#005BA6' : 'lightgrey',
-              color: 'white',
-              border: 'none',
-              padding: '10px 15px',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s',
-              outline: 'none',
-              fontSize: '13px',
-            }}
-          >
-            <FontAwesomeIcon icon={faChartPie} />
-            <span style={{ marginLeft: '5px' }}>Pie Chart View</span>
-          </button>
+          {['table', 'bar', 'pie'].map(view => (
+            <button
+              key={view}
+              onClick={() => this.toggleView(view)}
+              style={{
+                flex: '0 1 auto',
+                backgroundColor: selectedView === view ? '#005BA6' : 'lightgrey',
+                color: 'white',
+                border: 'none',
+                padding: '10px 15px',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s',
+                outline: 'none',
+                fontSize: '13px',
+              }}
+            >
+              <FontAwesomeIcon icon={view === 'table' ? faTable : view === 'bar' ? faChartBar : faChartPie} />
+              <span style={{ marginLeft: '5px' }}>
+                {view.charAt(0).toUpperCase() + view.slice(1)} View
+              </span>
+            </button>
+          ))}
         </div>
 
         <div>
-          {/* Rendering based on selected view */}
-          {selectedView === 'table' && (
-            <>
-              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('table', categories.votingTrends, 'Voting Trends')}
-
-              {selectedTrend === 'People' && (
-                <>
-                  {selectedOption === 'sex' && this.renderChartOrTable('table', categories.sex, 'People - Sex')}
-                  {selectedOption === 'age' && this.renderChartOrTable('table', categories.age, 'People - Age Distribution')}
-                  {selectedOption === 'race' && this.renderChartOrTable('table', categories.race, 'People - Race')}
-                </>
-              )}
-
-              {selectedTrend === 'SocioEconomic' && (
-                <>
-                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('table', categories.meanmedianincome, 'Mean/Median Income')}
-                  {selectedOption === 'income' && this.renderChartOrTable('table', categories.income, 'Income Breakdown')}
-                </>
-              )}
-
-              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('table', categories.business, 'Business Types')}
-
-              {selectedTrend === 'Workers' && (
-                <>
-                  {selectedOption === 'workers2' && this.renderChartOrTable('table', categories.workers2, 'Worker Type (Industry)')}
-                  {selectedOption === 'workers1' && this.renderChartOrTable('table', categories.workers1, 'Workers (Per Industry)')}
-                </>
-              )}
-            </>
-          )}
-
-          {selectedView === 'bar' && (
-            <>
-              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('bar', categories.votingTrends, 'Voting Trends')}
-
-              {selectedTrend === 'People' && (
-                <>
-                  {selectedOption === 'sex' && this.renderChartOrTable('bar', categories.sex, 'People - Sex')}
-                  {selectedOption === 'age' && this.renderChartOrTable('bar', categories.age, 'People - Age Distribution')}
-                  {selectedOption === 'race' && this.renderChartOrTable('bar', categories.race, 'People - Race')}
-                </>
-              )}
-
-              {selectedTrend === 'SocioEconomic' && (
-                <>
-                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('bar', categories.meanmedianincome, 'Mean/Median Income')}
-                  {selectedOption === 'income' && this.renderChartOrTable('bar', categories.income, 'Income Breakdown')}
-                </>
-              )}
-
-              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('bar', categories.business, 'Business Types')}
-
-              {selectedTrend === 'Workers' && (
-                <>
-                  {selectedOption === 'workers2' && this.renderChartOrTable('bar', categories.workers2, 'Worker Type (Industry)')}
-                  {selectedOption === 'workers1' && this.renderChartOrTable('bar', categories.workers1, 'Workers (Per Industry)')}
-                </>
-              )}
-            </>
-          )}
-
-          {selectedView === 'pie' && (
-            <>
-              {selectedTrend === 'Voting' && selectedOption === 'voting' && this.renderChartOrTable('pie', categories.votingTrends, 'Voting Trends')}
-
-              {selectedTrend === 'People' && (
-                <>
-                  {selectedOption === 'sex' && this.renderChartOrTable('pie', categories.sex, 'People - Sex')}
-                  {selectedOption === 'age' && this.renderChartOrTable('pie', categories.age, 'People - Age Distribution')}
-                  {selectedOption === 'race' && this.renderChartOrTable('pie', categories.race, 'People - Race')}
-                </>
-              )}
-
-              {selectedTrend === 'SocioEconomic' && (
-                <>
-                  {selectedOption === 'meanmedianincome' && this.renderChartOrTable('pie', categories.meanmedianincome, 'Mean/Median Income')}
-                  {selectedOption === 'income' && this.renderChartOrTable('pie', categories.income, 'Income Breakdown')}
-                </>
-              )}
-
-              {selectedTrend === 'Business' && selectedOption === 'business' && this.renderChartOrTable('pie', categories.business, 'Business Types')}
-
-              {selectedTrend === 'Workers' && (
-                <>
-                  {selectedOption === 'workers2' && this.renderChartOrTable('pie', categories.workers2, 'Worker Type (Industry)')}
-                  {selectedOption === 'workers1' && this.renderChartOrTable('pie', categories.workers1, 'Workers (Per Industry)')}
-                </>
-              )}
-            </>
-          )}
+          {['table', 'bar', 'pie'].map(view => (
+            selectedView === view && selectedOption && (
+              <div key={view}>
+                {this.renderChartOrTable(view, chartData[view][selectedOption], `${selectedTrend} - ${selectedOption.charAt(0).toUpperCase() + selectedOption.slice(1)}`)}
+              </div>
+            )
+          ))}
         </div>
       </div>
     );

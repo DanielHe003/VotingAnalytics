@@ -12,21 +12,14 @@ const App = () => {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTrend, setSelectedTrend] = useState('');
 
+  const sectionProps = {selectedState, selectedDistrict, selectedTrend, setSelectedState, setSelectedDistrict, setSelectedTrend};
+
   const navLinks = [
-    { name: 'State Insights', href: '#state-analysis' },
+    { name: 'State Insights', href: '#state-insights' },
     { name: 'State Analysis', href: '#state-analysis' },
   ];
 
   const renderSection = () => {
-    const sectionProps = {
-      selectedState,
-      selectedDistrict,
-      selectedTrend,
-      setSelectedState,
-      setSelectedDistrict,
-      setSelectedTrend
-    };
-
     switch (activeSection) {
       case 'State Analysis':
         return <StateAnalysis {...sectionProps} />;
@@ -40,7 +33,7 @@ const App = () => {
   return (
     <div>
       <Navbar navLinks={navLinks} activeSection={activeSection} setActiveSection={setActiveSection} />
-      <div style={{ padding: '20px 2%' }}>
+      <div style={{ padding: '12px 2%' }}>
         {renderSection()}
       </div>
     </div>

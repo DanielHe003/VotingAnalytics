@@ -1,32 +1,52 @@
 import React, { Component } from "react";
-import TopBar from './topBar'; 
-import MapComponent from '../common/MapComponent'; 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import TopBar from "./topBar";
+import MapComponent from "../common/MapComponent";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import Chart from "./ChartSwitch";
-import axios from 'axios';
-import Popup from '../common/Popup';
-import './stateInfo.css';
+import axios from "axios";
+import Popup from "../common/Popup";
+import "./stateInfo.css";
 
 class StateInfo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      mapData: '',
+      numericData: null,
+      mapData: null,
       showPopup: false,
       isMapVisible: true,
     };
   }
 
-  // ----------------------------------------------------API Calls---------------------------------------------------------------------
-  updateMapData = async (state) => {
-    const baseUrl = 'http://localhost:8080';
+  //Component Mount + Update
+  componentDidMount() {
+    this.updateMapData(this.props.selectedState);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.selectedState !== this.props.selectedState) {
+      this.updateMapData(this.props.selectedState);
+    }
+  }
+
+  //Toggle Drawing Process
+  togglePopup = () => {
+    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
+  };
+
+  // Toggle Map On/Off
+  toggleVisibility = () => {
+    this.setState((prevState) => ({ isMapVisible: !prevState.isMapVisible }));
+  };
+
+  //Update Map Data
+  updateMapData = async () => {
+    const baseUrl = "http://localhost:8080";
     const urlMap = {
       Alabama: `${baseUrl}/map/alabama`,
       California: `${baseUrl}/map/california`,
     };
-
-    this.setState({ mapData: null });
 
     const fetchMapData = async (url) => {
       try {
@@ -38,106 +58,86 @@ class StateInfo extends Component {
       }
     };
 
-    if (!state) {
-      await fetchMapData('http://localhost:8080/map');
-    } else if (urlMap[state]) {
-      await fetchMapData(urlMap[state]);
+    if (!this.props.selectedState && !this.props.selectedTrend) {
+      await fetchMapData("http://localhost:8080/map");
+    } else if (urlMap[this.props.selectedState]) {
+      await fetchMapData(urlMap[this.props.selectedState]);
     }
   };
 
-  updateNumericalData = async (state) => {
-    // const baseUrl = 'http://localhost:8080';
-    // const urlMap = {
-    //   Alabama: `${baseUrl}/map/alabama`,
-    //   California: `${baseUrl}/map/california`,
-    // };
-  };
-
-  // -------------------------------------------------------------------------------------------------------------------------
-
-  componentDidMount() {
-    this.updateMapData(this.props.selectedState);
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.selectedState !== this.props.selectedState) {
-      this.updateMapData(this.props.selectedState);
-    }
-  }
-
-  togglePopup = () => {
-    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
-  };
-
-  toggleVisibility = () => {
-    this.setState((prevState) => ({ isMapVisible: !prevState.isMapVisible }));
-  };
+  //
+  updateNumericalData = async () => {};
 
   render() {
-
     return (
       <>
-        <div className="sidebar-container">
+        <TopBar
+          selectedState={this.props.selectedState}
+          selectedDistrict={this.props.selectedDistrict}
+          selectedTrend={this.props.selectedTrend}
+          setSelectedState={this.props.setSelectedState}
+          setSelectedDistrict={this.props.setSelectedDistrict}
+          setSelectedTrend={this.props.setSelectedTrend}
+        />
 
-          {/* TopBar for Selection */}
-          <TopBar 
-            selectedState={this.props.selectedState}
-            selectedDistrict={this.props.selectedDistrict}
-            selectedTrend={this.props.selectedTrend}
-            setSelectedState={this.props.setSelectedState}
-            setSelectedDistrict={this.props.setSelectedDistrict}
-            setSelectedTrend={this.props.setSelectedTrend}
-          />
-        </div>
-
-        <div className="content-container"> 
-          
-          {/* Toggle the Map */}
+        <div className="content-container">
+          {/* Map Render */}
           {this.state.isMapVisible && (
             <div className="map-container">
-              <MapComponent 
-                geoJsonData={this.state.mapData} 
-                onFeatureClick={this.props.setSelectedState} 
+              <MapComponent
+                geoJsonData={this.state.mapData}
+                onFeatureClick={this.props.setSelectedState}
               />
             </div>
           )}
 
-          <div className="chart-container">
-
-            {/* Chart Container */}
-            <div className="chart-inner-container">
-              <div>
-                {this.props.selectedTrend ? ( 
-                  <Chart 
-                    selectedState={this.props.selectedState} 
-                    selectedDistrict={this.props.selectedDistrict} 
-                    selectedTrend={this.props.selectedTrend} 
-                  />
-                ) : (
-                  <div className="no-trend-selected">
-                    <FontAwesomeIcon icon={faCircleExclamation} className="exclamation-icon" />
-                    <h1 className="no-trend-text">Select Trend Above</h1>
-                  </div>
-                )}
+          {this.props.selectedState ? (
+            <div className="chart-container">
+              {/* Show Charts -- Dependent on Selected Trend */}
+              <div className="chart-inner-container">
+                <div>
+                  {this.props.selectedTrend ? (
+                    <Chart
+                      data={this.state.numericData}
+                      selectedState={this.props.selectedState}
+                      selectedDistrict={this.props.selectedDistrict}
+                      selectedTrend={this.props.selectedTrend}
+                    />
+                  ) : (
+                    <div className="no-trend-selected">
+                      <FontAwesomeIcon
+                        icon={faCircleExclamation}
+                        className="exclamation-icon"
+                      />
+                      <h1 className="no-trend-text">Select Trend Above</h1>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            {/* Buttons at the Bottom */}
-            <div className="button-container">
-              {this.props.selectedState && (
-                <button onClick={this.togglePopup} className="action-button">
-                  Drawing Process
-                </button>
-              )}
-              <button onClick={this.toggleVisibility} className="action-button">
-                {this.state.isMapVisible ? "Hide Map" : "Show Map"}
-              </button>
-            </div>
-            
-            {/* Popup Component */}
-            <Popup  isVisible={this.state.showPopup} state={this.props.selectedState} onClose={this.togglePopup} />
 
-          </div>
+              {/* Bottom Layer -- Drawing Process and Hide Map */}
+              <div className="button-container">
+                {this.props.selectedState && (
+                  <button onClick={this.togglePopup} className="action-button">
+                    Drawing Process
+                  </button>
+                )}
+                <button
+                  onClick={this.toggleVisibility}
+                  className="action-button"
+                >
+                  {this.state.isMapVisible ? "Hide Map" : "Show Map"}
+                </button>
+              </div>
+
+              {/* Popup Component */}
+              <Popup
+                isVisible={this.state.showPopup}
+                state={this.props.selectedState}
+                onClose={this.togglePopup}
+              />
+            </div>
+          ) : null}
         </div>
       </>
     );
