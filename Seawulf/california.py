@@ -165,11 +165,10 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
     num_suburban_districts = 0
     num_poverty_districts = 0
 
+    for partition in chain:
+        pass
 
-    step_chain = list(chain)
-    print(step_chain[-1])
-    final_partition = step_chain[-1]
-
+    final_partition = partition 
     logging.debug("Final partition after chain execution.")
 
     all_precincts = graph.nodes(data=True)
