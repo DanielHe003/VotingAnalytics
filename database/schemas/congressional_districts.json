@@ -1,0 +1,117 @@
+{
+    "collMod": "merged_congressional_districts",
+    "validator": {
+      "$jsonSchema": {
+        "bsonType": "object",
+        "required": ["type", "properties", "geometry"],
+        "properties": {
+          "type": { "bsonType": "string", "description": "Must be a string and is required" },
+          "properties": {
+            "bsonType": "object",
+            "required": ["state_id",
+              "ID", "PCT_DEM", "PCT_REP", "TOT_HOUS21", "TOT_POP",
+              "MEDN_INC21", "PRSDEM01", "PRSREP01", "TOT_VOTES", "Density",
+              "Category", "Urban", "Rural", "Suburban"
+            ],
+            "properties": {
+              "state_id": {
+              "bsonType": "int",
+              "description": "Two-character state identifier"
+            },
+              "ID": { "bsonType": "int" },
+              "PCT_DEM": { "bsonType": "double" },
+              "PCT_REP": { "bsonType": "double" },
+              "PRSDEM01": { "bsonType": "int" },
+              "PRSREP01": { "bsonType": "int" },
+              "TOT_VOTES": { "bsonType": "int" },
+              "TOT_POP": { "bsonType": ["double", "int"] },
+              "POP_HISLAT": { "bsonType": ["double", "int"] },
+              "POP_WHT": { "bsonType": ["double", "int"] },
+              "POP_BLK": { "bsonType": ["double", "int"] },
+              "POP_AINDALK": { "bsonType": ["double", "int"] },
+              "POP_ASN": { "bsonType": ["double", "int"] },
+              "POP_HIPI": { "bsonType": ["double", "int"] },
+              "POP_OTH": { "bsonType": ["double", "int"] },
+              "POP_TWOMOR": { "bsonType": ["double", "int"] },
+              "AREALAND": { "bsonType": ["double", "int", "long"] },
+              "Urban": { "bsonType": "double" },
+              "Rural": { "bsonType": "double" },
+              "Suburban": { "bsonType": "double" },
+              "Density": { "bsonType": "double" },
+              "Category": { "bsonType": "string" },
+              "TOT_HOUS21": { "bsonType": ["double", "int"] },
+              "LESS_10K21": { "bsonType": ["double", "int"] },
+              "10K_15K21": { "bsonType": ["double", "int"] },
+              "15K_20K21": { "bsonType": ["double", "int"] },
+              "20K_25K21": { "bsonType": ["double", "int"] },
+              "25K_30K21": { "bsonType": ["double", "int"] },
+              "30K_35K21": { "bsonType": ["double", "int"] },
+              "35K_40K21": { "bsonType": ["double", "int"] },
+              "40K_45K21": { "bsonType": ["double", "int"] },
+              "45K_50K21": { "bsonType": ["double", "int"] },
+              "50K_60K21": { "bsonType": ["double", "int"] },
+              "60K_75K21": { "bsonType": ["double", "int"] },
+              "75K_100K21": { "bsonType": ["double", "int"] },
+              "100_125K21": { "bsonType": ["double", "int"] },
+              "125_150K21": { "bsonType": ["double", "int"] },
+              "150_200K21": { "bsonType": ["double", "int"] },
+              "200K_MOR21": { "bsonType": ["double", "int"] },
+              "MEDN_INC21": { "bsonType": ["double", "int"] },
+              "POVERTY": { "bsonType": ["double", "int"] },
+              "POVERTY_PCT": { "bsonType": "double" }
+            }
+          },
+"geometry": {
+  "bsonType": "object",
+  "required": ["type", "coordinates"],
+  "properties": {
+    "type": {
+      "enum": ["Polygon", "MultiPolygon"],
+      "description": "Can be either 'Polygon' or 'MultiPolygon'"
+    },
+    "coordinates": {
+      "oneOf": [
+        {
+          "description": "Polygon format",
+          "bsonType": "array",
+          "items": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "double"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        {
+          "description": "MultiPolygon format",
+          "bsonType": "array",
+          "items": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "array",
+              "items": {
+                "bsonType": "array",
+                "items": {
+                  "bsonType": "double"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+        }
+      }
+    },
+    "validationLevel": "moderate"
+  }
+  

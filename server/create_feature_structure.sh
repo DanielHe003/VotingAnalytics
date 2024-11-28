@@ -26,8 +26,8 @@ FEATURE_BASE_DIR="$BASE_DIR/$FEATURE_NAME"
 # Create subdirectories under the feature directory for each layer
 mkdir -p "$FEATURE_BASE_DIR/controller"
 mkdir -p "$FEATURE_BASE_DIR/service"
-# mkdir -p "$FEATURE_BASE_DIR/repository"
-# mkdir -p "$FEATURE_BASE_DIR/model"
+mkdir -p "$FEATURE_BASE_DIR/repository"
+mkdir -p "$FEATURE_BASE_DIR/model"
 # mkdir -p "$FEATURE_BASE_DIR/dto"
 # mkdir -p "$FEATURE_BASE_DIR/mapper"
 
@@ -50,11 +50,9 @@ public class ${FEATURE_NAME_CAMEL}Controller {
 
 echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.service;
 
-
+import com.voter_analysis.voter_analysis.$FEATURE_NAME.repository.${FEATURE_NAME_CAMEL}Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ${FEATURE_NAME_CAMEL}Service {
@@ -65,56 +63,31 @@ public class ${FEATURE_NAME_CAMEL}Service {
     // Define your business logic here
 }" > "$FEATURE_BASE_DIR/service/${FEATURE_NAME_CAMEL}Service.java"
 
-# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.repository;
-#this goes uptop 
-# import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
-# import com.voter_analysis.voter_analysis.$FEATURE_NAME.repository.${FEATURE_NAME_CAMEL}Repository;
-# import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
-# import org.springframework.data.mongodb.repository.MongoRepository;
-# import org.springframework.stereotype.Repository;
+echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.repository;
 
-# @Repository
-# public interface ${FEATURE_NAME_CAMEL}Repository extends MongoRepository<${FEATURE_NAME_CAMEL}, String> {
-#     // Define your custom queries here
-# }" > "$FEATURE_BASE_DIR/repository/${FEATURE_NAME_CAMEL}Repository.java"
+import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
-# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.model;
+@Repository
+public interface ${FEATURE_NAME_CAMEL}Repository extends MongoRepository<${FEATURE_NAME_CAMEL}, String> {
+    // Define your custom queries here
+}" > "$FEATURE_BASE_DIR/repository/${FEATURE_NAME_CAMEL}Repository.java"
 
-# import org.springframework.data.annotation.Id;
-# import org.springframework.data.mongodb.core.mapping.Document;
+echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.model;
 
-# @Document(collection = \"${FEATURE_NAME_CAMEL,,}\")
-# public class ${FEATURE_NAME_CAMEL} {
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-#     @Id
-#     private String id;
+@Document(collection = \"${FEATURE_NAME_CAMEL,,}\")
+public class ${FEATURE_NAME_CAMEL} {
 
-#     // Add your fields here
+    @Id
+    private String id;
 
-#     // Constructors, getters, and setters
-# }" > "$FEATURE_BASE_DIR/model/${FEATURE_NAME_CAMEL}.java"
+    // Add your fields here
 
-# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.dto;
-
-# public class ${FEATURE_NAME_CAMEL}DTO {
-
-#     // Define your DTO fields here
-
-#     // Constructors, getters, and setters
-# }" > "$FEATURE_BASE_DIR/dto/${FEATURE_NAME_CAMEL}DTO.java"
-
-# echo "package com.voter_analysis.voter_analysis.$FEATURE_NAME.mapper;
-
-# import com.voter_analysis.voter_analysis.$FEATURE_NAME.dto.${FEATURE_NAME_CAMEL}DTO;
-# import com.voter_analysis.voter_analysis.$FEATURE_NAME.model.${FEATURE_NAME_CAMEL};
-# import org.mapstruct.Mapper;
-
-# @Mapper(componentModel = \"spring\")
-# public interface ${FEATURE_NAME_CAMEL}Mapper {
-
-#     ${FEATURE_NAME_CAMEL}DTO toDTO(${FEATURE_NAME_CAMEL} ${FEATURE_NAME_CAMEL,,});
-#     ${FEATURE_NAME_CAMEL} toEntity(${FEATURE_NAME_CAMEL}DTO ${FEATURE_NAME_CAMEL,,}DTO);
-
-# }" > "$FEATURE_BASE_DIR/mapper/${FEATURE_NAME_CAMEL}Mapper.java"
+    // Constructors, getters, and setters
+}" > "$FEATURE_BASE_DIR/model/${FEATURE_NAME_CAMEL}.java"
 
 echo "Feature '$FEATURE_NAME_CAMEL' structure created successfully under the directory '$FEATURE_BASE_DIR' with compliant package names!"

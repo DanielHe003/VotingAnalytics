@@ -4,3 +4,4 @@ merged_state.geojson
 .venv/
 .pytest_cache/
 tests/__pycache__
+data/

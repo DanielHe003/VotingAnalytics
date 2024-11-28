@@ -8,12 +8,18 @@ from pymongo.errors import BulkWriteError
 MONGO_URI = "mongodb://localhost:27017/"
 DATABASE_NAME = "voter_analysis_project"
 
+# Define folder structure for states
+data_directories = {
+    'alabama': './data/alabama',
+    'california': './data/california'
+}
+
 # File paths
 schema_dir = './schemas'
-data_files = {
-    'merged_precincts': './merged_precincts.geojson',
-    'merged_states': './merged_states.geojson',
-    'merged_congressional_districts': './merged_congressional_districts.geojson'
+file_mappings = {
+    'congressional_district_merged.geojson': 'congressional_districts',
+    'precinct_merged.geojson': 'precincts',
+    'state_merged.geojson': 'states'
 }
 
 # Connect to MongoDB
@@ -70,23 +76,35 @@ def import_geojson(collection_name, geojson_file):
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
 
+def initialize_state_data(state, data_directory):
+    """Initialize data for a specific state."""
+    print(f"Loading data for state: {state}")
+    for file_suffix, collection_name in file_mappings.items():
+        geojson_file = os.path.normpath(os.path.join('./', data_directory, f"{state}_{file_suffix}"))
+        schema_file = os.path.normpath(os.path.join('./', schema_dir, f"{collection_name}.json"))
+
+        # Apply schema if it exists
+        if os.path.exists(schema_file):
+            print(f"Applying schema for {collection_name}...")
+            schema = load_schema(schema_file)
+            create_collection_with_schema(collection_name, schema)
+
+        # Import data
+        if os.path.exists(geojson_file):
+            print(f"Importing {geojson_file} into {collection_name} collection...")
+            import_geojson(collection_name, geojson_file)
+        else:
+            print(f"File {geojson_file} not found. Skipping.")
+
 
 def initialize_db():
     """Initialize database: clear, load data, and then apply schemas."""
     # Clear existing collections
     clear_database()
 
-    # For each collection, load schema and create it with schema validation if possible
-    for collection_name, geojson_file in data_files.items():
-        # Apply schema if it exists
-        schema_file = os.path.join(schema_dir, f"{collection_name}.json")
-        schema = load_schema(schema_file) if os.path.exists(schema_file) else {}
-
-        # Create collection with schema
-        create_collection_with_schema(collection_name, schema)
-
-        # Load GeoJSON data
-        import_geojson(collection_name, geojson_file)
+    # Process data for each state in order: Alabama first, then California
+    for state, directory in data_directories.items():
+        initialize_state_data(state, directory)
 
 if __name__ == "__main__":
     initialize_db()

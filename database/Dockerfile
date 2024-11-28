@@ -7,9 +7,7 @@ WORKDIR /app
 # Copy your Python script and any other files needed
 COPY initialize_db.py /app/
 COPY schemas /app/schemas
-COPY merged_precincts.geojson /app/
-COPY merged_states.geojson /app/
-COPY merged_congressional_districts.geojson /app/
+COPY data /app/data  
 
 # Install Python and dependencies
 RUN apt-get update && \
