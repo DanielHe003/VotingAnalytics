@@ -13,12 +13,14 @@ java {
 	}
 }
 
+
 repositories {
 	mavenCentral()
 }
 bootRun {
     systemProperty 'spring.devtools.restart.enabled', 'true'
 }
+
 
 dependencies {
 	compileOnly 'org.projectlombok:lombok'

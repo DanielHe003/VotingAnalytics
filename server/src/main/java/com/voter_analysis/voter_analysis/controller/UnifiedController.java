@@ -1,10 +1,10 @@
 package com.voter_analysis.voter_analysis.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
 import com.voter_analysis.voter_analysis.dtos.*;
 
-import com.voter_analysis.voter_analysis.service.*;
+import com.voter_analysis.voter_analysis.services.*;
 import java.util.List;
 @RestController
 public class UnifiedController {
@@ -60,4 +60,26 @@ public class UnifiedController {
         StateSummaryDTO summary = unifiedService.getStateSummary(stateName);
         return ResponseEntity.ok(summary);
     }
+    //Use Case #4-7
+    @GetMapping("/states/{stateId}/precincts/combinedheatmap")
+    public ResponseEntity<PaginatedResponse<PrecinctHeatMapDTO>> getCombinedHeatMap(
+            @PathVariable int stateId,
+            @RequestParam int page,
+            @RequestParam int size) {
+        PaginatedResponse<PrecinctHeatMapDTO> response = unifiedService.getCombinedPrecinctHeatMap(stateId, page, size);
+        return ResponseEntity.ok(response);
+    }
+    
+
+    //Use case #4
+    // @GetMapping("/states/{stateId}/precincts/demographicHeatMap/{demographicGroup}")
+    // public ResponseEntity<PaginatedResponse<PrecinctDemographicHeatMapDTO>> getDemographicHeatMap(
+    //     @PathVariable int stateId, 
+    //     @PathVariable String demographicGroup,
+    //     @RequestParam int page, @RequestParam int size) { 
+    //     PaginatedResponse<PrecinctDemographicHeatMapDTO> response = unifiedService.getPrecinctDemographicHeatMap(stateId, demographicGroup, page, size);
+    //     return ResponseEntity.ok(response);
+    // }
+    
+
 }
