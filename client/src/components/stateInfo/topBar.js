@@ -1,7 +1,5 @@
 import React from 'react';
 import './topBar.css';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faCircle } from '@fortawesome/free-solid-svg-icons';
 
 const colors = {
     demoBlue: '#005BA6',
@@ -39,11 +37,11 @@ class TopBar extends React.Component {
         {
             name: 'Select Trend',
             options: [
-                { id: 'Voting', name: 'Voting Trends' },
-                { id: 'People', name: 'People' },
-                { id: 'Workers', name: 'Workers' },
-                { id: 'SocioEconomic', name: 'Socio-Economic Trends' },
-                { id: 'Business', name: 'Business Trends' },            ],
+                { id: 'voting', name: 'Voting Distribution' },
+                { id: 'race', name: 'Population by Race' },
+                { id: 'region', name: 'Population (Region)' },
+                { id: 'income', name: 'Income Distribution' },
+            ],
         },
     ];
 
@@ -52,10 +50,12 @@ class TopBar extends React.Component {
         this.setState({
             selectedState: selectedState,
             selectedDistrict: 'All Districts',
-            selectedTrend: '',
+            selectedTrend: 'voting',
         });
         this.props.setSelectedState(selectedState);
         this.props.setSelectedDistrict('All Districts');
+        this.props.setSelectedTrend('');
+    
     }
 
     handleDistrictChange(event) {
@@ -68,6 +68,7 @@ class TopBar extends React.Component {
         if (prevProps.selectedState !== this.props.selectedState) {
             this.setState({ selectedState: this.props.selectedState });
             this.props.setSelectedDistrict('All Districts');
+            this.props.setSelectedTrend('voting');
         }
 
         if (prevProps.selectedDistrict !== this.props.selectedDistrict) {
@@ -89,11 +90,11 @@ class TopBar extends React.Component {
         this.setState({
             selectedState: '',
             selectedDistrict: '',
-            selectedTrend: '',
+            selectedTrend: 'voting', // Reset trend to 'voting' when filters are reset
         });
         this.props.setSelectedState('');
         this.props.setSelectedDistrict('');
-        this.props.setSelectedTrend('');
+        this.props.setSelectedTrend('voting'); // Reset trend to 'voting'
     }
 
     getDistrictOptions() {
@@ -169,6 +170,6 @@ class TopBar extends React.Component {
             </div>
         );
     }
-}    
+}
 
 export default TopBar;

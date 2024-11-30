@@ -8,7 +8,7 @@ class Popup extends React.Component {
           <span>
             In Alabama, the redistricting process is primarily controlled by the state legislature, 
             with some opportunity for public input. The governor also plays a significant role in 
-            approving the maps, and they may be subject to judicial review.
+            approving the maps, and they may be subject to judicial review. For Alabama, the Republic Party mainly controls the process as they've been in the dominant party in the state for last 20+ years.
           </span>
         );
       case 'California':
@@ -39,7 +39,7 @@ class Popup extends React.Component {
       padding: '30px',
       zIndex: 1000,
       maxWidth: '400px',
-      width: '90%',
+      width: '100%',
     };
 
     const overlayStyle = {

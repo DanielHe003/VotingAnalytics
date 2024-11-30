@@ -1,114 +1,50 @@
-// Example Usage:
-// {
-//   "Category A": {
-//     "District 1": "1,200",
-//     "District 2": "1,500",
-//     "District 3": "800"
-//   },
-//   "Category B": {
-//     "District 1": "2,300",
-//     "District 2": "2,000",
-//     "District 3": "1,100"
-//   },
-//   "Category C": {
-//     "District 1": "700",
-//     "District 2": "1,400",
-//     "District 3": "950"
-//   }
-// }
-// <BarChartComponent categoryData={categoryData} selectedDistrict="District 1" />
+import React from 'react';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
-import React from "react";
-import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler} from "chart.js";
-ChartJS.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const BarChartComponent = ({ categoryData, selectedDistrict, height, width }) => {
-  const barData = Object.entries(categoryData).map(([key, value]) => ({
-    name: key,
-    value: parseInt(value[selectedDistrict].replace(/,/g, ""), 10),
-  }));
-
+const BarChartComponent = ({ categoryData, height, width, xAxisTitle, yAxisTitle, label }) => {
   const colors = [
-    "#FF6384",
-    "#36A2EB",
-    "#FFCE56",
-    "#4BC0C0",
-    "#9966FF",
-    "#FF9F40",
-    "#FF5733",
-    "#FFC300",
-    "#DAF7A6",
-    "#900C3F",
-    "#581845",
+    '#1ABC9C', '#E67E22', '#34495E', '#16A085', '#5D6D7E',
+    '#2E86C1', '#E74C3C', '#27AE60', '#F1C40F', '#9B59B6', 
   ];
 
   const data = {
-    labels: barData.map((entry) => entry.name),
+    labels: categoryData.labels,
     datasets: [
       {
-        label: "Count",
-        data: barData.map((entry) => entry.value),
-        backgroundColor: barData.map(
-          (_, index) => colors[index % colors.length]
-        ),
-        hoverBackgroundColor: barData.map(
-          (_, index) => `${colors[index % colors.length]}50`
-        ),
-        hoverBorderColor: "#0D47A1",
-        hoverBorderWidth: 2,
+        label: label,
+        data: categoryData.values,
+        backgroundColor: colors.slice(0, categoryData.values.length),
+        borderColor: colors.slice(0, categoryData.values.length),
+        borderWidth: 1,
       },
     ],
   };
 
   const options = {
-    maintainAspectRatio: false,
     responsive: true,
-    animation: {
-      duration: 1000,
-    },
-    plugins: {
-      legend: {
-        display: false,
-        position: "top",
-      },
-      tooltip: {
-        enabled: true,
-        backgroundColor: "#fff",
-        titleColor: "#1E88E5",
-        bodyColor: "#000",
-        callbacks: {
-          label: (context) => `Count: ${context.raw.toLocaleString()}`,
-        },
-      },
-    },
+    plugins: {},
     scales: {
       x: {
-        ticks: {
-          font: {
-            weight: "bold",
-            size: 15,
-          },
-          maxRotation: 45,
-          minRotation: 30,
+        title: {
+          display: true,
+          text: xAxisTitle,
         },
       },
       y: {
-        ticks: {
-          font: {
-            weight: "bold",
-            size: 16,
-          },
+        title: {
+          display: true,
+          text: yAxisTitle,
         },
-        grid: {
-          color: "#e0e0e0",
-        },
+        beginAtZero: true,
       },
     },
   };
 
   return (
-    <div style={{ width: `${width}px`, height: `${height}px` }}>
+    <div style={{ height, width }}>
       <Bar data={data} options={options} />
     </div>
   );
