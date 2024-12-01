@@ -69,7 +69,7 @@ class MapComponent extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.geoJsonData !== this.props.geoJsonData) {
-      console.log('Updated GeoJSON data:', this.props.geoJsonData);
+      // console.log('Updated GeoJSON data:', this.props.geoJsonData);
       this.setState({ geoJsonData: this.props.geoJsonData }, () => {
         this.updateGeoJsonLayer(this.state.geoJsonData);
       });

@@ -67,7 +67,6 @@ class TopBar extends React.Component {
       this.props.selectedTrend === "precinct" &&
       !this.state.analysisOptionsAdded
     ) {
-      // Add Precinct Analysis Options
       const updatedFilterOptions = [
         ...this.filterOptions,
         {
@@ -84,14 +83,13 @@ class TopBar extends React.Component {
       this.setState({
         analysisOptionsAdded: true,
       });
-      this.filterOptions = updatedFilterOptions; // Assign updated array to filterOptions
+      this.filterOptions = updatedFilterOptions;
     }
 
     if (
       this.props.selectedTrend !== "precinct" &&
       this.state.analysisOptionsAdded
     ) {
-      // Remove Precinct Analysis Options
       const updatedFilterOptions = this.filterOptions.filter(
         (option) => option.name !== "Precinct Analysis Options"
       );
@@ -99,7 +97,7 @@ class TopBar extends React.Component {
       this.setState({
         analysisOptionsAdded: false,
       });
-      this.filterOptions = updatedFilterOptions; // Assign updated array to filterOptions
+      this.filterOptions = updatedFilterOptions;
     }
 
     if (prevProps.selectedState !== this.props.selectedState) {
@@ -167,7 +165,9 @@ class TopBar extends React.Component {
                   ? "trend"
                   : "subTrend"
               )}
-              disabled={filter.name !== "Select State" && !this.state.selectedState}
+              disabled={
+                filter.name !== "Select State" && !this.state.selectedState
+              }
             />
           ))}
           <button

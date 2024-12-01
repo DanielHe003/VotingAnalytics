@@ -21,15 +21,6 @@ class SummaryComponent extends Component {
     };
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.selectedTrend !== this.props.selectedTrend) {
-      console.log("selectedTrend has been updated:", this.props.selectedTrend);
-    }
-    if (prevProps.data !== this.props.data) {
-      console.log("Data has been updated:", this.props.data);
-    }
-  }
-
   render() {
     const { data, selectedTrend } = this.props;
 
