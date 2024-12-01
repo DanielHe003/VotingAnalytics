@@ -13,12 +13,13 @@ class StateInfo extends Component {
     showPopup: false,
     summaryData: {},
     cdSummaryData: null,
+    precinctView: null, 
   };
 
   componentDidMount() {
-    this.fetchMapData(this.props.selectedState);
-    this.fetchSummaryData("Alabama");
-    this.fetchSummaryData("California");
+    const { selectedState } = this.props;
+    this.fetchMapData(selectedState);
+    this.fetchSummaryData(selectedState);
   }
 
   componentDidUpdate(prevProps) {
@@ -28,133 +29,126 @@ class StateInfo extends Component {
     }
   }
 
-  togglePopup = () =>
-    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
+  togglePopup = () => this.setState(prevState => ({ showPopup: !prevState.showPopup }));
 
   fetchData = async (endpoint) => {
     try {
-      const response = await axios.get(`${this.state.baseUrl}/${endpoint}`);
-      return response.data;
+      const { data } = await axios.get(`${this.state.baseUrl}/${endpoint}`);
+      return data;
     } catch (error) {
       console.error("Error fetching data:", error);
       throw error;
     }
   };
 
-  fetchMapData = async () => {
+  fetchMapData = async (state) => {
     try {
-      if (this.props.selectedState) {
-        const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
+      if (state) {
+        const stateId = state === "Alabama" ? 1 : 6;
         const data = await this.fetchData(`states/${stateId}/districtmaps`);
         const mapData = {
           type: "FeatureCollection",
-          features: data.map((item) => ({
+          features: data.map(item => ({
             type: "Feature",
-            properties: {
-              stateId: item.stateId,
-              districtId: item.districtId,
-            },
+            properties: { stateId: item.stateId, districtId: item.districtId },
             geometry: item.geometry,
           })),
         };
         this.setState({ mapData });
       } else {
-        const californiaData = await this.fetchData("states/california/map");
-        const alabamaData = await this.fetchData("states/alabama/map");
+        const [californiaData, alabamaData] = await Promise.all([
+          this.fetchData("states/california/map"),
+          this.fetchData("states/alabama/map"),
+        ]);
         const mergedGeoJSON = {
           type: "FeatureCollection",
           features: [
-            {
-              type: "Feature",
-              properties: { name: "Alabama" },
-              geometry: alabamaData,
-            },
-            {
-              type: "Feature",
-              properties: { name: "California" },
-              geometry: californiaData,
-            },
+            { type: "Feature", properties: { name: "Alabama" }, geometry: alabamaData },
+            { type: "Feature", properties: { name: "California" }, geometry: californiaData },
           ],
         };
         this.setState({ mapData: mergedGeoJSON });
       }
-    } catch (error) {}
-  };
-
-  fetchSummaryData = async (state) => {
-    if (this.state.summaryData[state]) return;
-    try {
-      const data = await this.fetchData(`states/${state}`);
-      this.setState((prevState) => ({
-        summaryData: { ...prevState.summaryData, [state]: data },
-      }));
     } catch (error) {
-      window.alert("Error fetching summary data");
+      console.error("Error fetching map data:", error);
     }
   };
 
-  // GUI Use Case 8
+  fetchSummaryData = async (state) => {
+    if (state && !this.state.summaryData[state]) {
+      try {
+        const data = await this.fetchData(`states/${state}`);
+        this.setState(prevState => ({
+          summaryData: { ...prevState.summaryData, [state]: data },
+        }));
+      } catch (error) {
+        window.alert("Error fetching summary data");
+      }
+    }
+  };
+
   fetchCDSummaryData = async (state) => {
-    if (this.state.summaryData[state]) return;
+    if (this.state.cdSummaryData) return;
     try {
       const data = await this.fetchData(`states/${state}`);
       this.setState({ cdSummaryData: data });
     } catch (error) {
-      window.alert("Error fetching summary data");
+      window.alert("Error fetching CD summary data");
     }
+  };
+  
+  fetchPrecinctData = async (state) => {
+    // if (this.state.cdSummaryData) return;
+    // try {
+    //   const data = await this.fetchData(`states/${state}`);
+    //   this.setState({ cdSummaryData: data });
+    // } catch (error) {
+    //   window.alert("Error fetching CD summary data");
+    // }
   };
 
   render() {
+    const { selectedState, selectedDistrict, selectedTrend, selectedSubTrend, setSelectedState, setSelectedDistrict, setSelectedTrend, setSelectedSubTrend } = this.props;
+    const { mapData, summaryData, showPopup, cdSummaryData } = this.state;
+
     return (
       <>
         <TopBar
-          selectedState={this.props.selectedState}
-          selectedDistrict={this.props.selectedDistrict}
-          selectedTrend={this.props.selectedTrend}
-          setSelectedState={this.props.setSelectedState}
-          setSelectedDistrict={this.props.setSelectedDistrict}
-          setSelectedTrend={this.props.setSelectedTrend}
+          selectedState={selectedState}
+          selectedDistrict={selectedDistrict}
+          selectedTrend={selectedTrend}
+          selectedSubTrend={selectedSubTrend}
+          setSelectedState={setSelectedState}
+          setSelectedDistrict={setSelectedDistrict}
+          setSelectedTrend={setSelectedTrend}
+          setSelectedSubTrend={setSelectedSubTrend}
         />
         <div className="content-container">
           <div className="map-container">
-            <MapComponent
-              geoJsonData={this.state.mapData}
-              onFeatureClick={this.props.setSelectedState}
-            />
+            <MapComponent geoJsonData={mapData} onFeatureClick={setSelectedState} />
           </div>
-          {this.props.selectedState && (
+          {selectedState && (
             <div className="chart-container">
               <div className="chart-inner-container">
-                {!this.props.selectedTrend ? (
-                  <></>
-                ) : (
+                {selectedTrend && (
                   <div className="no-trend-selected">
-                    {this.state.summaryData[this.props.selectedState] && (
+                    {summaryData[selectedState] && (
                       <SummaryComponent
-                        data={
-                          this.props.selectedDistrict !== "All Districts"
-                            ? this.state.cdSummaryData 
-                            : this.state.summaryData[this.props.selectedState]
-                        }
-                        selectedTrend={this.props.selectedTrend}
+                        data={selectedDistrict !== "All Districts" ? cdSummaryData : summaryData[selectedState]}
+                        selectedTrend={selectedTrend}
                       />
                     )}
                   </div>
                 )}
               </div>
               <div className="button-container">
-                {this.props.selectedState && (
+                {selectedState && (
                   <button onClick={this.togglePopup} className="action-button">
                     Drawing Process
                   </button>
                 )}
               </div>
-              <Popup
-                isVisible={this.state.showPopup}
-                state={this.props.selectedState}
-                onClose={this.togglePopup}
-              />
-              <div></div>
+              <Popup isVisible={showPopup} state={selectedState} onClose={this.togglePopup} />
             </div>
           )}
         </div>

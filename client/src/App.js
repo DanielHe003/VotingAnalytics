@@ -11,8 +11,9 @@ const App = () => {
   const [selectedState, setSelectedState] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTrend, setSelectedTrend] = useState('');
+  const [selectedSubTrend, setSelectedSubTrend] = useState('');
 
-  const sectionProps = {selectedState, selectedDistrict, selectedTrend, setSelectedState, setSelectedDistrict, setSelectedTrend};
+  const sectionProps = {selectedState, selectedDistrict, selectedTrend, selectedSubTrend, setSelectedState, setSelectedDistrict, setSelectedTrend, setSelectedSubTrend};
 
   const navLinks = [
     { name: 'State Insights', href: '#state-insights' },
