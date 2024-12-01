@@ -8,4 +8,5 @@ import org.springframework.data.domain.Page;
 
 public interface PrecinctRepository extends MongoRepository<Precinct, String> {
     Page<Precinct> findByPropertiesStateId(int stateId,Pageable pageable);
+    List<Precinct> findByPropertiesStateId(int stateId);
 }
