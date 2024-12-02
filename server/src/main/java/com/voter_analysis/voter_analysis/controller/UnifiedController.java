@@ -138,7 +138,7 @@ public class UnifiedController {
     }
 
     //Use Case #14
-    @GetMapping("/states/{stateId}/gingles/income-race/{racialgroup}")
+    @GetMapping("/states/{stateId}/gingles/income-race/{racialGroup}")
     public ResponseEntity<List<IncomeRaceGinglesDTO>> getIncomeRaceGinglesData(
             @PathVariable int stateId,
             @PathVariable String racialGroup) {

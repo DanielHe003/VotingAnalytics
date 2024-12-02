@@ -10,5 +10,4 @@ public class PaginatedFeatureCollectionDTO {
     private long totalElements;
     private int totalPages;
     private FeatureCollectionDTO featureCollection;
-    private Map<String, Map<String, String>> legends; // Legends for heat maps
 }

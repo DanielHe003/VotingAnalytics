@@ -6,6 +6,7 @@ import lombok.Data;
 public class IncomeRaceGinglesDTO {
     private String precinctKey;
     private double compositeIndexXaxis; // X-axis: Composite of income and race
-    private double partyVoteShareYaxis; // Y-axis
+    private double democraticVoteShareYaxis; // Y-axis
+    private double republicanVoteShareYaxis;
     private String dominantPartyColor; // Dot color
 }
