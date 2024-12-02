@@ -1,72 +1,91 @@
-import React, { Component } from "react";
-import TopBar from "./topBar";
+import React from "react";
+import TopBar from "./TopBar";
 import MapComponent from "../common/MapComponent";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
-import Chart from "./ChartSwitch";
-import axios from "axios";
 import Popup from "../common/Popup";
-import "./stateInfo.css";
+import "./StateInfo.css";
+import SummaryComponent from "./SummaryComponent";
+import ApiService from '../common/ApiService';
 
-class StateInfo extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      numericData: null,
-      mapData: null,
-      showPopup: false,
-      isMapVisible: true,
-    };
-  }
+class StateInfo extends React.Component {
+  state = {
+    mapData: null,
+    showPopup: false,
+    summaryData: {},
+    cdSummaryData: null,
+    precinctView: null,
+  };
 
-  //Component Mount + Update
   componentDidMount() {
-    this.updateMapData(this.props.selectedState);
+    this.fetchMapData(this.propsselectedState);
+    this.fetchSummaryData(this.propsselectedState);
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedState !== this.props.selectedState) {
-      this.updateMapData(this.props.selectedState);
+      this.fetchMapData(this.props.selectedState);
+      this.fetchSummaryData(this.props.selectedState);
     }
   }
 
-  //Toggle Drawing Process
-  togglePopup = () => {
-    this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
-  };
+  togglePopup = () => this.setState(prevState => ({ showPopup: !prevState.showPopup }));
 
-  // Toggle Map On/Off
-  toggleVisibility = () => {
-    this.setState((prevState) => ({ isMapVisible: !prevState.isMapVisible }));
-  };
-
-  //Update Map Data
-  updateMapData = async () => {
-    const baseUrl = "http://localhost:8080";
-    const urlMap = {
-      Alabama: `${baseUrl}/map/alabama`,
-      California: `${baseUrl}/map/california`,
-    };
-
-    const fetchMapData = async (url) => {
-      try {
-        const response = await axios.get(url);
-        this.setState({ mapData: response.data });
-      } catch (error) {
-        console.error("Error fetching map data:", error);
-        this.setState({ mapData: null });
+  fetchMapData = async () => {
+    try {
+      const state = this.props.selectedState;
+      if (state) {
+        const stateId = state === "Alabama" ? 1 : 6;
+        const data = await ApiService.fetchMapData(stateId);  
+        const mapData = {
+          type: "FeatureCollection",
+          features: data.map(item => ({
+            type: "Feature",
+            properties: { stateId: item.stateId, districtId: item.districtId },
+            geometry: item.geometry,
+          })),
+        };
+        this.setState({ mapData });
+      } else {
+        const [californiaData, alabamaData] = await Promise.all([
+          ApiService.fetchData("states/california/map"),
+          ApiService.fetchData("states/alabama/map"),
+        ]);
+        const mergedGeoJSON = {
+          type: "FeatureCollection",
+          features: [
+            { type: "Feature", properties: { name: "Alabama" }, geometry: alabamaData },
+            { type: "Feature", properties: { name: "California" }, geometry: californiaData },
+          ],
+        };
+        this.setState({ mapData: mergedGeoJSON });
       }
-    };
-
-    if (!this.props.selectedState && !this.props.selectedTrend) {
-      await fetchMapData("http://localhost:8080/map");
-    } else if (urlMap[this.props.selectedState]) {
-      await fetchMapData(urlMap[this.props.selectedState]);
+    } catch (error) {
+      console.error("Error fetching map data:", error);
     }
   };
-
-  //
-  updateNumericalData = async () => {};
+  
+  fetchSummaryData = async () => {
+    const state = this.props.selectedState;
+    if (state && !this.state.summaryData[state]) {
+      try {
+        const data = await ApiService.fetchStateSummary(state);
+        this.setState(prevState => ({
+          summaryData: { ...prevState.summaryData, [state]: data },
+        }));
+      } catch (error) {
+        window.alert("Error fetching summary data");
+      }
+    }
+  };
+  
+  fetchCDSummaryData = async () => {
+    if (this.state.cdSummaryData) return;
+    try {
+      const data = await ApiService.fetchStateSummary(this.props.selectedState);
+      this.setState({ cdSummaryData: data });
+    } catch (error) {
+      window.alert("Error fetching CD summary data");
+    }
+  };
 
   render() {
     return (
@@ -75,69 +94,43 @@ class StateInfo extends Component {
           selectedState={this.props.selectedState}
           selectedDistrict={this.props.selectedDistrict}
           selectedTrend={this.props.selectedTrend}
+          selectedSubTrend={this.props.selectedSubTrend}
           setSelectedState={this.props.setSelectedState}
           setSelectedDistrict={this.props.setSelectedDistrict}
           setSelectedTrend={this.props.setSelectedTrend}
+          setSelectedSubTrend={this.props.setSelectedSubTrend}
         />
-
         <div className="content-container">
-          {/* Map Render */}
-          {this.state.isMapVisible && (
-            <div className="map-container">
-              <MapComponent
-                geoJsonData={this.state.mapData}
-                onFeatureClick={this.props.setSelectedState}
-              />
-            </div>
-          )}
+          {/* Left Side */}
+          <div className="map-container">
+            <MapComponent geoJsonData={this.state.mapData} onFeatureClick={this.props.setSelectedState} />
+          </div>
 
-          {this.props.selectedState ? (
+          {/* Right Side */}
+          {this.props.selectedState && (
             <div className="chart-container">
-              {/* Show Charts -- Dependent on Selected Trend */}
               <div className="chart-inner-container">
-                <div>
-                  {this.props.selectedTrend ? (
-                    <Chart
-                      data={this.state.numericData}
-                      selectedState={this.props.selectedState}
-                      selectedDistrict={this.props.selectedDistrict}
-                      selectedTrend={this.props.selectedTrend}
-                    />
-                  ) : (
-                    <div className="no-trend-selected">
-                      <FontAwesomeIcon
-                        icon={faCircleExclamation}
-                        className="exclamation-icon"
+                {this.props.selectedTrend && (
+                  <div className="no-trend-selected">
+                    {this.state.summaryData[this.props.selectedState] && (
+                      <SummaryComponent
+                        data={this.props.selectedDistrict !== "All Districts" ? this.state.cdSummaryData : this.state.summaryData[this.props.selectedState]}
+                        selectedTrend={this.props.selectedTrend}
                       />
-                      <h1 className="no-trend-text">Select Trend Above</h1>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
-
-              {/* Bottom Layer -- Drawing Process and Hide Map */}
               <div className="button-container">
-                {this.props.selectedState && (
+                {this.props.State && (
                   <button onClick={this.togglePopup} className="action-button">
                     Drawing Process
                   </button>
                 )}
-                <button
-                  onClick={this.toggleVisibility}
-                  className="action-button"
-                >
-                  {this.state.isMapVisible ? "Hide Map" : "Show Map"}
-                </button>
               </div>
-
-              {/* Popup Component */}
-              <Popup
-                isVisible={this.state.showPopup}
-                state={this.props.selectedState}
-                onClose={this.togglePopup}
-              />
+              <Popup isVisible={this.state.showPopup} state={this.props.State} onClose={this.togglePopup} />
             </div>
-          ) : null}
+          )}
         </div>
       </>
     );

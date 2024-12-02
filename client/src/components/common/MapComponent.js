@@ -1,10 +1,9 @@
-import React, { Component, createRef } from "react";
+import React, { createRef } from "react";
 import { MapContainer as LeafletMap, TileLayer } from "react-leaflet"; 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import HeatmapLayer from 'react-leaflet-heatmap-layer';
 
-class MapComponent extends Component {
+class MapComponent extends React.Component {
   constructor(props) {
     super(props);
     this.initialPosition = [37.0902, -95.7129];
@@ -43,7 +42,6 @@ class MapComponent extends Component {
     });
 
     const properties = layer.feature.properties;
-
     const tooltipContent = Object.entries(properties)
       .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
       .join("<br>");
@@ -70,10 +68,9 @@ class MapComponent extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.geoJsonData !== this.props.geoJsonData) {
-      this.setState({
-        geoJsonData: this.props.geoJsonData, 
-      }, () => {
-        this.updateGeoJsonLayer(this.state.geoJsonData); 
+      // console.log('Updated GeoJSON data:', this.props.geoJsonData);
+      this.setState({ geoJsonData: this.props.geoJsonData }, () => {
+        this.updateGeoJsonLayer(this.state.geoJsonData);
       });
     }
   }
@@ -137,20 +134,10 @@ class MapComponent extends Component {
             zoomControl={false} 
             attributionControl={false} 
           >
-            <TileLayer
+             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             />
-            {this.props.heatmapData.length > 0 && (
-              <HeatmapLayer
-                points={this.props.heatmapData}
-                longitudeExtractor={(m) => m[1]}
-                latitudeExtractor={(m) => m[0]}
-                intensityExtractor={(m) => m[2]}
-                blur={10}
-                radius={25}
-              />
-            )}
           </LeafletMap>
         </div>
       </div>

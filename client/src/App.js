@@ -3,16 +3,17 @@ import Navbar from './components/common/Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
-import StateAnalysis from './components/stateAnalysis/stateAnalysis';
-import StateInfo from './components/stateInfo/stateInfo';
+import StateAnalysis from './components/StateAnalysis/StateAnalysis';
+import StateInfo from './components/StateInfo/StateInfo';
 
 const App = () => {
   const [activeSection, setActiveSection] = useState('State Insights');
   const [selectedState, setSelectedState] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTrend, setSelectedTrend] = useState('');
+  const [selectedSubTrend, setSelectedSubTrend] = useState('');
 
-  const sectionProps = {selectedState, selectedDistrict, selectedTrend, setSelectedState, setSelectedDistrict, setSelectedTrend};
+  const sectionProps = {selectedState, selectedDistrict, selectedTrend, selectedSubTrend, setSelectedState, setSelectedDistrict, setSelectedTrend, setSelectedSubTrend};
 
   const navLinks = [
     { name: 'State Insights', href: '#state-insights' },
