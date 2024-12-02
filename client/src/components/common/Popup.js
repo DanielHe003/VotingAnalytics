@@ -1,28 +1,27 @@
 import React from "react";
 
 class Popup extends React.Component {
-  renderStateDescription(selectedState) {
-    switch (selectedState) {
-      case 'Alabama':
-        return (
-          <span>
-            In Alabama, the redistricting process is primarily controlled by the state legislature, 
-            with some opportunity for public input. The governor also plays a significant role in 
-            approving the maps, and they may be subject to judicial review. For Alabama, the Republic Party mainly controls the process as they've been in the dominant party in the state for last 20+ years.
-          </span>
-        );
-      case 'California':
-        return (
-          <span>
-            California uses an independent commission for redistricting, emphasizing public input 
-            and transparency in the process. The California Citizens Redistricting Commission 
-            draws district maps, and these can be challenged in court to prevent gerrymandering.
-          </span>
-        );
-      default:
-        return <span>Please select a state to see its redistricting process.</span>;
-    }
-  }
+  renderStateDescription = (selectedState) => {
+    const descriptions = {
+      Alabama: (
+        <span>
+          In Alabama, the redistricting process is primarily controlled by the state legislature,
+          with some opportunity for public input. The governor also plays a significant role in
+          approving the maps, and they may be subject to judicial review. For Alabama, the Republican
+          Party mainly controls the process as they've been the dominant party in the state for the last 20+ years.
+        </span>
+      ),
+      California: (
+        <span>
+          California uses an independent commission for redistricting, emphasizing public input
+          and transparency in the process. The California Citizens Redistricting Commission
+          draws district maps, and these can be challenged in court to prevent gerrymandering.
+        </span>
+      ),
+    };
+
+    return descriptions[selectedState] || <span>Please select a state to see its redistricting process.</span>;
+  };
 
   render() {
     const { state, isVisible, onClose } = this.props;

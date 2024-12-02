@@ -1,8 +1,8 @@
 import React from 'react';
 import FilterDropdown from '../common/FilterDropdown';
-import "./sideBar.css";
+import "./TopBar.css";
 
-class Sidebar extends React.Component {
+class TopBar extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -17,8 +17,9 @@ class Sidebar extends React.Component {
                 {
                     name: 'Select Trend',
                     options: [
-                        { id: 'Ecological Inference', name: 'Ecological Inference' },
-                        { id: 'MCMC Analysis', name: 'MCMC' },
+                        { id: 'EI', name: 'Ecological Inference' },
+                        { id: 'Gingles', name: 'Gingles 2/3 Analysis' },
+                        { id: 'MCMC', name: 'MCMC Analysis' },
                     ],
                 },
             ],
@@ -82,4 +83,4 @@ class Sidebar extends React.Component {
     }
 }
 
-export default Sidebar;
+export default TopBar;

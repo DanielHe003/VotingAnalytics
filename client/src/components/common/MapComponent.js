@@ -1,9 +1,9 @@
-import React, { Component, createRef } from "react";
+import React, { createRef } from "react";
 import { MapContainer as LeafletMap, TileLayer } from "react-leaflet"; 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-class MapComponent extends Component {
+class MapComponent extends React.Component {
   constructor(props) {
     super(props);
     this.initialPosition = [37.0902, -95.7129];
@@ -42,7 +42,6 @@ class MapComponent extends Component {
     });
 
     const properties = layer.feature.properties;
-
     const tooltipContent = Object.entries(properties)
       .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
       .join("<br>");
@@ -75,7 +74,6 @@ class MapComponent extends Component {
       });
     }
   }
-  
 
   componentWillUnmount() {
     if (this.resizeObserver && this.containerRef.current) {

@@ -1,25 +1,23 @@
-import React, { Component } from "react";
-import TopBar from "./topBar";
+import React from "react";
+import TopBar from "./TopBar";
 import MapComponent from "../common/MapComponent";
-import axios from "axios";
 import Popup from "../common/Popup";
-import "./stateInfo.css";
+import "./StateInfo.css";
 import SummaryComponent from "./SummaryComponent";
+import ApiService from '../common/ApiService';
 
-class StateInfo extends Component {
+class StateInfo extends React.Component {
   state = {
-    baseUrl: "http://localhost:8080",
     mapData: null,
     showPopup: false,
     summaryData: {},
     cdSummaryData: null,
-    precinctView: null, 
+    precinctView: null,
   };
 
   componentDidMount() {
-    const { selectedState } = this.props;
-    this.fetchMapData(selectedState);
-    this.fetchSummaryData(selectedState);
+    this.fetchMapData(this.propsselectedState);
+    this.fetchSummaryData(this.propsselectedState);
   }
 
   componentDidUpdate(prevProps) {
@@ -31,21 +29,12 @@ class StateInfo extends Component {
 
   togglePopup = () => this.setState(prevState => ({ showPopup: !prevState.showPopup }));
 
-  fetchData = async (endpoint) => {
+  fetchMapData = async () => {
     try {
-      const { data } = await axios.get(`${this.state.baseUrl}/${endpoint}`);
-      return data;
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      throw error;
-    }
-  };
-
-  fetchMapData = async (state) => {
-    try {
+      const state = this.props.selectedState;
       if (state) {
         const stateId = state === "Alabama" ? 1 : 6;
-        const data = await this.fetchData(`states/${stateId}/districtmaps`);
+        const data = await ApiService.fetchMapData(stateId);  
         const mapData = {
           type: "FeatureCollection",
           features: data.map(item => ({
@@ -57,8 +46,8 @@ class StateInfo extends Component {
         this.setState({ mapData });
       } else {
         const [californiaData, alabamaData] = await Promise.all([
-          this.fetchData("states/california/map"),
-          this.fetchData("states/alabama/map"),
+          ApiService.fetchData("states/california/map"),
+          ApiService.fetchData("states/alabama/map"),
         ]);
         const mergedGeoJSON = {
           type: "FeatureCollection",
@@ -73,11 +62,12 @@ class StateInfo extends Component {
       console.error("Error fetching map data:", error);
     }
   };
-
-  fetchSummaryData = async (state) => {
+  
+  fetchSummaryData = async () => {
+    const state = this.props.selectedState;
     if (state && !this.state.summaryData[state]) {
       try {
-        const data = await this.fetchData(`states/${state}`);
+        const data = await ApiService.fetchStateSummary(state);
         this.setState(prevState => ({
           summaryData: { ...prevState.summaryData, [state]: data },
         }));
@@ -86,69 +76,59 @@ class StateInfo extends Component {
       }
     }
   };
-
-  fetchCDSummaryData = async (state) => {
+  
+  fetchCDSummaryData = async () => {
     if (this.state.cdSummaryData) return;
     try {
-      const data = await this.fetchData(`states/${state}`);
+      const data = await ApiService.fetchStateSummary(this.props.selectedState);
       this.setState({ cdSummaryData: data });
     } catch (error) {
       window.alert("Error fetching CD summary data");
     }
   };
-  
-  fetchPrecinctData = async (state) => {
-    // if (this.state.cdSummaryData) return;
-    // try {
-    //   const data = await this.fetchData(`states/${state}`);
-    //   this.setState({ cdSummaryData: data });
-    // } catch (error) {
-    //   window.alert("Error fetching CD summary data");
-    // }
-  };
 
   render() {
-    const { selectedState, selectedDistrict, selectedTrend, selectedSubTrend, setSelectedState, setSelectedDistrict, setSelectedTrend, setSelectedSubTrend } = this.props;
-    const { mapData, summaryData, showPopup, cdSummaryData } = this.state;
-
     return (
       <>
         <TopBar
-          selectedState={selectedState}
-          selectedDistrict={selectedDistrict}
-          selectedTrend={selectedTrend}
-          selectedSubTrend={selectedSubTrend}
-          setSelectedState={setSelectedState}
-          setSelectedDistrict={setSelectedDistrict}
-          setSelectedTrend={setSelectedTrend}
-          setSelectedSubTrend={setSelectedSubTrend}
+          selectedState={this.props.selectedState}
+          selectedDistrict={this.props.selectedDistrict}
+          selectedTrend={this.props.selectedTrend}
+          selectedSubTrend={this.props.selectedSubTrend}
+          setSelectedState={this.props.setSelectedState}
+          setSelectedDistrict={this.props.setSelectedDistrict}
+          setSelectedTrend={this.props.setSelectedTrend}
+          setSelectedSubTrend={this.props.setSelectedSubTrend}
         />
         <div className="content-container">
+          {/* Left Side */}
           <div className="map-container">
-            <MapComponent geoJsonData={mapData} onFeatureClick={setSelectedState} />
+            <MapComponent geoJsonData={this.state.mapData} onFeatureClick={this.props.setSelectedState} />
           </div>
-          {selectedState && (
+
+          {/* Right Side */}
+          {this.props.selectedState && (
             <div className="chart-container">
               <div className="chart-inner-container">
-                {selectedTrend && (
+                {this.props.selectedTrend && (
                   <div className="no-trend-selected">
-                    {summaryData[selectedState] && (
+                    {this.state.summaryData[this.props.selectedState] && (
                       <SummaryComponent
-                        data={selectedDistrict !== "All Districts" ? cdSummaryData : summaryData[selectedState]}
-                        selectedTrend={selectedTrend}
+                        data={this.props.selectedDistrict !== "All Districts" ? this.state.cdSummaryData : this.state.summaryData[this.props.selectedState]}
+                        selectedTrend={this.props.selectedTrend}
                       />
                     )}
                   </div>
                 )}
               </div>
               <div className="button-container">
-                {selectedState && (
+                {this.props.State && (
                   <button onClick={this.togglePopup} className="action-button">
                     Drawing Process
                   </button>
                 )}
               </div>
-              <Popup isVisible={showPopup} state={selectedState} onClose={this.togglePopup} />
+              <Popup isVisible={this.state.showPopup} state={this.props.State} onClose={this.togglePopup} />
             </div>
           )}
         </div>

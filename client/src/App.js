@@ -3,8 +3,8 @@ import Navbar from './components/common/Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
-import StateAnalysis from './components/stateAnalysis/stateAnalysis';
-import StateInfo from './components/stateInfo/stateInfo';
+import StateAnalysis from './components/StateAnalysis/StateAnalysis';
+import StateInfo from './components/StateInfo/StateInfo';
 
 const App = () => {
   const [activeSection, setActiveSection] = useState('State Insights');

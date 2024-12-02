@@ -1,6 +1,6 @@
 import React from "react";
 import FilterDropdown from "../common/FilterDropdown";
-import "./topBar.css";
+import "./TopBar.css";
 
 class TopBar extends React.Component {
   constructor(props) {
