@@ -60,15 +60,55 @@ public class UnifiedController {
         StateSummaryDTO summary = unifiedService.getStateSummary(stateName);
         return ResponseEntity.ok(summary);
     }
-    //Use Case #4-7
-    @GetMapping("/states/{stateId}/precincts/combinedheatmap")
-    public ResponseEntity<PaginatedFeatureCollectionDTO> getCombinedHeatMap(
+    // Use Case #4-7: Get precinct geometries
+    @GetMapping("/states/{stateId}/precincts/geometries")
+    public ResponseEntity<PaginatedFeatureCollectionDTO> getPrecinctGeometries(
             @PathVariable int stateId,
             @RequestParam int page,
             @RequestParam int size) {
-        PaginatedFeatureCollectionDTO paginatedResponse = unifiedService.getCombinedPrecinctGeoJSON(stateId, page, size);
+        PaginatedFeatureCollectionDTO paginatedResponse = unifiedService.getPrecinctGeometries(stateId, page, size);
         return ResponseEntity.ok(paginatedResponse);
     }
+    // Use Case #4: Get demographic heat map data
+    @GetMapping("/states/{stateId}/heatmap/demographic/{demographicGroup}")
+    public ResponseEntity<DemographicHeatMapDTO> getDemographicHeatMap(
+            @PathVariable int stateId,
+            @PathVariable String demographicGroup) {
+        DemographicHeatMapDTO response = unifiedService.getDemographicHeatMapData(stateId, demographicGroup);
+        return ResponseEntity.ok(response);
+    }
+    // Use Case #5: Get economic heat map data
+    @GetMapping("/states/{stateId}/heatmap/economic")
+    public ResponseEntity<EconomicHeatMapDTO> getEconomicHeatMap(
+            @PathVariable int stateId) {
+        EconomicHeatMapDTO response = unifiedService.getEconomicHeatMapData(stateId);
+        return ResponseEntity.ok(response);
+    }
+
+
+    // Use Case #5 (Extension): Get region type heat map data
+    @GetMapping("/states/{stateId}/heatmap/region-type")
+    public ResponseEntity<RegionTypeHeatMapDTO> getRegionTypeHeatMap(
+            @PathVariable int stateId) {
+        RegionTypeHeatMapDTO response = unifiedService.getRegionTypeHeatMapData(stateId);
+        return ResponseEntity.ok(response);
+    }
+
+   // Use Case #6: Get poverty level heat map data
+   @GetMapping("/states/{stateId}/heatmap/poverty")
+   public ResponseEntity<PovertyHeatMapDTO> getPovertyHeatMap(
+           @PathVariable int stateId) {
+       PovertyHeatMapDTO response = unifiedService.getPovertyHeatMapData(stateId);
+       return ResponseEntity.ok(response);
+   }
+
+   // Use Case #7: Get political/income level heat map data
+   @GetMapping("/states/{stateId}/heatmap/political-income")
+   public ResponseEntity<PoliticalIncomeHeatMapDTO> getPoliticalIncomeHeatMap(
+           @PathVariable int stateId) {
+       PoliticalIncomeHeatMapDTO response = unifiedService.getPoliticalIncomeHeatMapData(stateId);
+       return ResponseEntity.ok(response);
+   }
     
     
 

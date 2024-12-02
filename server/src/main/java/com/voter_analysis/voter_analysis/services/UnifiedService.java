@@ -83,66 +83,29 @@ public class UnifiedService {
         State state = stateRepository.findByPropertiesName(stateName);
         return stateMapper.toStateSummaryDTO(state);
     }
-    //Use case #4-7
-    public PaginatedFeatureCollectionDTO getCombinedPrecinctGeoJSON(int stateId, int page, int size) {
+    //Use case 4-7
+    public PaginatedFeatureCollectionDTO getPrecinctGeometries(int stateId, int page, int size) {
         System.out.println("State ID is " + stateId);
         Pageable pageable = PageRequest.of(page, size);
         Page<Precinct> precinctsPage = precinctRepository.findByPropertiesStateId(stateId, pageable);
         System.out.println("Number of precincts are " + precinctsPage.getNumberOfElements());
     
-        // List of all demographic groups
-        List<String> demographicGroups = Arrays.asList(
-            "white",
-            "black",
-            "hispanic",
-            "asian",
-            "american_indian_alaska_native",
-            "native_hawaiian_pacific_islander",
-            "multiracial",
-            "other"
-        );
-    
         List<FeatureDTO> features = precinctsPage.stream()
             .map(precinct -> {
-                // Calculate and set demographic data
-                Map<String, DemographicHeatData> demographicDataMap = demographicService.calculateDemographicData(precinct, demographicGroups);
+                // Map to FeatureDTO with only geometry and minimal properties
+                Map<String, Object> properties = new HashMap<>();
+                properties.put("stateId", precinct.getProperties().getStateId());
+                properties.put("precinctKey", precinct.getProperties().getSrPrecKey());
     
-                // Calculate and set economic data
-                EconomicHeatData economicData = economicService.calculateEconomicData(precinct);
-    
-                // Calculate and set region type data
-                RegionTypeHeatData regionTypeData = regionTypeService.calculateRegionTypeData(precinct);
-    
-                // Calculate and set poverty data
-                PovertyHeatData povertyData = povertyService.calculatePovertyData(precinct);
-    
-                // Calculate and set political income data
-                PoliticalIncomeHeatData politicalIncomeData = politicalIncomeService.calculatePoliticalIncomeData(precinct);
-    
-                // Map to FeatureDTO
-                FeatureDTO feature = precinctMapper.toFeatureDTO(
-                    precinct,
-                    demographicDataMap,
-                    economicData,
-                    regionTypeData,
-                    povertyData,
-                    politicalIncomeData
-                );
-    
+                FeatureDTO feature = new FeatureDTO();
+                feature.setGeometry(precinctMapper.toGeometryDTO(precinct.getGeometry()));
+                feature.setProperties(properties);
                 return feature;
             })
             .collect(Collectors.toList());
     
         FeatureCollectionDTO featureCollection = new FeatureCollectionDTO();
         featureCollection.setFeatures(features);
-    
-        // Legends
-        Map<String, Map<String, String>> legends = new HashMap<>();
-        legends.put("demographicLegend", demographicService.getLegend());
-        legends.put("economicLegend", economicService.getLegend());
-        legends.put("regionTypeLegend", regionTypeService.getLegend());
-        legends.put("povertyLegend", povertyService.getLegend());
-        legends.put("politicalIncomeLegend", politicalIncomeService.getLegend());
     
         // Create PaginatedFeatureCollectionDTO
         PaginatedFeatureCollectionDTO paginatedResponse = new PaginatedFeatureCollectionDTO();
@@ -151,10 +114,135 @@ public class UnifiedService {
         paginatedResponse.setTotalElements(precinctsPage.getTotalElements());
         paginatedResponse.setTotalPages(precinctsPage.getTotalPages());
         paginatedResponse.setFeatureCollection(featureCollection);
-        paginatedResponse.setLegends(legends);
     
         return paginatedResponse;
     }
+    //Use Case #4
+    public DemographicHeatMapDTO getDemographicHeatMapData(int stateId, String demographicGroup) {
+        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+    
+        List<DemographicHeatDataDTO> dataList = precincts.stream()
+            .map(precinct -> {
+                DemographicHeatDataDTO data = demographicService.calculateDemographicData(
+                    precinct,
+                    Arrays.asList(demographicGroup)
+                ).get(demographicGroup);
+    
+                DemographicHeatDataDTO dto = new DemographicHeatDataDTO();
+                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
+                dto.setPercentage(data.getPercentage());
+                dto.setBin(data.getBin());
+                dto.setColor(data.getColor());
+                return dto;
+            })
+            .collect(Collectors.toList());
+    
+        Map<String, String> legend = demographicService.getLegend();
+    
+        DemographicHeatMapDTO response = new DemographicHeatMapDTO();
+        response.setData(dataList);
+        response.setLegend(legend);
+        return response;
+    }
+    //Use case 5
+    public EconomicHeatMapDTO getEconomicHeatMapData(int stateId) {
+        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+    
+        List<EconomicHeatDataDTO> dataList = precincts.stream()
+            .map(precinct -> {
+                EconomicHeatDataDTO data = economicService.calculateEconomicData(precinct);
+    
+                EconomicHeatDataDTO dto = new EconomicHeatDataDTO();
+                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
+                dto.setMedianIncome(data.getMedianIncome());
+                dto.setBin(data.getBin());
+                dto.setColor(data.getColor());
+                return dto;
+            })
+            .collect(Collectors.toList());
+    
+        Map<String, String> legend = economicService.getLegend();
+    
+        EconomicHeatMapDTO response = new EconomicHeatMapDTO();
+        response.setData(dataList);
+        response.setLegend(legend);
+        return response;
+    }
+    //Also use case 5
+    public RegionTypeHeatMapDTO getRegionTypeHeatMapData(int stateId) {
+        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+    
+        List<RegionTypeHeatDataDTO> dataList = precincts.stream()
+            .map(precinct -> {
+                RegionTypeHeatDataDTO data = regionTypeService.calculateRegionTypeData(precinct);
+    
+                RegionTypeHeatDataDTO dto = new RegionTypeHeatDataDTO();
+                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
+                dto.setType(data.getType());
+                dto.setColor(data.getColor());
+                return dto;
+            })
+            .collect(Collectors.toList());
+    
+        Map<String, String> legend = regionTypeService.getLegend();
+    
+        RegionTypeHeatMapDTO response = new RegionTypeHeatMapDTO();
+        response.setData(dataList);
+        response.setLegend(legend);
+        return response;
+    }
+    //Use case 6
+    public PovertyHeatMapDTO getPovertyHeatMapData(int stateId) {
+        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+    
+        List<PovertyHeatDataDTO> dataList = precincts.stream()
+            .map(precinct -> {
+                PovertyHeatDataDTO data = povertyService.calculatePovertyData(precinct);
+    
+                PovertyHeatDataDTO dto = new PovertyHeatDataDTO();
+                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
+                dto.setPovertyPercentage(data.getPovertyPercentage());
+                dto.setBin(data.getBin());
+                dto.setColor(data.getColor());
+                return dto;
+            })
+            .collect(Collectors.toList());
+    
+        Map<String, String> legend = povertyService.getLegend();
+    
+        PovertyHeatMapDTO response = new PovertyHeatMapDTO();
+        response.setData(dataList);
+        response.setLegend(legend);
+        return response;
+    }
+    public PoliticalIncomeHeatMapDTO getPoliticalIncomeHeatMapData(int stateId) {
+        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+    
+        List<PoliticalIncomeHeatDataDTO> dataList = precincts.stream()
+            .map(precinct -> {
+                PoliticalIncomeHeatDataDTO data = politicalIncomeService.calculatePoliticalIncomeData(precinct);
+    
+                PoliticalIncomeHeatDataDTO dto = new PoliticalIncomeHeatDataDTO();
+                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
+                dto.setMedianIncome(data.getMedianIncome());
+                dto.setBin(data.getBin());
+                dto.setColor(data.getColor());
+                dto.setDominantParty(data.getDominantParty());
+                return dto;
+            })
+            .collect(Collectors.toList());
+    
+        Map<String, String> legend = politicalIncomeService.getLegend();
+    
+        PoliticalIncomeHeatMapDTO response = new PoliticalIncomeHeatMapDTO();
+        response.setData(dataList);
+        response.setLegend(legend);
+        return response;
+    }
+    
+    
+    
+    
     
     //Use Case #8-9
     public FeatureCollectionDTO getDistrictTableMap(int stateId) {

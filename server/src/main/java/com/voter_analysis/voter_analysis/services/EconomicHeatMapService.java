@@ -1,6 +1,6 @@
 package com.voter_analysis.voter_analysis.services;
 import org.springframework.stereotype.Service;
-import com.voter_analysis.voter_analysis.dtos.EconomicHeatData;
+import com.voter_analysis.voter_analysis.dtos.EconomicHeatDataDTO;
 import com.voter_analysis.voter_analysis.models.Precinct;
 import com.voter_analysis.voter_analysis.utils.BinUtils;
 import com.voter_analysis.voter_analysis.utils.LegendUtils;
@@ -15,13 +15,13 @@ public class EconomicHeatMapService {
             "#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6",
             "#4292c6", "#2171b5", "#08519c", "#08306b");
 
-    public EconomicHeatData calculateEconomicData(Precinct precinct) {
+    public EconomicHeatDataDTO calculateEconomicData(Precinct precinct) {
         double medianIncome = precinct.getProperties().getMednInc21(); // Assuming 'MednInc21' field exists
         int binIndex = BinUtils.determineBinIndex(medianIncome, BIN_EDGES);
         String color = COLORS.get(binIndex);
         String binLabel = BinUtils.createBinLabel(binIndex, BIN_EDGES, "$%,.0f");
 
-        EconomicHeatData data = new EconomicHeatData();
+        EconomicHeatDataDTO data = new EconomicHeatDataDTO();
         data.setMedianIncome(medianIncome);
         data.setBin(binLabel);
         data.setColor(color);

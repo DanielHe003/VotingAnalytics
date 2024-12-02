@@ -1,6 +1,6 @@
 package com.voter_analysis.voter_analysis.services;
 import org.springframework.stereotype.Service;
-import com.voter_analysis.voter_analysis.dtos.DemographicHeatData;
+import com.voter_analysis.voter_analysis.dtos.DemographicHeatDataDTO;
 import com.voter_analysis.voter_analysis.models.Precinct;
 import com.voter_analysis.voter_analysis.utils.BinUtils;
 import com.voter_analysis.voter_analysis.utils.LegendUtils;
@@ -14,15 +14,15 @@ public class DemographicHeatMapService {
         "#fff5eb", "#fee6ce", "#fdd0a2", "#fdae6b", "#fd8d3c",
         "#f16913", "#d94801", "#a63603", "#7f2704", "#5a1f03");
 
-    public Map<String, DemographicHeatData> calculateDemographicData(Precinct precinct, List<String> demographicGroups) {
-        Map<String, DemographicHeatData> demographicDataMap = new HashMap<>();
+    public Map<String, DemographicHeatDataDTO> calculateDemographicData(Precinct precinct, List<String> demographicGroups) {
+        Map<String, DemographicHeatDataDTO> demographicDataMap = new HashMap<>();
         for (String demographicGroup : demographicGroups) {
             double percentage = calculateDemographicPercentage(precinct, demographicGroup);
             int binIndex = BinUtils.determineBinIndex(percentage, BIN_EDGES);
             String color = COLORS.get(binIndex);
             String binLabel = BinUtils.createBinLabel(binIndex, BIN_EDGES, "%,.0f%%");
 
-            DemographicHeatData data = new DemographicHeatData();
+            DemographicHeatDataDTO data = new DemographicHeatDataDTO();
             data.setPercentage(percentage);
             data.setBin(binLabel);
             data.setColor(color);
