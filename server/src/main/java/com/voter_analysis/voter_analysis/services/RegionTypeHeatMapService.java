@@ -1,6 +1,6 @@
 package com.voter_analysis.voter_analysis.services;
 import org.springframework.stereotype.Service;
-import com.voter_analysis.voter_analysis.dtos.RegionTypeHeatData;
+import com.voter_analysis.voter_analysis.dtos.RegionTypeHeatDataDTO;
 import com.voter_analysis.voter_analysis.models.Precinct;
 import java.util.*;
 
@@ -14,11 +14,11 @@ public class RegionTypeHeatMapService {
             "Rural", "#2ca02c"
     );
 
-    public RegionTypeHeatData calculateRegionTypeData(Precinct precinct) {
+    public RegionTypeHeatDataDTO calculateRegionTypeData(Precinct precinct) {
         String regionType = precinct.getProperties().getCategory();
         String color = REGION_COLORS.getOrDefault(regionType, "#cccccc"); // Default color
 
-        RegionTypeHeatData data = new RegionTypeHeatData();
+        RegionTypeHeatDataDTO data = new RegionTypeHeatDataDTO();
         data.setType(regionType);
         data.setColor(color);
 

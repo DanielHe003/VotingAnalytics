@@ -1,6 +1,6 @@
 package com.voter_analysis.voter_analysis.services;
 import org.springframework.stereotype.Service;
-import com.voter_analysis.voter_analysis.dtos.PoliticalIncomeHeatData;
+import com.voter_analysis.voter_analysis.dtos.PoliticalIncomeHeatDataDTO;
 import com.voter_analysis.voter_analysis.models.Precinct;
 import com.voter_analysis.voter_analysis.utils.BinUtils;
 import com.voter_analysis.voter_analysis.utils.LegendUtils;
@@ -24,7 +24,7 @@ public class PoliticalIncomeHeatMapService {
         "#de1416", "#ad1012", "#7d0c0d", "#4c0809"
     );
 
-    public PoliticalIncomeHeatData calculatePoliticalIncomeData(Precinct precinct) {
+    public PoliticalIncomeHeatDataDTO calculatePoliticalIncomeData(Precinct precinct) {
         double medianIncome = precinct.getProperties().getMednInc21();
         int binIndex = BinUtils.determineBinIndex(medianIncome, BIN_EDGES);
         String binLabel = BinUtils.createBinLabel(binIndex, BIN_EDGES, "$%,.0f");
@@ -46,7 +46,7 @@ public class PoliticalIncomeHeatMapService {
             color = "#cccccc"; // Neutral color
         }
 
-        PoliticalIncomeHeatData data = new PoliticalIncomeHeatData();
+        PoliticalIncomeHeatDataDTO data = new PoliticalIncomeHeatDataDTO();
         data.setMedianIncome(medianIncome);
         data.setBin(binLabel);
         data.setColor(color);

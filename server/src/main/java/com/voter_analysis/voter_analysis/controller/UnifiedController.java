@@ -43,14 +43,14 @@ public class UnifiedController {
 
     //Retrieve state geometry
     @GetMapping("/states/{stateName}/map")
-    public ResponseEntity<GeometryDTO> getStateMap(@PathVariable String stateName) {
-        GeometryDTO mapData = unifiedService.getStateGeometry(stateName);
+    public ResponseEntity<FeatureDTO> getStateMap(@PathVariable String stateName) {
+        FeatureDTO mapData = unifiedService.getStateGeometry(stateName);
         return ResponseEntity.ok(mapData);
     }
 
     //Use Case #2 
     @GetMapping("/states/{stateId}/districtmaps")
-    public ResponseEntity<List<CongressionalDistrictMapDTO>> getDistrictPlan(@PathVariable int stateId) {
+    public ResponseEntity<FeatureCollectionDTO> getDistrictPlan(@PathVariable int stateId) {
         System.out.println("State id is "+ stateId);
         return ResponseEntity.ok(unifiedService.getCongressionalDistrictsMaps(stateId));
     }
@@ -60,26 +60,100 @@ public class UnifiedController {
         StateSummaryDTO summary = unifiedService.getStateSummary(stateName);
         return ResponseEntity.ok(summary);
     }
-    //Use Case #4-7
-    @GetMapping("/states/{stateId}/precincts/combinedheatmap")
-    public ResponseEntity<PaginatedResponse<PrecinctHeatMapDTO>> getCombinedHeatMap(
+    // Use Case #4-7: Get precinct geometries
+    @GetMapping("/states/{stateId}/precincts/geometries")
+    public ResponseEntity<PaginatedFeatureCollectionDTO> getPrecinctGeometries(
             @PathVariable int stateId,
             @RequestParam int page,
             @RequestParam int size) {
-        PaginatedResponse<PrecinctHeatMapDTO> response = unifiedService.getCombinedPrecinctHeatMap(stateId, page, size);
+        PaginatedFeatureCollectionDTO paginatedResponse = unifiedService.getPrecinctGeometries(stateId, page, size);
+        return ResponseEntity.ok(paginatedResponse);
+    }
+    // Use Case #4: Get demographic heat map data
+    @GetMapping("/states/{stateId}/heatmap/demographic/{demographicGroup}")
+    public ResponseEntity<DemographicHeatMapDTO> getDemographicHeatMap(
+            @PathVariable int stateId,
+            @PathVariable String demographicGroup) {
+        DemographicHeatMapDTO response = unifiedService.getDemographicHeatMapData(stateId, demographicGroup);
         return ResponseEntity.ok(response);
     }
+    // Use Case #5: Get economic heat map data
+    @GetMapping("/states/{stateId}/heatmap/economic")
+    public ResponseEntity<EconomicHeatMapDTO> getEconomicHeatMap(
+            @PathVariable int stateId) {
+        EconomicHeatMapDTO response = unifiedService.getEconomicHeatMapData(stateId);
+        return ResponseEntity.ok(response);
+    }
+
+
+    // Use Case #5 (Extension): Get region type heat map data
+    @GetMapping("/states/{stateId}/heatmap/region-type")
+    public ResponseEntity<RegionTypeHeatMapDTO> getRegionTypeHeatMap(
+            @PathVariable int stateId) {
+        RegionTypeHeatMapDTO response = unifiedService.getRegionTypeHeatMapData(stateId);
+        return ResponseEntity.ok(response);
+    }
+
+   // Use Case #6: Get poverty level heat map data
+   @GetMapping("/states/{stateId}/heatmap/poverty")
+   public ResponseEntity<PovertyHeatMapDTO> getPovertyHeatMap(
+           @PathVariable int stateId) {
+       PovertyHeatMapDTO response = unifiedService.getPovertyHeatMapData(stateId);
+       return ResponseEntity.ok(response);
+   }
+
+   // Use Case #7: Get political/income level heat map data
+   @GetMapping("/states/{stateId}/heatmap/political-income")
+   public ResponseEntity<PoliticalIncomeHeatMapDTO> getPoliticalIncomeHeatMap(
+           @PathVariable int stateId) {
+       PoliticalIncomeHeatMapDTO response = unifiedService.getPoliticalIncomeHeatMapData(stateId);
+       return ResponseEntity.ok(response);
+   }
+    
     
 
-    //Use case #4
-    // @GetMapping("/states/{stateId}/precincts/demographicHeatMap/{demographicGroup}")
-    // public ResponseEntity<PaginatedResponse<PrecinctDemographicHeatMapDTO>> getDemographicHeatMap(
-    //     @PathVariable int stateId, 
-    //     @PathVariable String demographicGroup,
-    //     @RequestParam int page, @RequestParam int size) { 
-    //     PaginatedResponse<PrecinctDemographicHeatMapDTO> response = unifiedService.getPrecinctDemographicHeatMap(stateId, demographicGroup, page, size);
-    //     return ResponseEntity.ok(response);
-    // }
-    
+    //Use Case #8-9
+    @GetMapping("/states/{stateId}/districtTableMaps")
+    public ResponseEntity<FeatureCollectionDTO> getDistrictTableMap(
+            @PathVariable int stateId
+            ) {
+        FeatureCollectionDTO district = unifiedService.getDistrictTableMap(stateId);
+        return ResponseEntity.ok(district);
+    }
+    //Use case #12
+    @GetMapping("/states/{stateId}/gingles/race/{demographicGroup}")
+    public ResponseEntity<List<RaceGinglesDTO>> getRaceGinglesData(
+        @PathVariable int stateId,
+        @PathVariable String demographicGroup){
+            List<RaceGinglesDTO> raceGinglesData = unifiedService.getRaceGinglesData(stateId, demographicGroup);
+            return ResponseEntity.ok(raceGinglesData);
+    }
+    //Use case #13
+    @GetMapping("/states/{stateId}/gingles/income")
+    public ResponseEntity<List<IncomeGinglesDTO>> getIncomeGinglesData(
+            @PathVariable int stateId,
+            @RequestParam(required = false) String regionType) {
+        List<IncomeGinglesDTO> incomeGinglesData = unifiedService.getIncomeGinglesData(stateId, regionType);
+        return ResponseEntity.ok(incomeGinglesData);
+    }
+
+    //Use Case #14
+    @GetMapping("/states/{stateId}/gingles/income-race/{racialGroup}")
+    public ResponseEntity<List<IncomeRaceGinglesDTO>> getIncomeRaceGinglesData(
+            @PathVariable int stateId,
+            @PathVariable String racialGroup) {
+        List<IncomeRaceGinglesDTO> incomeRaceGinglesData = unifiedService.getIncomeRaceGinglesData(stateId, racialGroup);
+        return ResponseEntity.ok(incomeRaceGinglesData);
+    }
+
+    //Use case #15
+    @GetMapping("/states/{stateId}/gingles/table")
+    public ResponseEntity<List<GinglesTableDTO>> getGinglesTableData(@PathVariable int stateId) {
+        List<GinglesTableDTO> tableData = unifiedService.getGinglesTableData(stateId);
+        return ResponseEntity.ok(tableData);
+    }
+
+
+
 
 }

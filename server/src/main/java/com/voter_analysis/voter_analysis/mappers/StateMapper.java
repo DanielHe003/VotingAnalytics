@@ -71,5 +71,20 @@ public interface StateMapper {
         incomeDistribution.put("200K+", properties.getK200KMor21());
         return incomeDistribution;
     }
+    default FeatureDTO toFeatureDTO(State state) {
+        if (state == null) {
+            return null;
+        }
 
+        FeatureDTO feature = new FeatureDTO();
+        feature.setGeometry(toGeometryDTO(state.getGeometry()));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("name", state.getProperties().getName());
+        // Add other properties as needed
+
+        feature.setProperties(properties);
+        return feature;
+    }
+    GeometryDTO toGeometryDTO(State.Geometry geometry);
 }

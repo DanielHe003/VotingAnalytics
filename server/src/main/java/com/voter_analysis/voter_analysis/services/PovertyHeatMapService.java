@@ -1,6 +1,6 @@
 package com.voter_analysis.voter_analysis.services;
 import org.springframework.stereotype.Service;
-import com.voter_analysis.voter_analysis.dtos.PovertyHeatData;
+import com.voter_analysis.voter_analysis.dtos.PovertyHeatDataDTO;
 import com.voter_analysis.voter_analysis.models.Precinct;
 import com.voter_analysis.voter_analysis.utils.BinUtils;
 import com.voter_analysis.voter_analysis.utils.LegendUtils;
@@ -16,13 +16,13 @@ public class PovertyHeatMapService {
         "#f7f4f9", "#e7e1ef", "#d4b9da", "#c994c7", "#df65b0",
         "#e7298a", "#ce1256", "#980043", "#67001f", "#400012");
 
-    public PovertyHeatData calculatePovertyData(Precinct precinct) {
+    public PovertyHeatDataDTO calculatePovertyData(Precinct precinct) {
         double povertyPercentage = precinct.getProperties().getPovertyPct();
         int binIndex = BinUtils.determineBinIndex(povertyPercentage, BIN_EDGES);
         String color = COLORS.get(binIndex);
         String binLabel = BinUtils.createBinLabel(binIndex, BIN_EDGES, "%.0f%%");
 
-        PovertyHeatData data = new PovertyHeatData();
+        PovertyHeatDataDTO data = new PovertyHeatDataDTO();
         data.setPovertyPercentage(povertyPercentage);
         data.setBin(binLabel);
         data.setColor(color);
