@@ -1,24 +1,3 @@
-// Example Usage
-// const dataSets = [
-//   {
-//     data: generateData(50, 0, 100, 40, 70),  
-//     label: "Democratic Votes",
-//     color: "blue",
-//     regressionType: "polynomial",  
-//   },.....
-// ];
-
-//   <div style={{ padding: "20px", textAlign: "center" }}>
-//     <h2>Vote Percentage Analysis</h2>
-//     <p>Scatter Plot with Regression Lines for Different Voting Groups</p>
-//     <ChartScatterComponent
-//       height={500}
-//       width={1000}
-//       dataSets={dataSets}
-//       populationStat="Registered"
-//     />
-//   </div>
-
 import React, { Component } from "react";
 import { Chart } from "chart.js/auto";
 import "chartjs-plugin-trendline";
@@ -44,58 +23,73 @@ class ChartScatterComponent extends Component {
     }
   }
 
-  generateRegressionData = (data, regressionType, color) => {
-    const regressionMethods = {
-      linear: regression.linear,
-      polynomial: regression.polynomial,
-      exponential: regression.exponential,
-      logarithmic: regression.logarithmic,
-      power: regression.power,
-    };
-  
-    const regressionFunc = regressionMethods[regressionType] || regression.polynomial;
-    const result = regressionFunc(data.map((d) => [d.x, d.y]), { order: 2 });
-  
+  generateRegressionData = (data, color) => {
+
+    const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order: 2 });
     const fitData = data.map((d) => ({
       x: d.x,
-      y: result.predict(d.x)[1],
+      y: polynomial.predict(d.x)[1],
     }));
-  
+
     return {
       label: "",
       data: fitData,
       borderColor: color,
-      backgroundColor: `${color}AA`,
+      backgroundColor: `${color}`,
       borderWidth: 3,
       pointRadius: 0,
       showLine: true,
     };
   };
-  
+
+  generateDataForRegression = (data) => {
+    if (!data || !Array.isArray(data)) {
+      return { democraticData: [], republicanData: [] };
+    }
+
+    const democraticData = data.map((d) => ({
+      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+      y: d.deomcracticShareYAxis || d.democraticVoteShareYaxis || 0,
+    }));
+
+    const republicanData = data.map((d) => ({
+      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+      y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0,
+    }));
+
+    return {
+      democraticData,
+      republicanData,
+    };
+  };
+
   renderChart = () => {
     const chartCanvas = document.getElementById("myChart");
+    const { democraticData, republicanData } = this.generateDataForRegression(this.props.data);
     const datasets = [];
 
-    this.props.dataSets.forEach((dataSet) => {
-      const { data, label, color, regressionType } = dataSet;
-
-      datasets.push({
-        label,
-        data: data.map((d) => ({ x: d.x, y: d.y })),
-        backgroundColor: `${color}`,
-        borderColor: color,
-        pointRadius: 1,
-        showLine: false,
-      });
-
-      datasets.push(this.generateRegressionData(data, regressionType, color));
+    datasets.push({
+      label: "Democratic Votes",
+      data: democraticData,
+      backgroundColor: "blue",
+      borderColor: "blue",
+      pointRadius: 0.5,
+      showLine: false,
     });
+    datasets.push({
+      label: "Republican Votes",
+      data: republicanData,
+      backgroundColor: "red",
+      borderColor: "red",
+      pointRadius: 0.5,
+      showLine: false,
+    });
+    datasets.push(this.generateRegressionData(democraticData, "blue"));
+    datasets.push(this.generateRegressionData(republicanData, "polynomial", "red"));
 
     this.chartInstance = new Chart(chartCanvas, {
       type: "scatter",
-      data: {
-        datasets,
-      },
+      data: {datasets},
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -113,26 +107,22 @@ class ChartScatterComponent extends Component {
           x: {
             title: {
               display: true,
-              text: `Percentage (%) of ${this.props.populationStat} Voters`,
+              text: this.props.xAxisTitle,
               font: {
                 size: 16,
                 weight: "bold",
               },
             },
-            min: 0,
-            max: 100,
           },
           y: {
             title: {
               display: true,
-              text: "Vote Percentage (%)",
+              text: this.props.yAxisTitle,
               font: {
                 size: 16,
                 weight: "bold",
               },
             },
-            min: 0,
-            max: 100,
           },
         },
         layout: {
@@ -145,7 +135,12 @@ class ChartScatterComponent extends Component {
   render() {
     return (
       <div style={{ width: `${this.props.width}px`, height: `${this.props.height}px` }}>
-        <canvas id="myChart" style={{ width: "1200px", height: "520px" }}></canvas>
+        <canvas 
+          id="myChart" 
+          width={this.props.width - 100} 
+          height={this.props.height - 100} 
+          style={{ border: '1px solid #ccc' }} 
+        ></canvas>
       </div>
     );
   }
