@@ -41,44 +41,6 @@ public interface PrecinctMapper {
     }
     GeometryDTO toGeometryDTO(Precinct.Geometry geometry);
 
-    default IncomeGinglesDTO toIncomeGinglesDTO(Precinct precinct) {
-        IncomeGinglesDTO dto = new IncomeGinglesDTO();
-        dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
-        dto.setMedianIncomeXaxis(precinct.getProperties().getMednInc21());
-        dto.setPartyVoteShareYaxis(precinct.getProperties().getPctDem());
-        dto.setDominantPartyColor(
-            precinct.getProperties().getPctDem() > precinct.getProperties().getPctRep() ? "Blue" : "Red"
-        );
-        dto.setRegionType(precinct.getProperties().getCategory());
-        return dto;
-    }
-    default RaceGinglesDTO toRaceGinglesDTO(Precinct precinct, double racialPercentage) {
-        RaceGinglesDTO dto = new RaceGinglesDTO();
-        dto.setPrecinctKey(precinct.getProperties().getSrPrecKey()); // For identification
-        dto.setRaceXAxis(racialPercentage);
-        dto.setPartyVoteShareYAxis(precinct.getProperties().getPctDem());
-        dto.setDominantPartyColor(
-            precinct.getProperties().getPctDem() > precinct.getProperties().getPctRep() ? "Blue" : "Red"
-        );
-        return dto;
-    }
-    default IncomeRaceGinglesDTO toIncomeRaceGinglesDTO(Precinct precinct, double racialPercentage, double minIncome, double maxIncome, double minRacePct, double maxRacePct) {
-        IncomeRaceGinglesDTO dto = new IncomeRaceGinglesDTO();
-        
-        // Normalize income and race percentage
-        double normalizedIncome = (precinct.getProperties().getMednInc21() - minIncome) / (maxIncome - minIncome);
-        double normalizedRacePct = (racialPercentage - minRacePct) / (maxRacePct - minRacePct);
-        
-        // Combine with equal weights
-        double compositeIndex = (normalizedIncome + normalizedRacePct) / 2.0;
-        
-        dto.setCompositeIndexXaxis(compositeIndex); // X-axis: Composite Index
-        dto.setPartyVoteShareYaxis(precinct.getProperties().getPctDem()); // Y-axis: Democratic Party Vote Share
-        dto.setDominantPartyColor(
-            precinct.getProperties().getPctDem() > precinct.getProperties().getPctRep() ? "Blue" : "Red"
-        );
-        return dto;
-    }
 
     @Mapping(source = "properties.srPrecKey", target = "precinctKey")
     @Mapping(source = "properties.pctDem", target = "pctDem")

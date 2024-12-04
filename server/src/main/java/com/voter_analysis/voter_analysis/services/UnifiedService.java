@@ -30,6 +30,7 @@ public class UnifiedService {
     private final RegionTypeHeatMapService regionTypeService;
     private final PovertyHeatMapService povertyService;
     private final PoliticalIncomeHeatMapService politicalIncomeService;
+    private final GinglesAnalysisRepository ginglesAnalysisRepository;
 
     public UnifiedService(
             CongressionalDistrictRepository congressionalDistrictRepository,
@@ -42,7 +43,7 @@ public class UnifiedService {
             EconomicHeatMapService economicService,
             RegionTypeHeatMapService regionTypeService,
             PovertyHeatMapService povertyService,
-            PoliticalIncomeHeatMapService politicalIncomeService) {
+            PoliticalIncomeHeatMapService politicalIncomeService, GinglesAnalysisRepository ginglesAnalysisRepository) {
         this.congressionalDistrictRepository = congressionalDistrictRepository;
         this.precinctRepository = precinctRepository;
         this.stateRepository = stateRepository;
@@ -54,6 +55,7 @@ public class UnifiedService {
         this.regionTypeService = regionTypeService;
         this.povertyService = povertyService;
         this.politicalIncomeService = politicalIncomeService;
+        this.ginglesAnalysisRepository = ginglesAnalysisRepository;
     }
     //Use case #1
     public List<StateListItem> getStateList() {
@@ -215,6 +217,7 @@ public class UnifiedService {
         response.setLegend(legend);
         return response;
     }
+    //Use case 7
     public PoliticalIncomeHeatMapDTO getPoliticalIncomeHeatMapData(int stateId) {
         List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
     
@@ -266,99 +269,105 @@ public class UnifiedService {
     
         return featureCollection;
     }
+
     //Use case #12
     public List<RaceGinglesDTO> getRaceGinglesData(int stateId, String racialGroup) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
-        return precincts.stream()
-                .map(precinct -> precinctMapper.toRaceGinglesDTO(
-                        precinct,
-                        getRacialPercentage(precinct, racialGroup)))
-                .collect(Collectors.toList());
+        // Fetch GinglesAnalysis entries for the specified state and "regular" analysis type
+        List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "regular");
+        String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
+        if (databaseField == null) {
+            throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
+        }
+    
+        
+        long relevantPrecincts = analyses.stream()
+        .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
+        .count();
+        System.out.println("The number of precincts for the racial group " + racialGroup + " are: " + relevantPrecincts);
+        return analyses.stream()
+            .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
+            .map(analysis -> {
+                double pctRace = Double.parseDouble((String) analysis.getData().get("PCT_RACE"));
+                double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
+                double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
+                String dominantParty = pctDem > pctRep ? "Blue" : "Red";
+    
+                RaceGinglesDTO dto = new RaceGinglesDTO();
+                dto.setPrecinctKey(analysis.getPrecinctKey());
+                dto.setRaceXAxis(pctRace);
+                dto.setDeomcracticShareYAxis(pctDem);
+                dto.setRepublicanShareYaxis(pctRep);
+                dto.setDominantPartyColor(dominantParty);
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
+    
     
     //Use case #13
     public List<IncomeGinglesDTO> getIncomeGinglesData(int stateId, String regionType) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        // Fetch GinglesAnalysis entries for the specified state and "income" analysis type
+        List<GinglesAnalysis> analyses = regionType == null
+            ? ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income")
+            : ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
         
-        // Filter by region type if provided
-        if (regionType != null) {
-            precincts = precincts.stream()
-                .filter(p -> regionType.equalsIgnoreCase(p.getProperties().getCategory()))
-                .collect(Collectors.toList());
-        }
+        System.out.println("Number of precincts are "+ analyses.size());
+        // Map to IncomeGinglesDTO
+        return analyses.stream()
+            .map(analysis -> {
+                double medianIncome = Double.parseDouble((String) analysis.getData().get("MEDN_INC"));
+                double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
+                double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
+                String dominantParty = pctDem > pctRep ? "Blue" : "Red";
     
-        // Warn if median income is 0 and skip those entries
-        precincts.stream()
-            .filter(p -> p.getProperties().getMednInc21() == 0)
-            .forEach(p -> System.out.println("Warning: Precinct " + p.getProperties().getSrPrecKey() + " has income 0"));
-    
-        // Map to DTO
-        return precincts.stream()
-            .filter(p -> p.getProperties().getMednInc21() > 0) // Skip invalid income data
-            .map(precinctMapper::toIncomeGinglesDTO)
+                IncomeGinglesDTO dto = new IncomeGinglesDTO();
+                dto.setPrecinctKey(analysis.getPrecinctKey());
+                dto.setMedianIncomeXaxis(medianIncome);
+                dto.setDemocraticVoteShareYaxis(pctDem);
+                dto.setRepublicanVoteShareYaxis(pctRep);
+                dto.setDominantPartyColor(dominantParty);
+                dto.setRegionType(analysis.getRegionType());
+                return dto;
+            })
             .collect(Collectors.toList());
     }
-    
-    
-    
     //Use case #14
     public List<IncomeRaceGinglesDTO> getIncomeRaceGinglesData(int stateId, String racialGroup) {
-        // Fetch precincts for the state
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        // Fetch GinglesAnalysis entries for the specified state and "income_race" analysis type
+        List<GinglesAnalysis> incomeRaceAnalyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income_race");
+        String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
+        if (databaseField == null) {
+            throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
+        }
         
-        // Calculate min and max values for normalization
-        double minIncome = precincts.stream()
-            .mapToDouble(p -> p.getProperties().getMednInc21())
-            .min().orElse(0);
-        double maxIncome = precincts.stream()
-            .mapToDouble(p -> p.getProperties().getMednInc21())
-            .max().orElse(1);
-        double minRacePct = precincts.stream()
-            .mapToDouble(p -> getRacialPercentage(p, racialGroup))
-            .min().orElse(0);
-        double maxRacePct = precincts.stream()
-            .mapToDouble(p -> getRacialPercentage(p, racialGroup))
-            .max().orElse(1);
         
-        // Map precincts to DTOs
-        return precincts.stream()
-            .map(p -> precinctMapper.toIncomeRaceGinglesDTO(
-                p,
-                getRacialPercentage(p, racialGroup),
-                minIncome,
-                maxIncome,
-                minRacePct,
-                maxRacePct
-            ))
+        long relevantPrecincts = incomeRaceAnalyses.stream()
+        .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
+        .count();
+        System.out.println("The number of precincts for the racial group " + racialGroup + " are: " + relevantPrecincts);
+        // Filter data by the specified racial group
+        return incomeRaceAnalyses.stream()
+            .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
+            .map(analysis -> {
+                double pctRaceIncome = Double.parseDouble((String) analysis.getData().get("PCT_RACE_INC"));
+                double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
+                double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
+    
+                // Determine the dominant party based on vote percentages
+                String dominantParty = pctDem > pctRep ? "Blue" : "Red";
+    
+                // Map to IncomeRaceGinglesDTO
+                IncomeRaceGinglesDTO dto = new IncomeRaceGinglesDTO();
+                dto.setPrecinctKey(analysis.getPrecinctKey());
+                dto.setCompositeIndexXaxis(pctRaceIncome); 
+                dto.setDemocraticVoteShareYaxis(pctDem);
+                dto.setRepublicanVoteShareYaxis(pctRep); 
+                dto.setDominantPartyColor(dominantParty); 
+                return dto;
+            })
             .collect(Collectors.toList());
     }
     
-    // Helper method to get racial percentage
-    private double getRacialPercentage(Precinct precinct, String racialGroup) {
-        Map<String, Double> racialPercentages = calculateRacialPercentages(precinct);
-        return racialPercentages.getOrDefault(racialGroup.toLowerCase(), 0.0);
-    }
-    private Map<String, Double> calculateRacialPercentages(Precinct precinct) {
-        Precinct.Properties props = precinct.getProperties();
-        double totalPopulation = props.getTotPop();
-
-        // Avoid division by zero
-        if (totalPopulation == 0) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, Double> racialPercentages = new HashMap<>();
-        racialPercentages.put("white", (props.getPopWht() / totalPopulation) * 100.0);
-        racialPercentages.put("black", (props.getPopBlk() / totalPopulation) * 100.0);
-        racialPercentages.put("hispanic", (props.getPopHisLat() / totalPopulation) * 100.0);
-        racialPercentages.put("asian", (props.getPopAsn() / totalPopulation) * 100.0);
-        racialPercentages.put("american_indian_alaska_native", (props.getPopAindalk() / totalPopulation) * 100.0);
-        racialPercentages.put("native_hawaiian_pacific_islander", (props.getPopHipi() / totalPopulation) * 100.0);
-        racialPercentages.put("multiracial", (props.getPopTwoMor() / totalPopulation) * 100.0);
-        racialPercentages.put("other", (props.getPopOth() / totalPopulation) * 100.0);
-
-        return racialPercentages;
-    }
     //Use case #15
     public List<GinglesTableDTO> getGinglesTableData(int stateId) {
         List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
