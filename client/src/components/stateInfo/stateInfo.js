@@ -65,7 +65,6 @@ class StateInfo extends React.Component {
   }
 };
 
-
   fetchPrecinctHeatMap = async () => {
     try {
       if (!this.props.selectedState || !this.props.selectedSubTrend) return;
@@ -80,12 +79,12 @@ class StateInfo extends React.Component {
       };
 
       if (urlMap[this.props.selectedSubTrend]) {
-        const data = await ApiService.fetchData(urlMap[this.props.selectedSubTrend])
+        const payload = await ApiService.fetchData(urlMap[this.props.selectedSubTrend])
         this.setState({
           mapData: {
             type: "FeatureCollection",
             features: this.state.orginalPrecinctData.features[0].features.map((feature) => {
-              const matchingData = data.data.find((entry) => entry.precinctKey === feature.properties.precinctKey);
+              const matchingData = payload.data.find((entry) => entry.precinctKey === feature.properties.precinctKey);
               return {
                 ...feature,
                 properties: {
@@ -95,7 +94,7 @@ class StateInfo extends React.Component {
               };
             }),
           },
-          heatmapLegend: data.legend,
+          heatmapLegend: payload.legend,
         });
       }
     } catch (error) {
