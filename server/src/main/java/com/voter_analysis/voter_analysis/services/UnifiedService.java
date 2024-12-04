@@ -247,31 +247,34 @@ public class UnifiedService {
     
     
     
-    //Use Case #8-9
-    public FeatureCollectionDTO getDistrictTableMap(int stateId) {
+    //Use Case #8
+    public List<CongressionalRepresentationDTO> getDistrictRepresentationList(int stateId) {
         // Fetch all districts for the given state
         List<CongressionalDistrict> districts = congressionalDistrictRepository.findByPropertiesStateId(stateId);
     
-        // Map districts to FeatureDTOs
-        List<FeatureDTO> features = districts.stream()
-            .map(district -> {
-                // Map to CongressionalRepresentationDTO
-                CongressionalRepresentationDTO representationDTO = congressionalDistrictMapper.toRepresentationDTO(district);
-    
-                // Map to FeatureDTO
-                return congressionalDistrictMapper.toFeatureDTO(district, representationDTO);
-            })
+        // Map districts to CongressionalRepresentationDTOs
+        return districts.stream()
+            .map(congressionalDistrictMapper::toRepresentationDTO)
             .collect(Collectors.toList());
-    
-        // Create FeatureCollectionDTO
-        FeatureCollectionDTO featureCollection = new FeatureCollectionDTO();
-        featureCollection.setFeatures(features);
-    
-        return featureCollection;
     }
+    //Use case #9
+    public FeatureDTO getDistrictMap(int stateId, int cdId) {
+        // Fetch the district for the given state and district ID
+        CongressionalDistrict district = congressionalDistrictRepository.findByPropertiesStateIdAndPropertiesDistrictId(stateId, cdId)
+            .orElseThrow(() -> new IllegalArgumentException("District not found for stateId: " + stateId + ", cdId: " + cdId));
+    
+        // Map the district to FeatureDTO containing only geometry
+        FeatureDTO feature = congressionalDistrictMapper.toFeatureDTO(district);
+    
+        return feature;
+    }
+    
+    
+
+    
 
     //Use case #12
-    public List<RaceGinglesDTO> getRaceGinglesData(int stateId, String racialGroup) {
+    public ScatterPlotDTO<RaceGinglesDTO> getRaceGinglesData(int stateId, String racialGroup) {
         // Fetch GinglesAnalysis entries for the specified state and "regular" analysis type
         List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "regular");
         String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
@@ -279,12 +282,7 @@ public class UnifiedService {
             throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
         }
     
-        
-        long relevantPrecincts = analyses.stream()
-        .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
-        .count();
-        System.out.println("The number of precincts for the racial group " + racialGroup + " are: " + relevantPrecincts);
-        return analyses.stream()
+        List<RaceGinglesDTO> dataPoints = analyses.stream()
             .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
             .map(analysis -> {
                 double pctRace = Double.parseDouble((String) analysis.getData().get("PCT_RACE"));
@@ -301,19 +299,26 @@ public class UnifiedService {
                 return dto;
             })
             .collect(Collectors.toList());
+    
+        ScatterPlotDTO<RaceGinglesDTO> scatterPlotDTO = new ScatterPlotDTO<>();
+        scatterPlotDTO.setXAxisLabel("Percentage of demographic group: " + racialGroup);
+        scatterPlotDTO.setYAxisLabel("Party Vote Share (%)");
+        scatterPlotDTO.setChartTitle("Party Vote Share vs. Percentage of demographic group: " + racialGroup);
+        scatterPlotDTO.setDataPoints(dataPoints);
+    
+        return scatterPlotDTO;
     }
     
     
+    
     //Use case #13
-    public List<IncomeGinglesDTO> getIncomeGinglesData(int stateId, String regionType) {
+    public ScatterPlotDTO<IncomeGinglesDTO> getIncomeGinglesData(int stateId, String regionType) {
         // Fetch GinglesAnalysis entries for the specified state and "income" analysis type
         List<GinglesAnalysis> analyses = regionType == null
             ? ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income")
             : ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
-        
-        System.out.println("Number of precincts are "+ analyses.size());
-        // Map to IncomeGinglesDTO
-        return analyses.stream()
+    
+        List<IncomeGinglesDTO> dataPoints = analyses.stream()
             .map(analysis -> {
                 double medianIncome = Double.parseDouble((String) analysis.getData().get("MEDN_INC"));
                 double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
@@ -330,43 +335,53 @@ public class UnifiedService {
                 return dto;
             })
             .collect(Collectors.toList());
+    
+        ScatterPlotDTO<IncomeGinglesDTO> scatterPlotDTO = new ScatterPlotDTO<>();
+        scatterPlotDTO.setXAxisLabel("Median Income ($)");
+        scatterPlotDTO.setYAxisLabel("Party Vote Share (%)");
+        scatterPlotDTO.setChartTitle("Party Vote Share vs. Median Income" + 
+            (regionType != null ? " (" + regionType + ")" : ""));
+        scatterPlotDTO.setDataPoints(dataPoints);
+    
+        return scatterPlotDTO;
     }
+    
     //Use case #14
-    public List<IncomeRaceGinglesDTO> getIncomeRaceGinglesData(int stateId, String racialGroup) {
+    public ScatterPlotDTO<IncomeRaceGinglesDTO> getIncomeRaceGinglesData(int stateId, String racialGroup) {
         // Fetch GinglesAnalysis entries for the specified state and "income_race" analysis type
-        List<GinglesAnalysis> incomeRaceAnalyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income_race");
+        List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income_race");
         String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
         if (databaseField == null) {
             throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
         }
-        
-        
-        long relevantPrecincts = incomeRaceAnalyses.stream()
-        .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
-        .count();
-        System.out.println("The number of precincts for the racial group " + racialGroup + " are: " + relevantPrecincts);
-        // Filter data by the specified racial group
-        return incomeRaceAnalyses.stream()
+    
+        List<IncomeRaceGinglesDTO> dataPoints = analyses.stream()
             .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
             .map(analysis -> {
                 double pctRaceIncome = Double.parseDouble((String) analysis.getData().get("PCT_RACE_INC"));
                 double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
                 double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
-    
-                // Determine the dominant party based on vote percentages
                 String dominantParty = pctDem > pctRep ? "Blue" : "Red";
     
-                // Map to IncomeRaceGinglesDTO
                 IncomeRaceGinglesDTO dto = new IncomeRaceGinglesDTO();
                 dto.setPrecinctKey(analysis.getPrecinctKey());
-                dto.setCompositeIndexXaxis(pctRaceIncome); 
+                dto.setCompositeIndexXaxis(pctRaceIncome);
                 dto.setDemocraticVoteShareYaxis(pctDem);
-                dto.setRepublicanVoteShareYaxis(pctRep); 
-                dto.setDominantPartyColor(dominantParty); 
+                dto.setRepublicanVoteShareYaxis(pctRep);
+                dto.setDominantPartyColor(dominantParty);
                 return dto;
             })
             .collect(Collectors.toList());
+    
+        ScatterPlotDTO<IncomeRaceGinglesDTO> scatterPlotDTO = new ScatterPlotDTO<>();
+        scatterPlotDTO.setXAxisLabel("Composite Index of Income and " + racialGroup);
+        scatterPlotDTO.setYAxisLabel("Party Vote Share (%)");
+        scatterPlotDTO.setChartTitle("Party Vote Share vs. Composite Index of Income and " + racialGroup);
+        scatterPlotDTO.setDataPoints(dataPoints);
+    
+        return scatterPlotDTO;
     }
+    
     
     //Use case #15
     public List<GinglesTableDTO> getGinglesTableData(int stateId) {

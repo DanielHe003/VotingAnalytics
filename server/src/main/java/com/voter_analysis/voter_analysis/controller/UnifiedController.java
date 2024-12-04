@@ -112,37 +112,45 @@ public class UnifiedController {
     
     
 
-    //Use Case #8-9
-    @GetMapping("/states/{stateId}/districtTableMaps")
-    public ResponseEntity<FeatureCollectionDTO> getDistrictTableMap(
-            @PathVariable int stateId
-            ) {
-        FeatureCollectionDTO district = unifiedService.getDistrictTableMap(stateId);
-        return ResponseEntity.ok(district);
+    //Use Case #8
+    @GetMapping("/states/{stateId}/districtRepresentation")
+    public ResponseEntity<List<CongressionalRepresentationDTO>> getDistrictRepresentationList(
+            @PathVariable int stateId) {
+        List<CongressionalRepresentationDTO> representations = unifiedService.getDistrictRepresentationList(stateId);
+        return ResponseEntity.ok(representations);
     }
+    //Use Case #0
+    @GetMapping("/states/{stateId}/districtMap/{cdId}")
+    public ResponseEntity<FeatureDTO> getDistrictMap(
+            @PathVariable int stateId,
+            @PathVariable int cdId) {
+        FeatureDTO districtMap = unifiedService.getDistrictMap(stateId, cdId);
+        return ResponseEntity.ok(districtMap);
+    }
+
     //Use case #12
     @GetMapping("/states/{stateId}/gingles/race/{demographicGroup}")
-    public ResponseEntity<List<RaceGinglesDTO>> getRaceGinglesData(
+    public ResponseEntity<ScatterPlotDTO<RaceGinglesDTO>> getRaceGinglesData(
         @PathVariable int stateId,
         @PathVariable String demographicGroup){
-            List<RaceGinglesDTO> raceGinglesData = unifiedService.getRaceGinglesData(stateId, demographicGroup);
+            ScatterPlotDTO<RaceGinglesDTO> raceGinglesData = unifiedService.getRaceGinglesData(stateId, demographicGroup);
             return ResponseEntity.ok(raceGinglesData);
     }
     //Use case #13
     @GetMapping("/states/{stateId}/gingles/income")
-    public ResponseEntity<List<IncomeGinglesDTO>> getIncomeGinglesData(
+    public ResponseEntity<ScatterPlotDTO<IncomeGinglesDTO>> getIncomeGinglesData(
             @PathVariable int stateId,
             @RequestParam(required = false) String regionType) {
-        List<IncomeGinglesDTO> incomeGinglesData = unifiedService.getIncomeGinglesData(stateId, regionType);
+        ScatterPlotDTO<IncomeGinglesDTO> incomeGinglesData = unifiedService.getIncomeGinglesData(stateId, regionType);
         return ResponseEntity.ok(incomeGinglesData);
     }
 
     //Use Case #14
     @GetMapping("/states/{stateId}/gingles/income-race/{racialGroup}")
-    public ResponseEntity<List<IncomeRaceGinglesDTO>> getIncomeRaceGinglesData(
+    public ResponseEntity<ScatterPlotDTO<IncomeRaceGinglesDTO>> getIncomeRaceGinglesData(
             @PathVariable int stateId,
             @PathVariable String racialGroup) {
-        List<IncomeRaceGinglesDTO> incomeRaceGinglesData = unifiedService.getIncomeRaceGinglesData(stateId, racialGroup);
+        ScatterPlotDTO<IncomeRaceGinglesDTO> incomeRaceGinglesData = unifiedService.getIncomeRaceGinglesData(stateId, racialGroup);
         return ResponseEntity.ok(incomeRaceGinglesData);
     }
 
