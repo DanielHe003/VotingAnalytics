@@ -1,6 +1,7 @@
 package com.voter_analysis.voter_analysis.models;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -140,7 +141,7 @@ public class Precinct {
         private long suburban;
 
         @Field("Density")
-        private double density;
+        private Double density;
 
         @Field("Category")
         private String category;
@@ -150,6 +151,18 @@ public class Precinct {
 
         @Field("POVERTY_PCT")
         private double povertyPct;
+
+        @Field("LOW_INC")
+        private long lowInc;
+
+        @Field("LOW_MID_INC")
+        private long lowMidInc;
+
+        @Field("UP_MID_INC")
+        private long upMidInc;
+
+        @Field("UP_INC")
+        private long upInc;
     }
 
     @Data

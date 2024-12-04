@@ -144,7 +144,27 @@ def parse_gingles_file_name(file_name):
         region_type = 'rural'
 
     return analysis_type, region_type
+def import_cd_representatives(state_id, data_directory,state):
+    """Import Congressional District Representatives data for a specific state."""
+    cd_representative_file = os.path.join(data_directory, "cd-representative", f"{state}_cd_representatives.json")
+    if not os.path.exists(cd_representative_file):
+        print(f"Representative data file not found for state id {state_id}. Skipping.")
+        return
 
+    print(f"Importing {cd_representative_file} for state {state_id}")
+    with open(cd_representative_file, 'r') as f:
+        data_list = json.load(f)
+
+    # Add stateId to each document
+    for item in data_list:
+        item["stateId"] = state_id
+
+    try:
+        db.cd_representatives.insert_many(data_list)
+        print(f"Inserted {len(data_list)} documents for {cd_representative_file}")
+    except BulkWriteError as bwe:
+        print(f"Bulk write error for {cd_representative_file}: {bwe.details}")
+        
 def initialize_state_data(state, data_directory):
     """Initialize data for a specific state."""
     print(f"Loading data for state: {state}")
@@ -166,6 +186,7 @@ def initialize_state_data(state, data_directory):
         else:
             print(f"File {geojson_file} not found. Skipping.")
     import_gingles_data(state_id, data_directory)
+    import_cd_representatives(state_id, data_directory,state)
 
 def initialize_db():
     """Initialize database: clear, load data, and then apply schemas."""

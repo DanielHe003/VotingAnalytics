@@ -61,7 +61,7 @@
               "Urban": { "bsonType": "double" },
               "Rural": { "bsonType": "double" },
               "Suburban": { "bsonType": "double" },
-              "Density": { "bsonType": "double" },
+              "Density": { "bsonType": ["double","null"] },
               "Category": { "bsonType": "string" },
               "POVERTY": { "bsonType": ["double", "int"] },
               "POVERTY_PCT": { "bsonType": "double" }
