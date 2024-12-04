@@ -23,21 +23,12 @@ class ChartScatterComponent extends Component {
     }
   }
 
-  generateRegressionData = (data, regressionType, color) => {
-    const regressionMethods = {
-      linear: regression.linear,
-      polynomial: regression.polynomial,
-      exponential: regression.exponential,
-      logarithmic: regression.logarithmic,
-      power: regression.power,
-    };
+  generateRegressionData = (data, color) => {
 
-    const regressionFunc = regressionMethods[regressionType] || regression.polynomial;
-    const result = regressionFunc(data.map((d) => [d.x, d.y]), { order: 2 });
-
+    const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order: 2 });
     const fitData = data.map((d) => ({
       x: d.x,
-      y: result.predict(d.x)[1],
+      y: polynomial.predict(d.x)[1],
     }));
 
     return {
@@ -74,8 +65,8 @@ class ChartScatterComponent extends Component {
 
   renderChart = () => {
     const chartCanvas = document.getElementById("myChart");
-    const datasets = [];
     const { democraticData, republicanData } = this.generateDataForRegression(this.props.data);
+    const datasets = [];
 
     datasets.push({
       label: "Democratic Votes",
@@ -85,9 +76,6 @@ class ChartScatterComponent extends Component {
       pointRadius: 0.5,
       showLine: false,
     });
-
-    datasets.push(this.generateRegressionData(democraticData, "polynomial", "blue"));
-
     datasets.push({
       label: "Republican Votes",
       data: republicanData,
@@ -96,14 +84,12 @@ class ChartScatterComponent extends Component {
       pointRadius: 0.5,
       showLine: false,
     });
-
+    datasets.push(this.generateRegressionData(democraticData, "blue"));
     datasets.push(this.generateRegressionData(republicanData, "polynomial", "red"));
 
     this.chartInstance = new Chart(chartCanvas, {
       type: "scatter",
-      data: {
-        datasets,
-      },
+      data: {datasets},
       options: {
         responsive: true,
         maintainAspectRatio: false,

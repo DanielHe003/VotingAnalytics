@@ -174,6 +174,7 @@ class StateInfo extends React.Component {
         />
 
         <div className="content-container">
+
           {/* Left Side */}
           <div className="map-container">
           <MapComponent
