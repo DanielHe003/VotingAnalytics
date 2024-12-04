@@ -1,7 +1,8 @@
 package com.voter_analysis.voter_analysis.dtos;
 import lombok.Data;
 import java.util.List;
-
+import lombok.AllArgsConstructor;
+@AllArgsConstructor
 @Data
 public class ScatterPlotDTO<T> {
     private String xAxisLabel; // Label for the x-axis

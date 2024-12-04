@@ -15,6 +15,9 @@ import com.voter_analysis.voter_analysis.dtos.*;
 import com.voter_analysis.voter_analysis.repositories.*;
 import com.voter_analysis.voter_analysis.models.*;
 import com.voter_analysis.voter_analysis.mappers.*;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+
 
 @Service
 public class UnifiedService {
@@ -22,15 +25,17 @@ public class UnifiedService {
     private final CongressionalDistrictRepository congressionalDistrictRepository;
     private final PrecinctRepository precinctRepository;
     private final StateRepository stateRepository;
+    private final GinglesAnalysisRepository ginglesAnalysisRepository;
     private final StateMapper stateMapper;
     private final CongressionalDistrictMapper congressionalDistrictMapper;
     private final PrecinctMapper precinctMapper;
+    private final GinglesMapper ginglesMapper;
     private final DemographicHeatMapService demographicService;
     private final EconomicHeatMapService economicService;
     private final RegionTypeHeatMapService regionTypeService;
     private final PovertyHeatMapService povertyService;
     private final PoliticalIncomeHeatMapService politicalIncomeService;
-    private final GinglesAnalysisRepository ginglesAnalysisRepository;
+   
 
     public UnifiedService(
             CongressionalDistrictRepository congressionalDistrictRepository,
@@ -43,7 +48,9 @@ public class UnifiedService {
             EconomicHeatMapService economicService,
             RegionTypeHeatMapService regionTypeService,
             PovertyHeatMapService povertyService,
-            PoliticalIncomeHeatMapService politicalIncomeService, GinglesAnalysisRepository ginglesAnalysisRepository) {
+            PoliticalIncomeHeatMapService politicalIncomeService, 
+            GinglesAnalysisRepository ginglesAnalysisRepository,
+            GinglesMapper ginglesMapper) {
         this.congressionalDistrictRepository = congressionalDistrictRepository;
         this.precinctRepository = precinctRepository;
         this.stateRepository = stateRepository;
@@ -56,6 +63,7 @@ public class UnifiedService {
         this.povertyService = povertyService;
         this.politicalIncomeService = politicalIncomeService;
         this.ginglesAnalysisRepository = ginglesAnalysisRepository;
+        this.ginglesMapper = ginglesMapper;
     }
     //Use case #1
     public List<StateListItem> getStateList() {
@@ -275,113 +283,67 @@ public class UnifiedService {
 
     //Use case #12
     public ScatterPlotDTO<RaceGinglesDTO> getRaceGinglesData(int stateId, String racialGroup) {
-        // Fetch GinglesAnalysis entries for the specified state and "regular" analysis type
         List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "regular");
-        String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
-        if (databaseField == null) {
+        String demographic = RacialCategoryMapper.getDatabaseField(racialGroup);
+
+        if (demographic == null) {
             throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
         }
-    
+
         List<RaceGinglesDTO> dataPoints = analyses.stream()
-            .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
-            .map(analysis -> {
-                double pctRace = Double.parseDouble((String) analysis.getData().get("PCT_RACE"));
-                double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
-                double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
-                String dominantParty = pctDem > pctRep ? "Blue" : "Red";
-    
-                RaceGinglesDTO dto = new RaceGinglesDTO();
-                dto.setPrecinctKey(analysis.getPrecinctKey());
-                dto.setRaceXAxis(pctRace);
-                dto.setDeomcracticShareYAxis(pctDem);
-                dto.setRepublicanShareYaxis(pctRep);
-                dto.setDominantPartyColor(dominantParty);
-                return dto;
-            })
-            .collect(Collectors.toList());
-    
-        ScatterPlotDTO<RaceGinglesDTO> scatterPlotDTO = new ScatterPlotDTO<>();
-        scatterPlotDTO.setXAxisLabel("Percentage of demographic group: " + racialGroup);
-        scatterPlotDTO.setYAxisLabel("Party Vote Share (%)");
-        scatterPlotDTO.setChartTitle("Party Vote Share vs. Percentage of demographic group: " + racialGroup);
-        scatterPlotDTO.setDataPoints(dataPoints);
-    
-        return scatterPlotDTO;
+                .filter(analysis -> demographic.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
+                .map(analysis -> ginglesMapper.toRaceGinglesDTO( analysis.getData()))
+                .collect(Collectors.toList());
+
+        return new ScatterPlotDTO<>(
+            "Percentage of demographic group: " + racialGroup,
+            "Party Vote Share (%)",
+            "Party Vote Share vs. Percentage of demographic group: " + racialGroup,
+            dataPoints
+        );
+                
     }
     
-    
-    
-    //Use case #13
+    // Use Case #13: Gingles Income Analysis
     public ScatterPlotDTO<IncomeGinglesDTO> getIncomeGinglesData(int stateId, String regionType) {
-        // Fetch GinglesAnalysis entries for the specified state and "income" analysis type
         List<GinglesAnalysis> analyses = regionType == null
-            ? ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income")
-            : ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
-    
+                ? ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income")
+                : ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
+
         List<IncomeGinglesDTO> dataPoints = analyses.stream()
-            .map(analysis -> {
-                double medianIncome = Double.parseDouble((String) analysis.getData().get("MEDN_INC"));
-                double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
-                double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
-                String dominantParty = pctDem > pctRep ? "Blue" : "Red";
-    
-                IncomeGinglesDTO dto = new IncomeGinglesDTO();
-                dto.setPrecinctKey(analysis.getPrecinctKey());
-                dto.setMedianIncomeXaxis(medianIncome);
-                dto.setDemocraticVoteShareYaxis(pctDem);
-                dto.setRepublicanVoteShareYaxis(pctRep);
-                dto.setDominantPartyColor(dominantParty);
-                dto.setRegionType(analysis.getRegionType());
-                return dto;
-            })
-            .collect(Collectors.toList());
-    
-        ScatterPlotDTO<IncomeGinglesDTO> scatterPlotDTO = new ScatterPlotDTO<>();
-        scatterPlotDTO.setXAxisLabel("Median Income ($)");
-        scatterPlotDTO.setYAxisLabel("Party Vote Share (%)");
-        scatterPlotDTO.setChartTitle("Party Vote Share vs. Median Income" + 
-            (regionType != null ? " (" + regionType + ")" : ""));
-        scatterPlotDTO.setDataPoints(dataPoints);
-    
-        return scatterPlotDTO;
+                .map(analysis -> ginglesMapper.toIncomeGinglesDTO(analysis.getData(), regionType))
+                .collect(Collectors.toList());
+
+        return new ScatterPlotDTO<>(
+                "Median Income ($)",
+                "Party Vote Share (%)",
+                "Party Vote Share vs. Median Income" + 
+                (regionType != null ? " (" + regionType + ")" : ""),
+                dataPoints
+        );
     }
     
     //Use case #14
     public ScatterPlotDTO<IncomeRaceGinglesDTO> getIncomeRaceGinglesData(int stateId, String racialGroup) {
-        // Fetch GinglesAnalysis entries for the specified state and "income_race" analysis type
         List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income_race");
         String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
+
         if (databaseField == null) {
             throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
         }
-    
+
         List<IncomeRaceGinglesDTO> dataPoints = analyses.stream()
-            .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
-            .map(analysis -> {
-                double pctRaceIncome = Double.parseDouble((String) analysis.getData().get("PCT_RACE_INC"));
-                double pctDem = Double.parseDouble((String) analysis.getData().get("PCT_DEM"));
-                double pctRep = Double.parseDouble((String) analysis.getData().get("PCT_REP"));
-                String dominantParty = pctDem > pctRep ? "Blue" : "Red";
-    
-                IncomeRaceGinglesDTO dto = new IncomeRaceGinglesDTO();
-                dto.setPrecinctKey(analysis.getPrecinctKey());
-                dto.setCompositeIndexXaxis(pctRaceIncome);
-                dto.setDemocraticVoteShareYaxis(pctDem);
-                dto.setRepublicanVoteShareYaxis(pctRep);
-                dto.setDominantPartyColor(dominantParty);
-                return dto;
-            })
-            .collect(Collectors.toList());
-    
-        ScatterPlotDTO<IncomeRaceGinglesDTO> scatterPlotDTO = new ScatterPlotDTO<>();
-        scatterPlotDTO.setXAxisLabel("Composite Index of Income and " + racialGroup);
-        scatterPlotDTO.setYAxisLabel("Party Vote Share (%)");
-        scatterPlotDTO.setChartTitle("Party Vote Share vs. Composite Index of Income and " + racialGroup);
-        scatterPlotDTO.setDataPoints(dataPoints);
-    
-        return scatterPlotDTO;
+                .filter(analysis -> databaseField.equalsIgnoreCase((String) analysis.getData().get("Race_Column")))
+                .map(analysis -> ginglesMapper.toIncomeRaceGinglesDTO( analysis.getData()))
+                .collect(Collectors.toList());
+
+        return new ScatterPlotDTO<>(
+                "Combined income and demographic group " + racialGroup,
+                "Party Vote Share (%)",
+                "Party Vote Share vs. combined income and demographic group " + racialGroup,
+                dataPoints
+        );
     }
-    
     
     //Use case #15
     public List<GinglesTableDTO> getGinglesTableData(int stateId) {
