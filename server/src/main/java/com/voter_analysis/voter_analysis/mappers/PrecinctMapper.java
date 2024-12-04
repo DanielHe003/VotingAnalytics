@@ -41,7 +41,7 @@ public interface PrecinctMapper {
     }
     GeometryDTO toGeometryDTO(Precinct.Geometry geometry);
 
-
+    // Use Case #15: Map Precinct to GinglesTableDTO for tabular data
     @Mapping(source = "properties.srPrecKey", target = "precinctKey")
     @Mapping(source = "properties.pctDem", target = "pctDem")
     @Mapping(source = "properties.pctRep", target = "pctRep")
@@ -53,6 +53,7 @@ public interface PrecinctMapper {
     @Mapping(target = "suburbanPct", expression = "java(calculatePercentage(precinct.getProperties().getSuburban(), precinct.getProperties().getTotPop()))")
     @Mapping(source = "properties.povertyPct", target = "povertyPct")
     GinglesTableDTO toGinglesTableDTO(Precinct precinct);
+
 
     // Helper method to calculate percentages
     default double calculatePercentage(long part, long total) {
