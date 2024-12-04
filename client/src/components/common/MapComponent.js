@@ -1,7 +1,8 @@
 import React, { createRef } from "react";
-import { MapContainer as LeafletMap, TileLayer } from "react-leaflet"; 
+import { MapContainer as LeafletMap, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import "./MapComponent.css";
 
 class MapComponent extends React.Component {
   constructor(props) {
@@ -12,16 +13,46 @@ class MapComponent extends React.Component {
     this.state = {
       selectedFeature: null,
       geoJsonLayer: null,
-      geoJsonData: props.geoJsonData, 
+      geoJsonData: props.geoJsonData,
     };
   }
 
-  geoJsonStyle = (feature) => ({
-    color: "black",
-    weight: 1,
-    fillColor: "#005BA6",
-    fillOpacity: 0.6,
-  });
+  geoJsonStyle = (feature) => {
+    const fillColor = feature.properties.color || "#005BA6";
+    return {
+      color: "black",
+      weight: 1,
+      fillColor,
+      fillOpacity: 0.6,
+    };
+  };
+
+  modifyProperties = (properties) => {
+    const modifiedProperties = new Map();
+    for (const [key, value] of Object.entries(properties)) {
+      switch (key) {
+        case "precinctKey":
+          modifiedProperties.set("Precinct ID", value);
+          break;
+        case "stateId":
+          modifiedProperties.set("State", value === 1 ? "Alabama" : value === 6 ? "California" : value);
+          break;
+        case "percentage":
+          modifiedProperties.set("Percentage (%)", value);
+          break;
+        case "districtId":
+          modifiedProperties.set("District ID", value);
+          break;
+        case "bin":
+          break;
+        case "color":
+          break;
+        default:
+          modifiedProperties.set(key, value);
+      }
+    }
+    return modifiedProperties;
+  };
 
   onFeatureClick = (e) => {
     const { properties } = e.target.feature;
@@ -41,8 +72,9 @@ class MapComponent extends React.Component {
       weight: 2.5,
     });
 
-    const properties = layer.feature.properties;
-    const tooltipContent = Object.entries(properties)
+    const modifiedProperties = this.modifyProperties(layer.feature.properties);
+
+    const tooltipContent = Array.from(modifiedProperties)
       .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
       .join("<br>");
 
@@ -52,7 +84,7 @@ class MapComponent extends React.Component {
   onFeatureMouseOut = (e) => {
     const layer = e.target;
     layer.setStyle(this.geoJsonStyle(layer.feature));
-    layer.closeTooltip(); 
+    layer.closeTooltip();
   };
 
   componentDidMount() {
@@ -63,12 +95,14 @@ class MapComponent extends React.Component {
     if (this.containerRef.current) {
       this.resizeObserver.observe(this.containerRef.current);
     }
-    this.updateGeoJsonLayer(this.state.geoJsonData); 
+    this.updateGeoJsonLayer(this.state.geoJsonData);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {  
+    if(this.props.selectedTrend === "precinct"){
+      this.renderLegend()
+    }
     if (prevProps.geoJsonData !== this.props.geoJsonData) {
-      // console.log('Updated GeoJSON data:', this.props.geoJsonData);
       this.setState({ geoJsonData: this.props.geoJsonData }, () => {
         this.updateGeoJsonLayer(this.state.geoJsonData);
       });
@@ -91,8 +125,8 @@ class MapComponent extends React.Component {
   };
 
   updateGeoJsonLayer = (geoJsonData) => {
-    if (!geoJsonData) return; 
-    
+    if (!geoJsonData) return;
+
     if (this.mapRef.current) {
       if (this.state.geoJsonLayer) {
         this.mapRef.current.removeLayer(this.state.geoJsonLayer);
@@ -109,7 +143,7 @@ class MapComponent extends React.Component {
         },
       });
 
-      geoJsonLayer.addTo(this.mapRef.current); 
+      geoJsonLayer.addTo(this.mapRef.current);
       this.setState({ geoJsonLayer });
       this.fitMapToGeoJsonData(geoJsonLayer);
     }
@@ -118,27 +152,50 @@ class MapComponent extends React.Component {
   fitMapToGeoJsonData = (geoJsonLayer) => {
     if (geoJsonLayer) {
       const bounds = geoJsonLayer.getBounds();
-      this.mapRef.current.fitBounds(bounds, { padding: [20, 20] });
+      this.mapRef.current.fitBounds(bounds, { padding: [10, 10] });
     }
+  };
+
+  renderLegend = () => {
+    const { heatMapLegend } = this.props;
+
+    if (!heatMapLegend || Object.keys(heatMapLegend).length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="legend">
+        <h4>Legend</h4>
+        <ul>
+          {Object.entries(heatMapLegend).map(([range, color], index) => (
+            <li key={index}>
+              <span className="color-box" style={{ backgroundColor: color }}></span>
+              {range}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
   };
 
   render() {
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        <div style={{ display: "flex", flex: 1, height: "100%" }} ref={this.containerRef}>
+      <div className="map-container">
+        <div className="map-wrapper" ref={this.containerRef}>
           <LeafletMap
             center={this.initialPosition}
             zoom={3}
             style={{ flex: 1 }}
             ref={this.mapRef}
-            zoomControl={false} 
-            attributionControl={false} 
+            zoomControl={false}
+            attributionControl={false}
           >
-             <TileLayer
+            <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             />
           </LeafletMap>
+          {this.renderLegend()}
         </div>
       </div>
     );

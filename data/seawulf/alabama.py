@@ -27,12 +27,11 @@ logging.basicConfig(
     ]
 )
 
-
 def process_plan(plan_num, working_directory, output_path, state, data, num_districts):
+    
     logging.info(f"Starting plan {plan_num+1}...")
-
     graph = Graph.from_file(working_directory + data)
-    # logging.debug(f"Graph loaded from {working_directory + data}")
+    logging.debug(f"Graph loaded from {working_directory + data}")
     
     updaters = {
         "population": Tally("TOT_POP", alias="population"),
@@ -51,13 +50,18 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         "suburban": Tally("Suburban", alias="suburban"),
         "rural": Tally("Rural", alias="rural"),
         "arealand": Tally("AREALAND", alias="arealand"),
+        "households": Tally("TOT_HOUS21", alias="households"),
+        "low_income": Tally("LOW_INC", alias="low_income"),
+        "low_middle_income": Tally("LOW_MID_INC", alias="low_middle_income"),
+        "upper_middle_income": Tally("UP_MID_INC", alias="upper_middle_income"),
+        "upper_income": Tally("UP_INC", alias="upper_income"),
     }
     logging.debug(f"Updaters initialized.")
 
     total_population = sum(graph.nodes[node]["TOT_POP"] for node in graph.nodes)
     ideal_population = total_population / num_districts
-    epsilon = 0.1
-    
+    epsilon = 0.05
+
     district_labels = list(range(1, num_districts + 1))
     
     logging.debug(f"Total population: {total_population}, Ideal population per district: {ideal_population}")
@@ -81,8 +85,8 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
     
     logging.debug(f"Initial partition created for plan {plan_num+1}.")
 
-    proposal = partial(recom, pop_col="TOT_POP", pop_target=ideal_population, epsilon=0.1, node_repeats=2)
-    pop_constraint = within_percent_of_ideal_population(initial_partition, 0.1)
+    proposal = partial(recom, pop_col="TOT_POP", pop_target=ideal_population, epsilon=0.05, node_repeats=2)
+    pop_constraint = within_percent_of_ideal_population(initial_partition, 0.05)
 
     chain = MarkovChain(
         proposal=proposal,
@@ -91,56 +95,59 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         initial_state=initial_partition,
         total_steps=10000
     )
-
+    
+    # Final Results 
     final_results = {
-            "district": [],
-            "democrats": [],
-            "republicans": [],
-            "winner": [],
-            "black_pct": [],
-            "white_pct": [],
-            "asian_pct": [],
-            "hispanic_pct": [],
-            "aindalk_pct": [],
-            "hipi_pct": [],
-            "other_pct": [],
-            "twoormore_pct": [],
-            "rural_black_pct": [],
-            "rural_white_pct": [],
-            "rural_asian_pct": [],
-            "rural_hispanic_pct": [],
-            "rural_aindalk_pct": [],
-            "rural_hipi_pct": [],
-            "rural_other_pct": [],
-            "rural_twoormore_pct": [],
-            "suburban_black_pct": [],
-            "suburban_white_pct": [],
-            "suburban_asian_pct": [],
-            "suburban_hispanic_pct": [],
-            "suburban_aindalk_pct": [],
-            "suburban_hipi_pct": [],
-            "suburban_other_pct": [],
-            "suburban_twoormore_pct": [],
-            "urban_black_pct": [],
-            "urban_white_pct": [],
-            "urban_asian_pct": [],
-            "urban_hispanic_pct": [],
-            "urban_aindalk_pct": [],
-            "urban_hipi_pct": [],
-            "urban_other_pct": [],
-            "urban_twoormore_pct": [],
-            "total_population": [],
-            "rural_population": [],
-            "urban_population": [],
-            "suburban_population": [],
-            "category": [],
-            "geometry": [],
-        }    
-       
-    logging.debug("Initialized final results structure.")
+        "district": [],
+        "democrats": [],
+        "republicans": [],
+        "winner": [],
+        "black_pct": [],
+        "white_pct": [],
+        "asian_pct": [],
+        "hispanic_pct": [],
+        "aindalk_pct": [],
+        "hipi_pct": [],
+        "other_pct": [],
+        "twoormore_pct": [],
+        "rural_black_pct": [],
+        "rural_white_pct": [],
+        "rural_asian_pct": [],
+        "rural_hispanic_pct": [],
+        "rural_aindalk_pct": [],
+        "rural_hipi_pct": [],
+        "rural_other_pct": [],
+        "rural_twoormore_pct": [],
+        "suburban_black_pct": [],
+        "suburban_white_pct": [],
+        "suburban_asian_pct": [],
+        "suburban_hispanic_pct": [],
+        "suburban_aindalk_pct": [],
+        "suburban_hipi_pct": [],
+        "suburban_other_pct": [],
+        "suburban_twoormore_pct": [],
+        "urban_black_pct": [],
+        "urban_white_pct": [],
+        "urban_asian_pct": [],
+        "urban_hispanic_pct": [],
+        "urban_aindalk_pct": [],
+        "urban_hipi_pct": [],
+        "urban_other_pct": [],
+        "urban_twoormore_pct": [],
+        "total_population": [],
+        "rural_population_pct": [],
+        "urban_population_pct": [],
+        "suburban_population_pct": [],
+        "low_income_pct": [],
+        "low_middle_income_pct": [],
+        "upper_middle_income_pct": [],
+        "upper_income_pct": [],
+        "category": [],
+        "geometry": [],
+    }     
 
     plan_summary = {
-        "plan_num": [plan_num + 1], 
+        "plan_num": [plan_num + 1],
         "avg_income_difference": [],
         "avg_dem_support": [],
         "avg_rep_support": [],
@@ -154,13 +161,12 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
     }
 
     statewide_average_income = 0
+    
     # Calculate Measures
     if state == "CA":
         statewide_average_income = 95777.82
     elif state == "AL":
         statewide_average_income = 56036.51
-
-    logging.debug(f"Statewide average income for {state}: {statewide_average_income}")
 
     current_plan_income_difference = 0
     current_plan_dem_pct = 0
@@ -171,38 +177,42 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
     num_urban_districts = 0
     num_suburban_districts = 0
     num_poverty_districts = 0
-
-    for partition in chain:
-        pass
-
-    final_partition = partition 
-    logging.debug("Final partition after chain execution.")
+    
+    for new_partition in chain:
+        pass 
+                        
+    final_partition = new_partition
     
     all_precincts = graph.nodes(data=True)
-
+    
+    # Rural
     rural_precincts = {k: v for k, v in all_precincts if v["Category"] == "Rural"}
+    
+    # Suburban
     suburban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Suburban"}
+    
+    # Urban
     urban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Urban"}
     
-    logging.debug(f"Filtered precincts by region categories: Rural {len(rural_precincts)}, Suburban {len(suburban_precincts)}, Urban {len(urban_precincts)}")
-
     for district in final_partition["democrats"].keys():
-        dem_count = final_partition["democrats"].get(district, 0)
-        rep_count = final_partition["republicans"].get(district, 0)
-        black_count = final_partition["black"].get(district, 0)
-        white_count = final_partition["white"].get(district, 0)
-        asian_count = final_partition["asian"].get(district, 0)
-        hispanic_count = final_partition["hispanic"].get(district, 0)
-        aindalk_count = final_partition["aindalk"].get(district, 0)
-        hipi_count = final_partition["hipi"].get(district, 0)
-        other_count = final_partition["other"].get(district, 0)
-        twoormore_count = final_partition["twoormore"].get(district, 0)
-        total_population = final_partition["population"].get(district, 0)
-
+        dem_count = final_partition["democrats"][district]
+        rep_count = final_partition["republicans"][district]
+        black_count = final_partition["black"][district]
+        white_count = final_partition["white"][district]
+        asian_count = final_partition["asian"][district]
+        hispanic_count = final_partition["hispanic"][district]
+        aindalk_count = final_partition["aindalk"][district]
+        hipi_count = final_partition["hipi"][district]
+        other_count = final_partition["other"][district]
+        twoormore_count = final_partition["twoormore"][district]
+        total_population = final_partition["population"][district]
+        
+        # Store results
+        # Election Data
         final_results["district"].append(district)
         final_results["democrats"].append(dem_count)
         final_results["republicans"].append(rep_count)
-
+        
         if dem_count > rep_count:
             final_results["winner"].append("democrats")
             num_dem_districts += 1
@@ -210,25 +220,29 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
             final_results["winner"].append("republicans")
             num_rep_districts += 1
 
-        current_plan_dem_pct += (dem_count) / (dem_count + rep_count) if (dem_count + rep_count) > 0 else 0
-        current_plan_rep_pct += (rep_count) / (dem_count + rep_count) if (dem_count + rep_count) > 0 else 0
-
+        current_plan_dem_pct += (dem_count)/(dem_count + rep_count)
+        current_plan_rep_pct += (rep_count)/(dem_count + rep_count)
+    
+        # Region Data
+        region_category = ""
 
         area = final_partition["arealand"][district]
-        density = (total_population / area) * 1000 if area > 0 else 0
+        
+        density = (total_population / area) * 1000
 
         if density < 0.1:
-            final_results["category"].append("Rural")
+            region_category = "Rural"
             num_rural_districts += 1
         elif density > 3:
-            final_results["category"].append("Urban")
+            region_category = "Urban"
             num_urban_districts += 1
         else:
-            final_results["category"].append("Suburban")
+            region_category = "Suburban"
             num_suburban_districts += 1
-
-
-        total_population = total_population if total_population > 0 else 1  
+        
+        final_results["category"].append(region_category)
+        
+        # Race Data
         final_results["black_pct"].append(black_count/total_population)
         final_results["white_pct"].append(white_count/total_population)
         final_results["asian_pct"].append(asian_count/total_population)
@@ -238,31 +252,36 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["other_pct"].append(other_count/total_population)
         final_results["twoormore_pct"].append(twoormore_count/total_population)
         final_results["total_population"].append(total_population)
-        
 
+    
+        # Get the geometry for the precincts in this district and combine them
         precinct_geometries = []
         for precinct in final_partition.assignment:
             if final_partition.assignment[precinct] == district:
                 geometry = graph.nodes[precinct]["geometry"]
                 precinct_geometries.append(shape(geometry))  # Convert geometry to Shapely object
-            
+        
+        # Combine the precinct geometries into a single geometry for the district
         combined_geometry = unary_union(precinct_geometries)  # Union all the precinct geometries
-            
+        
+        # Add the combined geometry for the district
         final_results["geometry"].append(combined_geometry)
-            
-        plan_summary["avg_dem_support"].append(current_plan_dem_pct/num_districts)
-        plan_summary["avg_rep_support"].append(current_plan_rep_pct/num_districts)
-        plan_summary["rep_districts"].append(num_rep_districts)
-        plan_summary["dem_districts"].append(num_dem_districts)
-        plan_summary["rural_districts"].append(num_rural_districts)
-        plan_summary["urban_districts"].append(num_urban_districts)
-        plan_summary["suburban_districts"].append(num_suburban_districts)
-    
-    
+
+    plan_summary["avg_dem_support"].append(current_plan_dem_pct/num_districts)
+    plan_summary["avg_rep_support"].append(current_plan_rep_pct/num_districts)
+    plan_summary["rep_districts"].append(num_rep_districts)
+    plan_summary["dem_districts"].append(num_dem_districts)
+    plan_summary["rural_districts"].append(num_rural_districts)
+    plan_summary["urban_districts"].append(num_urban_districts)
+    plan_summary["suburban_districts"].append(num_suburban_districts)
+
+
+    # race data with region
     for district in final_partition["population"].keys():
         total_rural_population = final_partition["rural"][district]
         total_suburban_population = final_partition["suburban"][district]
         total_urban_population = final_partition["urban"][district]
+        total_population = final_partition["population"][district]
 
         # rural
         rural_black_count = 0
@@ -293,7 +312,7 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["rural_hipi_pct"].append(rural_hipi_count/total_rural_population if total_rural_population > 0 else 0)
         final_results["rural_other_pct"].append(rural_other_count/total_rural_population if total_rural_population > 0 else 0)
         final_results["rural_twoormore_pct"].append(rural_twoormore_count/total_rural_population if total_rural_population > 0 else 0)
-        final_results["rural_population"].append(total_rural_population)
+        final_results["rural_population_pct"].append(total_rural_population/total_population)
         
         # suburban
         suburban_black_count = 0
@@ -324,7 +343,7 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["suburban_hipi_pct"].append(suburban_hipi_count/total_suburban_population if total_suburban_population > 0 else 0)
         final_results["suburban_other_pct"].append(suburban_other_count/total_suburban_population if total_suburban_population > 0 else 0)
         final_results["suburban_twoormore_pct"].append(suburban_twoormore_count/total_suburban_population if total_suburban_population > 0 else 0)
-        final_results["suburban_population"].append(total_suburban_population)
+        final_results["suburban_population_pct"].append(total_suburban_population/total_population)
         
         # urban
         urban_black_count = 0
@@ -355,14 +374,14 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["urban_hipi_pct"].append(urban_hipi_count/total_urban_population if total_urban_population > 0 else 0)
         final_results["urban_other_pct"].append(urban_other_count/total_urban_population if total_urban_population > 0 else 0)
         final_results["urban_twoormore_pct"].append(urban_twoormore_count/total_urban_population if total_urban_population > 0 else 0)
-        final_results["urban_population"].append(total_urban_population)
-
+        final_results["urban_population_pct"].append(total_urban_population/total_population)
+    
     # income data
-
+    
     eligible_precincts = graph.nodes(data=True)
     eligible_precincts = {k: v for k, v in eligible_precincts if v["TOT_HOUS21"] > 0.0}
 
-    for district in final_partition["population"].keys():
+    for district in final_partition["population"].keys():    
         total_income = 0
         precinct_count = 0
 
@@ -376,11 +395,21 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         
         if district_income <= 40000:
             num_poverty_districts += 1
+            
+        total_households = final_partition["households"][district]
+        total_low_income = final_partition["low_income"][district]
+        total_low_middle_income = final_partition["low_middle_income"][district]
+        total_upper_middle_income = final_partition["upper_middle_income"][district]
+        total_upper_income = final_partition["upper_income"][district]
 
+        final_results["low_income_pct"].append(total_low_income/total_households if total_households > 0 else 0)
+        final_results["low_middle_income_pct"].append(total_low_middle_income /total_households if total_households > 0 else 0)
+        final_results["upper_middle_income_pct"].append(total_upper_middle_income/total_households if total_households > 0 else 0)
+        final_results["upper_income_pct"].append(total_upper_income/total_households if total_households > 0 else 0)
+                    
+    
     plan_summary["avg_income_difference"].append(current_plan_income_difference/num_districts)
     plan_summary["poverty_districts"].append(num_poverty_districts)
-
-    logging.info(f"Plan {plan_num + 1} completed.")
     
     return plan_num, final_results, (plan_summary)
 
@@ -405,10 +434,8 @@ def seawulf(working_directory, output_path, state, data, num_plans, num_district
 
         for future in concurrent.futures.as_completed(futures):
             try:
-                timestamp = time.strftime("%Y%m%d_%H%M%S")
                 index, final_results, plan_summary = future.result()
 
-                # Save the GeoJSON for each plan
                 district_file = os.path.join(output_path, f"{index + 1}_{state}.geojson")
                 all_districts_gdf = gpd.GeoDataFrame(
                     final_results,
@@ -446,4 +473,4 @@ if __name__ == "__main__":
     current_directory = os.getcwd()  
     alabama_data = "/alabama_precinct_merged.geojson"
     logging.info("Running seawulf function.")
-    seawulf(current_directory, os.path.join(current_directory, ""), "AL", alabama_data, 5000, 52)
+    seawulf(current_directory, os.path.join(current_directory, ""), "AL", alabama_data, 5000, 7)

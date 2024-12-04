@@ -30,6 +30,9 @@ class TopBar extends React.Component {
         { id: "race", name: "Population by Race" },
         { id: "region", name: "Population (Region)" },
         { id: "income", name: "Income Distribution" },
+
+
+        // UPLOAD THE CODE FOR SEAWULF
         { id: "precinct", name: "Precinct Analysis" },
       ],
     },
@@ -60,53 +63,17 @@ class TopBar extends React.Component {
     this.props.setSelectedDistrict("");
     this.props.setSelectedTrend("");
     this.props.setSelectedSubTrend("");
+    this.props.setSelectedSubSubTrend("");
   };
 
   componentDidUpdate(prevProps) {
-    if (
-      this.props.selectedTrend === "precinct" &&
-      !this.state.analysisOptionsAdded
-    ) {
-      const updatedFilterOptions = [
-        ...this.filterOptions,
-        {
-          name: "Precinct Analysis Options",
-          options: [
-            { id: "demographic", name: "Demographic" },
-            { id: "economic", name: "Economic" },
-            { id: "poverty", name: "Poverty Level" },
-            { id: "pil", name: "Political/Income Level" },
-          ],
-        },
-      ];
-
-      this.setState({
-        analysisOptionsAdded: true,
-      });
-      this.filterOptions = updatedFilterOptions;
-    }
-
-    if (
-      this.props.selectedTrend !== "precinct" &&
-      this.state.analysisOptionsAdded
-    ) {
-      const updatedFilterOptions = this.filterOptions.filter(
-        (option) => option.name !== "Precinct Analysis Options"
-      );
-
-      this.setState({
-        analysisOptionsAdded: false,
-      });
-      this.filterOptions = updatedFilterOptions;
-    }
-
     if (prevProps.selectedState !== this.props.selectedState) {
       this.setState({ selectedState: this.props.selectedState });
       this.props.setSelectedDistrict("All Districts");
       this.props.setSelectedTrend("");
       this.props.setSelectedSubTrend("");
+      this.props.setSelectedSubSubTrend("");
     }
-
     if (prevProps.selectedDistrict !== this.props.selectedDistrict) {
       this.setState({ selectedDistrict: this.props.selectedDistrict });
     }
@@ -170,6 +137,40 @@ class TopBar extends React.Component {
               }
             />
           ))}
+
+        {this.props.selectedTrend === "precinct" && (
+            <FilterDropdown
+              number={3}
+              label="Chose Sub Trend"
+              options={[
+                { id: "demographic", name: "Demographic" },
+                { id: "economic", name: "Economic" },
+                { id: "region", name: "Region Type" },
+                { id: "poverty", name: "Poverty Level" },
+                { id: "pil", name: "Political-Income Level" },
+              ]}
+              value={this.props.selectedSubTrend || ""}
+              onChange={this.handleChange("SubTrend")}
+            />
+          )}
+
+          {this.props.selectedSubTrend === "demographic" && (
+
+            <FilterDropdown 
+
+              number={4}
+              label="Select Ethnic Group"
+              options={[
+                { id: "white", name: "White" },
+                { id: "black", name: "Black" },
+                { id: "hispanic", name: "Hispanic" },
+                { id: "asian", name: "Asian" },
+              ]}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
+            />
+          )}
+
           <button
             onClick={this.handleResetFilters}
             className="reset-filters-button"
