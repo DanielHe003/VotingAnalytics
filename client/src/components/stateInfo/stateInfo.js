@@ -44,15 +44,12 @@ class StateInfo extends React.Component {
 
   fetchPrecinctBoundaries = async () => {
   try {
-    const { selectedState } = this.props;
-    if (!selectedState) return;
+    if (!this.props.selectedState) return;
 
-    const stateId = selectedState === "Alabama" ? 1 : selectedState === "California" ? 6 : null;
-    if (!stateId) return;
-
-    const pageSize = 6700;
-    const fetchDataForState = async (stateId, page) => ApiService.fetchData(`states/${stateId}/precincts/geometries?page=${page}&size=${pageSize}`);
-
+    const stateId = this.props.selectedState === "Alabama" ? 1 : this.props.selectedState === "California" ? 6 : null;
+    
+    //Working through performance issues for California as we're loading ~20k+ precincts -- trying to determine the most effective method 
+    const fetchDataForState = async (stateId, page) => ApiService.fetchData(`states/${stateId}/precincts/geometries?page=${page}&size=${6700}`);
     if (stateId === 6) {
       const data = await Promise.all([0, 1, 2].map(page => fetchDataForState(stateId, page)));
       const mergedData = data.flatMap(d => d?.featureCollection?.features || []);
@@ -62,6 +59,7 @@ class StateInfo extends React.Component {
       const mergedGeoJSON = { type: "FeatureCollection", features: [data["featureCollection"]] };
       this.setState({ mapData: mergedGeoJSON, orginalPrecinctData: mergedGeoJSON });
     }
+
   } catch (error) {
     console.error("Error fetching precinct boundaries:", error);
   }
@@ -70,32 +68,19 @@ class StateInfo extends React.Component {
 
   fetchPrecinctHeatMap = async () => {
     try {
-      const { selectedState, selectedSubTrend, selectedSubSubTrend } = this.props;
-      if (!selectedState || !selectedSubTrend) return;
-      const stateId = selectedState === "Alabama" ? 1 : selectedState === "California" ? 6 : null;
-  
-      let data;  
-      switch (selectedSubTrend) {
-        case "demographic":
-          data = await ApiService.fetchData(`states/${stateId}/heatmap/demographic/${selectedSubSubTrend}`);
-          break;
-        case "economic":
-          data = await ApiService.fetchData(`states/${stateId}/heatmap/economic`);
-          break;
-        case "region":
-          data = await ApiService.fetchData(`states/${stateId}/heatmap/region-type`);
-          break;
-        case "poverty":
-          data = await ApiService.fetchData(`states/${stateId}/heatmap/poverty`);
-          break;
-        case "pil":
-          data = await ApiService.fetchData(`states/${stateId}/heatmap/political-income`);
-          break;
-        default:
-          console.error("Invalid sub-trend selected");
-          return;
-      }
-      if (data) {
+      if (!this.props.selectedState || !this.props.selectedSubTrend) return;
+      const stateId = this.props.selectedState === "Alabama" ? 1 : this.props.selectedState === "California" ? 6 : null;
+
+      const urlMap = {
+        "demographic": `states/${stateId}/heatmap/demographic/${this.props.selectedSubSubTrend}`,
+        "economic": `states/${stateId}/heatmap/economic`,
+        "region": `states/${stateId}/heatmap/region-type`,
+        "poverty": `states/${stateId}/heatmap/poverty`,
+        "pil": `states/${stateId}/heatmap/political-income`,
+      };
+
+      if (urlMap[this.props.selectedSubTrend]) {
+        const data = await ApiService.fetchData(urlMap[this.props.selectedSubTrend])
         this.setState({
           mapData: {
             type: "FeatureCollection",
@@ -122,7 +107,7 @@ class StateInfo extends React.Component {
     try {
       const state = this.props.selectedState;
       if (state) {
-        const stateId = state === "Alabama" ? 1 : 6;
+        const stateId = this.props.selectedState === "Alabama" ? 1 : this.props.selectedState === "California" ? 6 : null;
         const data = await ApiService.fetchMapData(stateId);
         console.log(data);
         const mapData = {
@@ -131,11 +116,9 @@ class StateInfo extends React.Component {
         };
         this.setState({ mapData });
       } else {
-        const [californiaData, alabamaData] = await Promise.all([
-          ApiService.fetchData("states/california/map"),
-          ApiService.fetchData("states/alabama/map"),
-        ]);
-            
+
+        const californiaData = await ApiService.fetchData("states/california/map");
+        const alabamaData = await ApiService.fetchData("states/alabama/map");            
         this.setState({ mapData: {
           type: "FeatureCollection",
           features: [alabamaData, californiaData],
@@ -220,7 +203,7 @@ class StateInfo extends React.Component {
                 )}
               </div>
               <div className="button-container">
-                {this.props.State && (
+                {this.props.selectedState && (
                   <button onClick={this.togglePopup} className="action-button">
                     Drawing Process
                   </button>
@@ -228,7 +211,7 @@ class StateInfo extends React.Component {
               </div>
               <Popup
                 isVisible={this.state.showPopup}
-                state={this.props.State}
+                state={this.props.selectedState}
                 onClose={this.togglePopup}
               />
             </div>

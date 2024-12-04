@@ -11,7 +11,7 @@ class SummaryComponent extends Component {
       prevData: null
     };
   }
-
+  
   render() {
     const { data, selectedTrend } = this.props;
 

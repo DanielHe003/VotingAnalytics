@@ -40,6 +40,15 @@ class MapComponent extends React.Component {
         case "percentage":
           modifiedProperties.set("Percentage (%)", value);
           break;
+        case "povertyPercentage":
+          modifiedProperties.set("Poverty Percentage (%)", value);
+          break;
+        case "type":
+          modifiedProperties.set("Region Type", value);
+          break;
+        case "medianIncome":
+          modifiedProperties.set("Median Income ($)", value)
+          break;
         case "districtId":
           modifiedProperties.set("District ID", value);
           break;

@@ -4,7 +4,6 @@ import ChartContainer from "../common/ChartContainer";
 import axios from "axios";
 import "./StateAnalysis.css";
 import ApiService from "../common/ApiService";
-import ChartScatterComponent from "../charts/ChartScatterComponent";
 
 class StateAnalysis extends React.Component {
   state = {
@@ -35,30 +34,23 @@ class StateAnalysis extends React.Component {
       if(!this.props.selectedSubSubTrend || !this.props.selectedSubTrend) return;
       const stateId = this.props.selectedState === "Alabama" ? 1 : this.props.selectedState === "California" ? 6 : null;
   
-      let url = "";  
-      switch (this.props.selectedSubTrend) {
-        case "race":
-          url = `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`;
-          break;
-        case "income":
-          url = `states/${stateId}/gingles/income${this.props.selectedSubSubTrend ? `?regionType=${this.props.selectedSubSubTrend}` : ""}`;
-          break;
-        case "income-race":
-          url = `states/${stateId}/gingles/income-race/${this.props.selectedSubSubTrend}`;
-          break;
-        default:
-          return;
-      }
-      if (url) {
-        const data = await this.fetchData(`${url}`);
+      const urlMap = {
+        "race": `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`,
+        "income": `states/${stateId}/gingles/income${this.props.selectedSubSubTrend ? `?regionType=${this.props.selectedSubSubTrend}` : ""}`,
+        "income-race": `states/${stateId}/gingles/income-race/${this.props.selectedSubSubTrend}`
+      };
+      
+      if (urlMap[this.props.selectedSubTrend]) {
+        const data = await ApiService.fetchData(`${urlMap[this.props.selectedSubTrend]}`);
         this.setState({ chartData: data });
       }
+      
     } catch (error) {
       console.error("Error fetching Gingles analysis:", error);
     }
   };
 
-  // Not implemented -- bad code + data
+  // Not implemented
   fetchSeawulf = async () => { 
   };
 
@@ -66,16 +58,14 @@ class StateAnalysis extends React.Component {
   };
 
   renderChart = () => {
-    const { selectedTrend } = this.props;
-    const { chartData } = this.state;
-    if (selectedTrend === "Gingles") {
-      return <ChartContainer data={chartData} type="scatter" title="Gingles Analysis" height={400} width={700} label="" xAxisTitle="Percentage (%) of _____" yAxisTitle="Vote Percentage (%)" />;
+    if (this.props.selectedTrend === "Gingles") {
+      return <ChartContainer data={this.state.chartData} type="scatter" title="Gingles Analysis" height={400} width={700} label="" xAxisTitle="Percentage (%) of _____" yAxisTitle="Vote Percentage (%)" />;
     }
-    if (selectedTrend === "MCMC") {
-      return <ChartContainer data={chartData} type="boxandwhisker" title="MCMC Analysis" height={400} width={600} xAxisTitle="X-Axis" yAxisTitle="Vote Percentage (%)" />;
+    else if (this.props.selectedTrend === "MCMC") {
+      return <ChartContainer data={this.state.chartData} type="boxandwhisker" title="MCMC Analysis" height={400} width={600} xAxisTitle="X-Axis" yAxisTitle="Vote Percentage (%)" />;
     }
-    if (selectedTrend === "EI") {
-      return <ChartContainer data={chartData} type="density" title="EI Analysis" label={" "} height={400} width={600} xAxisTitle="" yAxisTitle="Vote Percentage (%)" />;
+    else if (this.props.selectedTrend === "EI") {
+      return <ChartContainer data={this.state.chartData} type="density" title="EI Analysis" label={" "} height={400} width={600} xAxisTitle="" yAxisTitle="Vote Percentage (%)" />;
     }
     return null;
   };
