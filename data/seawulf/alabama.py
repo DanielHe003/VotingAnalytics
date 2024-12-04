@@ -27,7 +27,7 @@ logging.basicConfig(
     ]
 )
 
-def process_plan(plan_num, working_directory, output_path, state, data, num_districts):
+def process_plan(plan_num, working_directory, state, statewide_average_income, data, num_districts):
     
     logging.info(f"Starting plan {plan_num+1}...")
     graph = Graph.from_file(working_directory + data)
@@ -96,7 +96,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         total_steps=10000
     )
     
-    # Final Results 
     final_results = {
         "district": [],
         "democrats": [],
@@ -160,14 +159,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         
     }
 
-    statewide_average_income = 0
-    
-    # Calculate Measures
-    if state == "CA":
-        statewide_average_income = 95777.82
-    elif state == "AL":
-        statewide_average_income = 56036.51
-
     current_plan_income_difference = 0
     current_plan_dem_pct = 0
     current_plan_rep_pct = 0
@@ -185,13 +176,8 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
     
     all_precincts = graph.nodes(data=True)
     
-    # Rural
     rural_precincts = {k: v for k, v in all_precincts if v["Category"] == "Rural"}
-    
-    # Suburban
     suburban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Suburban"}
-    
-    # Urban
     urban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Urban"}
     
     for district in final_partition["democrats"].keys():
@@ -207,8 +193,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         twoormore_count = final_partition["twoormore"][district]
         total_population = final_partition["population"][district]
         
-        # Store results
-        # Election Data
         final_results["district"].append(district)
         final_results["democrats"].append(dem_count)
         final_results["republicans"].append(rep_count)
@@ -223,11 +207,8 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         current_plan_dem_pct += (dem_count)/(dem_count + rep_count)
         current_plan_rep_pct += (rep_count)/(dem_count + rep_count)
     
-        # Region Data
         region_category = ""
-
         area = final_partition["arealand"][district]
-        
         density = (total_population / area) * 1000
 
         if density < 0.1:
@@ -238,11 +219,9 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
             num_urban_districts += 1
         else:
             region_category = "Suburban"
-            num_suburban_districts += 1
-        
+            num_suburban_districts += 1   
         final_results["category"].append(region_category)
         
-        # Race Data
         final_results["black_pct"].append(black_count/total_population)
         final_results["white_pct"].append(white_count/total_population)
         final_results["asian_pct"].append(asian_count/total_population)
@@ -253,7 +232,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["twoormore_pct"].append(twoormore_count/total_population)
         final_results["total_population"].append(total_population)
 
-    
         # Get the geometry for the precincts in this district and combine them
         precinct_geometries = []
         for precinct in final_partition.assignment:
@@ -263,8 +241,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         
         # Combine the precinct geometries into a single geometry for the district
         combined_geometry = unary_union(precinct_geometries)  # Union all the precinct geometries
-        
-        # Add the combined geometry for the district
         final_results["geometry"].append(combined_geometry)
 
     plan_summary["avg_dem_support"].append(current_plan_dem_pct/num_districts)
@@ -275,7 +251,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
     plan_summary["urban_districts"].append(num_urban_districts)
     plan_summary["suburban_districts"].append(num_suburban_districts)
 
-
     # race data with region
     for district in final_partition["population"].keys():
         total_rural_population = final_partition["rural"][district]
@@ -283,7 +258,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         total_urban_population = final_partition["urban"][district]
         total_population = final_partition["population"][district]
 
-        # rural
         rural_black_count = 0
         rural_white_count = 0
         rural_asian_count = 0
@@ -314,7 +288,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["rural_twoormore_pct"].append(rural_twoormore_count/total_rural_population if total_rural_population > 0 else 0)
         final_results["rural_population_pct"].append(total_rural_population/total_population)
         
-        # suburban
         suburban_black_count = 0
         suburban_white_count = 0
         suburban_asian_count = 0
@@ -345,7 +318,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["suburban_twoormore_pct"].append(suburban_twoormore_count/total_suburban_population if total_suburban_population > 0 else 0)
         final_results["suburban_population_pct"].append(total_suburban_population/total_population)
         
-        # urban
         urban_black_count = 0
         urban_white_count = 0
         urban_asian_count = 0
@@ -377,7 +349,6 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["urban_population_pct"].append(total_urban_population/total_population)
     
     # income data
-    
     eligible_precincts = graph.nodes(data=True)
     eligible_precincts = {k: v for k, v in eligible_precincts if v["TOT_HOUS21"] > 0.0}
 
@@ -407,21 +378,19 @@ def process_plan(plan_num, working_directory, output_path, state, data, num_dist
         final_results["upper_middle_income_pct"].append(total_upper_middle_income/total_households if total_households > 0 else 0)
         final_results["upper_income_pct"].append(total_upper_income/total_households if total_households > 0 else 0)
                     
-    
     plan_summary["avg_income_difference"].append(current_plan_income_difference/num_districts)
     plan_summary["poverty_districts"].append(num_poverty_districts)
     
     return plan_num, final_results, (plan_summary)
 
-
-def seawulf(working_directory, output_path, state, data, num_plans, num_districts):
+def seawulf(working_directory, output_path, state, statewide_average_income, data, num_plans, num_districts):
     logging.info("Starting the seawulf process")
     logging.info(f"Starting multiprocessing with {mp.cpu_count()} cores")
 
     all_plan_summaries = []
 
     tasks = [
-        (i, working_directory, output_path, state, data, num_districts)
+        (i, working_directory, output_path, state, statewide_average_income, data, num_districts)
         for i in range(num_plans)
     ]
     logging.debug(f"Tasks prepared for {num_plans} plans.")
@@ -473,4 +442,4 @@ if __name__ == "__main__":
     current_directory = os.getcwd()  
     alabama_data = "/alabama_precinct_merged.geojson"
     logging.info("Running seawulf function.")
-    seawulf(current_directory, os.path.join(current_directory, ""), "AL", alabama_data, 5000, 7)
+    seawulf(current_directory, os.path.join(current_directory, ""), "AL", 56036.51, alabama_data, 5000, 7)
