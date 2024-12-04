@@ -31,15 +31,15 @@ class ChartScatterComponent extends Component {
       logarithmic: regression.logarithmic,
       power: regression.power,
     };
-  
+
     const regressionFunc = regressionMethods[regressionType] || regression.polynomial;
     const result = regressionFunc(data.map((d) => [d.x, d.y]), { order: 2 });
-  
+
     const fitData = data.map((d) => ({
       x: d.x,
       y: result.predict(d.x)[1],
     }));
-  
+
     return {
       label: "",
       data: fitData,
@@ -51,31 +51,27 @@ class ChartScatterComponent extends Component {
     };
   };
 
-  medianIncomeXaxis
   generateDataForRegression = (data) => {
-    console.log(data)
     if (!data || !Array.isArray(data)) {
-      console.error("Invalid data provided for regression");
-      return { democraticData: [], republicanData: [] }; // Return empty arrays to prevent further errors
+      return { democraticData: [], republicanData: [] };
     }
-  
-    // Ensure that each object in the data has the expected properties
+
     const democraticData = data.map((d) => ({
-      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0, // Default to 0 if property is missing
-      y: d.deomcracticShareYAxis || d.democraticVoteShareYaxis || 0, // Default to 0 if property is missing
+      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+      y: d.deomcracticShareYAxis || d.democraticVoteShareYaxis || 0,
     }));
-    
+
     const republicanData = data.map((d) => ({
-      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0, // Default to 0 if property is missing
-      y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0, // Default to 0 if property is missing
+      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+      y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0,
     }));
-  
+
     return {
       democraticData,
       republicanData,
     };
   };
-  
+
   renderChart = () => {
     const chartCanvas = document.getElementById("myChart");
     const datasets = [];
@@ -86,7 +82,7 @@ class ChartScatterComponent extends Component {
       data: democraticData,
       backgroundColor: "blue",
       borderColor: "blue",
-      pointRadius: 1,
+      pointRadius: 0.5,
       showLine: false,
     });
 
@@ -97,7 +93,7 @@ class ChartScatterComponent extends Component {
       data: republicanData,
       backgroundColor: "red",
       borderColor: "red",
-      pointRadius: 1,
+      pointRadius: 0.5,
       showLine: false,
     });
 
@@ -153,13 +149,12 @@ class ChartScatterComponent extends Component {
   render() {
     return (
       <div style={{ width: `${this.props.width}px`, height: `${this.props.height}px` }}>
-<canvas 
-  id="myChart" 
-  width={this.props.width - 100} 
-  height={this.props.height - 100} 
-  style={{ border: '1px solid #ccc' }} 
-></canvas>
-
+        <canvas 
+          id="myChart" 
+          width={this.props.width - 100} 
+          height={this.props.height - 100} 
+          style={{ border: '1px solid #ccc' }} 
+        ></canvas>
       </div>
     );
   }
