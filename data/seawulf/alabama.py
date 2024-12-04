@@ -86,7 +86,7 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
     logging.debug(f"Initial partition created for plan {plan_num+1}.")
 
     proposal = partial(recom, pop_col="TOT_POP", pop_target=ideal_population, epsilon=0.05, node_repeats=2)
-    pop_constraint = within_percent_of_ideal_population(initial_partition, 0.05)
+    pop_constraint = within_percent_of_ideal_population(initial_partition, epsilon)
 
     chain = MarkovChain(
         proposal=proposal,
@@ -174,12 +174,9 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
                         
     final_partition = new_partition
     
-    all_precincts = graph.nodes(data=True)
+    all_precincts = graph.nodes(data=True)    
     
-    rural_precincts = {k: v for k, v in all_precincts if v["Category"] == "Rural"}
-    suburban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Suburban"}
-    urban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Urban"}
-    
+    # Find District Plan Voting Splits and Region Type
     for district in final_partition["democrats"].keys():
         dem_count = final_partition["democrats"][district]
         rep_count = final_partition["republicans"][district]
@@ -232,15 +229,15 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
         final_results["twoormore_pct"].append(twoormore_count/total_population)
         final_results["total_population"].append(total_population)
 
-        # Get the geometry for the precincts in this district and combine them
+        # Get the Geometry For the Precincts in This District and Combine Them
         precinct_geometries = []
         for precinct in final_partition.assignment:
             if final_partition.assignment[precinct] == district:
                 geometry = graph.nodes[precinct]["geometry"]
-                precinct_geometries.append(shape(geometry))  # Convert geometry to Shapely object
+                precinct_geometries.append(shape(geometry))  # Convert Geometry to Shapely Object
         
-        # Combine the precinct geometries into a single geometry for the district
-        combined_geometry = unary_union(precinct_geometries)  # Union all the precinct geometries
+        # Combine the Precinct Geometries into a Single Geometry for the District
+        combined_geometry = unary_union(precinct_geometries)  # Union all the Precinct Geometries
         final_results["geometry"].append(combined_geometry)
 
     plan_summary["avg_dem_support"].append(current_plan_dem_pct/num_districts)
@@ -251,7 +248,11 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
     plan_summary["urban_districts"].append(num_urban_districts)
     plan_summary["suburban_districts"].append(num_suburban_districts)
 
-    # race data with region
+    # Race Data with Region
+    rural_precincts = {k: v for k, v in all_precincts if v["Category"] == "Rural"}
+    suburban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Suburban"}
+    urban_precincts = {k: v for k, v in all_precincts if v["Category"] == "Urban"}
+
     for district in final_partition["population"].keys():
         total_rural_population = final_partition["rural"][district]
         total_suburban_population = final_partition["suburban"][district]
@@ -348,15 +349,15 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
         final_results["urban_twoormore_pct"].append(urban_twoormore_count/total_urban_population if total_urban_population > 0 else 0)
         final_results["urban_population_pct"].append(total_urban_population/total_population)
     
-    # income data
-    eligible_precincts = graph.nodes(data=True)
-    eligible_precincts = {k: v for k, v in eligible_precincts if v["TOT_HOUS21"] > 0.0}
+    # Finding Income Data
+    eligible_income_precincts = graph.nodes(data=True)
+    eligible_income_precincts = {k: v for k, v in eligible_income_precincts if v["TOT_HOUS21"] > 0.0}
 
     for district in final_partition["population"].keys():    
         total_income = 0
         precinct_count = 0
 
-        for precinct, attributes in eligible_precincts.items():
+        for precinct, attributes in eligible_income_precincts.items():
             if final_partition.assignment[precinct] == district:
                 total_income += attributes["MEDN_INC21"]
                 precinct_count += 1
