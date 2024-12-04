@@ -1,7 +1,10 @@
 package com.voter_analysis.voter_analysis.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class RaceGinglesDTO {
     private String precinctKey;

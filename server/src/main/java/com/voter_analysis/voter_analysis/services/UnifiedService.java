@@ -65,21 +65,62 @@ public class UnifiedService {
         this.ginglesAnalysisRepository = ginglesAnalysisRepository;
         this.ginglesMapper = ginglesMapper;
     }
+    //Frequently accessed repo methods 
+    @Cacheable(value = "precinctsByState", key = "#stateId")
+    public List<Precinct> getPrecinctsByState(int stateId) {
+        return precinctRepository.findByPropertiesStateId(stateId);
+    }
+
+    @Cacheable(value = "congressionalDistrictsByState", key = "#stateId")
+    public List<CongressionalDistrict> getCongressionalDistrictsByState(int stateId) {
+        return congressionalDistrictRepository.findByPropertiesStateId(stateId);
+    }
+
+    @Cacheable(value = "state", key = "#stateName")
+    public State getStateByStateName(String stateName) {
+        return stateRepository.findByPropertiesName(stateName);
+    }
+    @Cacheable(value = "paginatedPrecinctsByState", key = "#stateId + '-' + #page + '-' + #size")
+    public Page<Precinct> getPaginatedPrecinctsByState(int stateId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return precinctRepository.findByPropertiesStateId(stateId, pageable);
+    }
+    @Cacheable(value = "congressionalDistrictByStateAndDistrict", key = "#stateId + '-' + #cdId")
+    public CongressionalDistrict getCongressionalDistrictByStateAndDistrict(int stateId, int cdId) {
+        return congressionalDistrictRepository.findByPropertiesStateIdAndPropertiesDistrictId(stateId, cdId)
+            .orElseThrow(() -> new IllegalArgumentException("District not found for stateId: " + stateId + ", cdId: " + cdId));
+    }
+    @Cacheable(value = "ginglesAnalysisByStateAndType", key = "#stateId + '-' + #analysisType")
+    public List<GinglesAnalysis> getGinglesAnalysisByStateAndAnalysisType(int stateId, String analysisType) {
+        return ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, analysisType);
+    }
+    @Cacheable(value = "ginglesAnalysisByStateAndRegion", key = "#stateId + '-' + #regionType")
+    public List<GinglesAnalysis> getGinglesAnalysisByStateAndRegion(int stateId, String regionType) {
+        return ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
+    }
+
+
+
+
     //Use case #1
+    @Cacheable(value = "stateList")
     public List<StateListItem> getStateList() {
         return List.of(new StateListItem(1, "Alabama"), new StateListItem(6, "California"));
     }
+    @Cacheable(value = "stateProperties", key = "#stateName")
     public StatePropertiesDTO getStateProperties(String stateName){
-        State state = stateRepository.findByPropertiesName(stateName);
+        State state = getStateByStateName(stateName);
         return stateMapper.toStatePropertiesDTO(state);
     }
+    @Cacheable(value = "stateGeometry", key = "#stateName")
     public FeatureDTO getStateGeometry(String stateName) {
-        State state = stateRepository.findByPropertiesName(stateName);
+        State state = getStateByStateName(stateName);
         return stateMapper.toFeatureDTO(state);
     }
     //Use case #2
+    @Cacheable(value = "congressionalDistrictsMaps", key = "#stateId")
     public FeatureCollectionDTO getCongressionalDistrictsMaps(int stateId) {
-        List<CongressionalDistrict> districts = congressionalDistrictRepository.findByPropertiesStateId(stateId);
+        List<CongressionalDistrict> districts = getCongressionalDistrictsByState(stateId);
         List<FeatureDTO> features = districts.stream()
                 .map(congressionalDistrictMapper::toFeatureDTO)
                 .collect(Collectors.toList());
@@ -89,15 +130,16 @@ public class UnifiedService {
         return featureCollection;
     }
     //Use case #3
+    @Cacheable(value = "stateSummary", key = "#stateName")
     public StateSummaryDTO getStateSummary(String stateName){
-        State state = stateRepository.findByPropertiesName(stateName);
+        State state = getStateByStateName(stateName);
         return stateMapper.toStateSummaryDTO(state);
     }
     //Use case 4-7
+    @Cacheable(value = "precinctGeometries", key = "#stateId + '-' + #page + '-' + #size")
     public PaginatedFeatureCollectionDTO getPrecinctGeometries(int stateId, int page, int size) {
         System.out.println("State ID is " + stateId);
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Precinct> precinctsPage = precinctRepository.findByPropertiesStateId(stateId, pageable);
+        Page<Precinct> precinctsPage = getPaginatedPrecinctsByState(stateId, page, size);
         System.out.println("Number of precincts are " + precinctsPage.getNumberOfElements());
     
         List<FeatureDTO> features = precinctsPage.stream()
@@ -128,8 +170,9 @@ public class UnifiedService {
         return paginatedResponse;
     }
     //Use Case #4
+    @Cacheable(value = "demographicHeatMap", key = "#stateId + '-' + #demographicGroup")
     public DemographicHeatMapDTO getDemographicHeatMapData(int stateId, String demographicGroup) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<DemographicHeatDataDTO> dataList = precincts.stream()
             .map(precinct -> {
@@ -155,8 +198,9 @@ public class UnifiedService {
         return response;
     }
     //Use case 5
+    @Cacheable(value = "economicHeatMap", key = "#stateId")
     public EconomicHeatMapDTO getEconomicHeatMapData(int stateId) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<EconomicHeatDataDTO> dataList = precincts.stream()
             .map(precinct -> {
@@ -179,8 +223,9 @@ public class UnifiedService {
         return response;
     }
     //Also use case 5
+    @Cacheable(value = "regionTypeHeatMap", key = "#stateId")
     public RegionTypeHeatMapDTO getRegionTypeHeatMapData(int stateId) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<RegionTypeHeatDataDTO> dataList = precincts.stream()
             .map(precinct -> {
@@ -202,8 +247,9 @@ public class UnifiedService {
         return response;
     }
     //Use case 6
+    @Cacheable(value = "povertyHeatMap", key = "#stateId")
     public PovertyHeatMapDTO getPovertyHeatMapData(int stateId) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<PovertyHeatDataDTO> dataList = precincts.stream()
             .map(precinct -> {
@@ -226,8 +272,9 @@ public class UnifiedService {
         return response;
     }
     //Use case 7
+    @Cacheable(value = "politicalIncomeHeatMap", key = "#stateId")
     public PoliticalIncomeHeatMapDTO getPoliticalIncomeHeatMapData(int stateId) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<PoliticalIncomeHeatDataDTO> dataList = precincts.stream()
             .map(precinct -> {
@@ -256,9 +303,10 @@ public class UnifiedService {
     
     
     //Use Case #8
+    @Cacheable(value = "districtRepresentationList", key = "#stateId")
     public List<CongressionalRepresentationDTO> getDistrictRepresentationList(int stateId) {
         // Fetch all districts for the given state
-        List<CongressionalDistrict> districts = congressionalDistrictRepository.findByPropertiesStateId(stateId);
+        List<CongressionalDistrict> districts = getCongressionalDistrictsByState(stateId);
     
         // Map districts to CongressionalRepresentationDTOs
         return districts.stream()
@@ -266,10 +314,10 @@ public class UnifiedService {
             .collect(Collectors.toList());
     }
     //Use case #9
+    @Cacheable(value = "districtMap", key = "#stateId + '-' + #cdId")
     public FeatureDTO getDistrictMap(int stateId, int cdId) {
         // Fetch the district for the given state and district ID
-        CongressionalDistrict district = congressionalDistrictRepository.findByPropertiesStateIdAndPropertiesDistrictId(stateId, cdId)
-            .orElseThrow(() -> new IllegalArgumentException("District not found for stateId: " + stateId + ", cdId: " + cdId));
+        CongressionalDistrict district = getCongressionalDistrictByStateAndDistrict(stateId, cdId);
     
         // Map the district to FeatureDTO containing only geometry
         FeatureDTO feature = congressionalDistrictMapper.toFeatureDTO(district);
@@ -282,9 +330,11 @@ public class UnifiedService {
     
 
     //Use case #12
+    @Cacheable(value = "raceGinglesData", key = "#stateId + '-' + #racialGroup")
     public ScatterPlotDTO<RaceGinglesDTO> getRaceGinglesData(int stateId, String racialGroup) {
-        List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "regular");
         String demographic = RacialCategoryMapper.getDatabaseField(racialGroup);
+        List<GinglesAnalysis> analyses = getGinglesAnalysisByStateAndAnalysisType(stateId, "regular");
+        
 
         if (demographic == null) {
             throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
@@ -305,10 +355,11 @@ public class UnifiedService {
     }
     
     // Use Case #13: Gingles Income Analysis
+    @Cacheable(value = "incomeGinglesData", key = "#stateId + '-' + (#regionType != null ? #regionType : 'all')")
     public ScatterPlotDTO<IncomeGinglesDTO> getIncomeGinglesData(int stateId, String regionType) {
         List<GinglesAnalysis> analyses = regionType == null
-                ? ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income")
-                : ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
+                ? getGinglesAnalysisByStateAndAnalysisType(stateId, "income")
+                : getGinglesAnalysisByStateAndRegion(stateId, regionType);
 
         List<IncomeGinglesDTO> dataPoints = analyses.stream()
                 .map(analysis -> ginglesMapper.toIncomeGinglesDTO(analysis.getData(), regionType))
@@ -324,8 +375,10 @@ public class UnifiedService {
     }
     
     //Use case #14
+    @Cacheable(value = "incomeRaceGinglesData", key = "#stateId + '-' + #racialGroup")
     public ScatterPlotDTO<IncomeRaceGinglesDTO> getIncomeRaceGinglesData(int stateId, String racialGroup) {
-        List<GinglesAnalysis> analyses = ginglesAnalysisRepository.findByStateIdAndAnalysisType(stateId, "income_race");
+        List<GinglesAnalysis> analyses = getGinglesAnalysisByStateAndAnalysisType(stateId, "income_race");
+        System.out.println("analyses are + " + analyses);
         String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
 
         if (databaseField == null) {
@@ -346,8 +399,9 @@ public class UnifiedService {
     }
     
     //Use case #15
+    @Cacheable(value = "ginglesTableData", key = "#stateId")
     public List<GinglesTableDTO> getGinglesTableData(int stateId) {
-        List<Precinct> precincts = precinctRepository.findByPropertiesStateId(stateId);
+        List<Precinct> precincts = getPrecinctsByState(stateId);
         return precincts.stream()
                 .map(precinctMapper::toGinglesTableDTO)
                 .collect(Collectors.toList());
