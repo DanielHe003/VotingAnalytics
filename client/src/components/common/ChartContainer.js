@@ -21,6 +21,7 @@ class ChartContainer extends React.Component {
     } = this.props;
 
     return (
+      <>
       <div className="chartBox">
         <h4 className="title">{title}</h4>
         {type === 'bar' && (
@@ -43,16 +44,7 @@ class ChartContainer extends React.Component {
           />
         )}
 
-        {type === 'scatter' && (
-          <ChartScatterComponent 
-            data={data} 
-            height={height} 
-            width={width} 
-            dataSets={null} 
-            populationStat={null} 
-          />
-        )}
-
+       
         {type === 'density' && (
           <DensityChartComponent 
             title={title} 
@@ -74,6 +66,17 @@ class ChartContainer extends React.Component {
           />
         )}
       </div>
+      {type === 'scatter' && (
+          <ChartScatterComponent 
+            data={data} 
+            height={height} 
+            width={width} 
+            dataSets={null} 
+            populationStat={null} 
+          />
+        )}
+      </>
+
     );
   }
 }

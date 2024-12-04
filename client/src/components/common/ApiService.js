@@ -7,8 +7,8 @@ class ApiService {
 
   async fetchData(endpoint) {
     try {
-      const { data } = await axios.get(`${this.baseUrl}/${endpoint}`);
-      return data;
+      const response = await axios.get(`${this.baseUrl}/${endpoint}`);
+      return response.data;
     } catch (error) {
       console.error('Error fetching data:', error);
       throw error;
@@ -20,6 +20,7 @@ class ApiService {
   }
 
   async fetchStateSummary(state) {
+    
     return this.fetchData(`states/${state}`);
   }
 }
