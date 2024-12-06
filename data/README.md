@@ -1,3 +1,5 @@
+https://docs.google.com/document/d/1C9FLcbXFKteyua69LbAV_jlFW451Abi3zdv5Ncty6yM/edit?usp=sharing
+
 Prepro‐1. Integrate multiple data sources (required) (AD)   
 Integrate and merge US Census data (income, region type (rural, urban, suburban) population, both for total and for any opportunity groups), precinct data (boundary, name, demographics, etc.), and existing district data (boundary, name, district#, etc.). Geographic boundary data should be converted (if necessary) to a consistent format (e.g., GeoJSON). 
 
@@ -91,5 +93,5 @@ Calculate the region type (rural, urban, and suburban) for each precinct. You ca
 reasonable values for the ratio of area to population to determine the classification of each
 precinct. 
 
-
-
+data/preprocessing/cali-preprocessing.ipnyb
+data/preprocessing/alabama-preprocessing.ipnyb
