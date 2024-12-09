@@ -27,13 +27,11 @@ logging.basicConfig(
     ]
 )
 
-def process_plan(plan_num, working_directory, state, statewide_average_income, data, num_districts):
-    
-    logging.info(f"Starting plan {plan_num+1}...")
-    graph = Graph.from_file(working_directory + data)
-    logging.debug(f"Graph loaded from {working_directory + data}")
-    
-    updaters = {
+def createGraph(directory):
+    return Graph.from_file(directory)
+
+def createUpdaters():
+    return {
         "population": Tally("TOT_POP", alias="population"),
         "cut_edges": cut_edges,
         "democrats": Tally("PRSDEM01", alias="democrats"),
@@ -56,16 +54,14 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
         "upper_middle_income": Tally("UP_MID_INC", alias="upper_middle_income"),
         "upper_income": Tally("UP_INC", alias="upper_income"),
     }
-    logging.debug(f"Updaters initialized.")
 
+def values(graph, num_districts):
     total_population = sum(graph.nodes[node]["TOT_POP"] for node in graph.nodes)
     ideal_population = total_population / num_districts
-    epsilon = 0.05
+    return total_population, ideal_population
 
-    district_labels = list(range(1, num_districts + 1))
-    
-    logging.debug(f"Total population: {total_population}, Ideal population per district: {ideal_population}")
-    new_assignment = recursive_tree_part(
+def new_assignment(graph, district_labels, ideal_population, epsilon):
+    return recursive_tree_part(
         graph,
         parts=district_labels,
         pop_target=ideal_population,
@@ -73,6 +69,38 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
         epsilon=epsilon,
         node_repeats=1,
     )
+
+def markovChain(proposal, pop_constraint, initial_partition):
+    return MarkovChain(
+        proposal=proposal,
+        constraints=pop_constraint,
+        accept=always_accept,
+        initial_state=initial_partition,
+        total_steps=10000
+    )
+
+def get_final_partition(chain):
+    for new_partition in chain:
+        pass
+    
+    final_partition = new_partition
+    return final_partition
+
+def process_plan(plan_num, working_directory, state, statewide_average_income, data, num_districts):
+    
+    logging.info(f"Starting plan {plan_num+1}...")
+    graph = createGraph(working_directory + data)
+    logging.debug(f"Graph loaded from {working_directory + data}")
+    
+    updaters = createUpdaters()
+    logging.debug(f"Updaters initialized.")
+
+    total_population, ideal_population = values(graph, num_districts)
+    epsilon = 0.05
+    district_labels = list(range(1, num_districts + 1))
+    
+    logging.debug(f"Total population: {total_population}, Ideal population per district: {ideal_population}")
+    new_assignment = new_assignment(graph, district_labels, ideal_population, epsilon)
     
     logging.debug(f"New assignment for plan {plan_num+1} created.")
     logging.info(f"Finished new assignment for plan {plan_num+1}.")
@@ -88,13 +116,7 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
     proposal = partial(recom, pop_col="TOT_POP", pop_target=ideal_population, epsilon=0.05, node_repeats=2)
     pop_constraint = within_percent_of_ideal_population(initial_partition, epsilon)
 
-    chain = MarkovChain(
-        proposal=proposal,
-        constraints=pop_constraint,
-        accept=always_accept,
-        initial_state=initial_partition,
-        total_steps=10000
-    )
+    chain = markovChain(proposal, pop_constraint, initial_partition)
     
     final_results = {
         "district": [],
@@ -169,10 +191,7 @@ def process_plan(plan_num, working_directory, state, statewide_average_income, d
     num_suburban_districts = 0
     num_poverty_districts = 0
     
-    for new_partition in chain:
-        pass 
-                        
-    final_partition = new_partition
+    final_partition = get_final_partition(chain)
     
     all_precincts = graph.nodes(data=True)    
     
