@@ -27,7 +27,7 @@ logging.basicConfig(
     ]
 )
 
-
+# Prepro‐7. Generate data files required for SeaWulf processing (required) (AD)
 def process_plan(plan_num, working_directory, output_path, state, data, num_districts):
     logging.info(f"Starting plan {plan_num+1}...")
 
