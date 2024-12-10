@@ -23,7 +23,7 @@ class ChartScatterComponent extends Component {
     }
   }
 
-  generateRegressionData = (data, color) => {
+  generateRegressionData = (data, color, label) => {
 
     const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order: 2 });
     const fitData = data.map((d) => ({
@@ -32,7 +32,7 @@ class ChartScatterComponent extends Component {
     }));
 
     return {
-      label: "",
+      label: label,
       data: fitData,
       borderColor: color,
       backgroundColor: `${color}`,
@@ -65,7 +65,7 @@ class ChartScatterComponent extends Component {
 
   renderChart = () => {
     const chartCanvas = document.getElementById("myChart");
-    const { democraticData, republicanData } = this.generateDataForRegression(this.props.data);
+    const { democraticData, republicanData } = this.generateDataForRegression(this.props.data.dataPoints);
     const datasets = [];
 
     datasets.push({
@@ -84,8 +84,9 @@ class ChartScatterComponent extends Component {
       pointRadius: 0.5,
       showLine: false,
     });
-    datasets.push(this.generateRegressionData(democraticData, "blue"));
-    datasets.push(this.generateRegressionData(republicanData, "polynomial", "red"));
+
+    datasets.push(this.generateRegressionData(democraticData, "blue", "Democratic Fit"));
+    datasets.push(this.generateRegressionData(republicanData, "red", "Republican Fit"));
 
     this.chartInstance = new Chart(chartCanvas, {
       type: "scatter",
@@ -107,7 +108,7 @@ class ChartScatterComponent extends Component {
           x: {
             title: {
               display: true,
-              text: this.props.xAxisTitle,
+              text: this.props.data.xaxisLabel,
               font: {
                 size: 16,
                 weight: "bold",
@@ -117,7 +118,7 @@ class ChartScatterComponent extends Component {
           y: {
             title: {
               display: true,
-              text: this.props.yAxisTitle,
+              text: this.props.data.yaxisLabel,
               font: {
                 size: 16,
                 weight: "bold",

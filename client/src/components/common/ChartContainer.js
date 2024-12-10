@@ -17,12 +17,17 @@ class ChartContainer extends React.Component {
       type, 
       xAxisTitle, 
       yAxisTitle, 
-      label 
+      label,
+      titleRender
     } = this.props;
+
+    console.log(data);
 
     return (
       <>
-      <div className="chartBox">
+      {titleRender && (
+        <>
+        <div className="chartBox">
         <h4 className="title">{title}</h4>
         {type === 'bar' && (
           <BarChartComponent 
@@ -34,6 +39,10 @@ class ChartContainer extends React.Component {
             yAxisTitle={yAxisTitle}
           />
         )}
+
+        </div>
+        </>)}
+
 
         {type === 'table' && (
           <TableComponent 
@@ -65,7 +74,7 @@ class ChartContainer extends React.Component {
             width={width} 
           />
         )}
-      </div>
+
       {type === 'scatter' && (
           <ChartScatterComponent 
             data={data} 
