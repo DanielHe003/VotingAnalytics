@@ -47,6 +47,7 @@ public class PoliticalIncomeHeatMapService {
         }
 
         PoliticalIncomeHeatDataDTO data = new PoliticalIncomeHeatDataDTO();
+        data.setPrecinctKey(precinct.getProperties().getSrPrecKey());
         data.setMedianIncome(medianIncome);
         data.setBin(binLabel);
         data.setColor(color);

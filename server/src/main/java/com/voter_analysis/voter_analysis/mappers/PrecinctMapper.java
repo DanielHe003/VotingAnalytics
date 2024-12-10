@@ -11,34 +11,6 @@ import com.voter_analysis.voter_analysis.dtos.*;
 public interface PrecinctMapper {
 
 
-    default FeatureDTO toFeatureDTO(Precinct precinct,
-                                    Map<String, DemographicHeatDataDTO> demographicDataMap,
-                                    EconomicHeatDataDTO economicData,
-                                    RegionTypeHeatDataDTO regionTypeData,
-                                    PovertyHeatDataDTO povertyData,
-                                    PoliticalIncomeHeatDataDTO politicalIncomeData) {
-        if (precinct == null) {
-            return null;
-        }
-
-        FeatureDTO feature = new FeatureDTO();
-        feature.setGeometry(toGeometryDTO(precinct.getGeometry()));
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("stateId", precinct.getProperties().getStateId());
-        properties.put("precinctKey", precinct.getProperties().getSrPrecKey());
-
-        // Include heat map data
-        properties.put("demographicDataMap", demographicDataMap);
-        properties.put("economicData", economicData);
-        properties.put("regionTypeData", regionTypeData);
-        properties.put("povertyData", povertyData);
-        properties.put("politicalIncomeData", politicalIncomeData);
-
-        feature.setProperties(properties);
-
-        return feature;
-    }
     GeometryDTO toGeometryDTO(Precinct.Geometry geometry);
 
     // Use Case #15: Map Precinct to GinglesTableDTO for tabular data
@@ -59,7 +31,15 @@ public interface PrecinctMapper {
     default double calculatePercentage(long part, long total) {
         return total > 0 ? (double) part / total * 100 : 0.0;
     }
-
+    default FeatureDTO mapToFeatureDTO(Precinct precinct) {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("stateId", precinct.getProperties().getStateId());
+        properties.put("precinctKey", precinct.getProperties().getSrPrecKey());
+        FeatureDTO feature = new FeatureDTO();
+        feature.setGeometry(toGeometryDTO(precinct.getGeometry()));
+        feature.setProperties(properties);
+        return feature;
+    }
     
     
     

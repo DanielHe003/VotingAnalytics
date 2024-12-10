@@ -19,6 +19,7 @@ public class RegionTypeHeatMapService {
         String color = REGION_COLORS.getOrDefault(regionType, "#cccccc"); // Default color
 
         RegionTypeHeatDataDTO data = new RegionTypeHeatDataDTO();
+        data.setPrecinctKey(precinct.getProperties().getSrPrecKey());
         data.setType(regionType);
         data.setColor(color);
 

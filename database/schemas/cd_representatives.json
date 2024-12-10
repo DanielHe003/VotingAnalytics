@@ -1,0 +1,34 @@
+{
+    "$jsonSchema": {
+      "bsonType": "object",
+      "required": ["state_id", "ID", "representative", "race", "party"],
+      "properties": {
+        "_id": {
+          "bsonType": "objectId",
+          "description": "The unique identifier for the document."
+        },
+        "state_id": {
+          "bsonType": "int",
+          "description": "State ID as an integer."
+        },
+        "ID": {
+          "bsonType": "int",
+          "description": "Representative's unique identifier within the state."
+        },
+        "representative": {
+          "bsonType": "string",
+          "description": "Name of the representative."
+        },
+        "race": {
+          "bsonType": "string",
+          "description": "Race of the representative."
+        },
+        "party": {
+          "bsonType": "string",
+          "description": "Political party of the representative."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+  

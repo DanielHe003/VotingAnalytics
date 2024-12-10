@@ -160,8 +160,49 @@ public class UnifiedController {
         List<GinglesTableDTO> tableData = unifiedService.getGinglesTableData(stateId);
         return ResponseEntity.ok(tableData);
     }
+    
+    /**
+     * Use Case #17: Candidate results for racial groups
+     */
+    @GetMapping("/{stateId}/ei-analysis/racial")
+    public ResponseEntity<List<EIAnalysisDTO>> getRacialAnalysisResults(
+            @PathVariable int stateId,
+            @RequestParam String racialGroup,
+            @RequestParam String candidateName) {
+    
+        System.out.println("Entering getRacialAnalysisResults");
+        System.out.println("stateId: " + stateId + ", racialGroup: " + racialGroup + ", candidateName: " + candidateName);
+    
+        List<EIAnalysisDTO> results = unifiedService.getRaceAnalysis(stateId, racialGroup, candidateName);
+        System.out.println("Results size: " + results.size());
+        return ResponseEntity.ok(results);
+    }
+    
 
+    /**
+     * Use Case #17: Candidate results for economic groups
+     */
+    @GetMapping("/{stateId}/ei-analysis/economic")
+    public ResponseEntity<List<EIAnalysisDTO>> getEconomicAnalysisResults(
+            @PathVariable int stateId,
+            @RequestParam String economicGroup,
+            @RequestParam String candidateName) {
 
+        List<EIAnalysisDTO> results = unifiedService.getEconomicAnalysis(stateId, economicGroup, candidateName);
+        return ResponseEntity.ok(results);
+    }
 
+    /**
+     * Use Case #17: Candidate results for region groups
+     */
+    @GetMapping("/{stateId}/ei-analysis/region")
+    public ResponseEntity<List<EIAnalysisDTO>> getRegionAnalysisResults(
+            @PathVariable int stateId,
+            @RequestParam String regionGroup,
+            @RequestParam String candidateName) {
+
+        List<EIAnalysisDTO> results = unifiedService.getRegionAnalysis(stateId, regionGroup, candidateName);
+        return ResponseEntity.ok(results);
+    }
 
 }

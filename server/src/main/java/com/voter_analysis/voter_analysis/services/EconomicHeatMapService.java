@@ -16,7 +16,7 @@ public class EconomicHeatMapService {
             "#4292c6", "#2171b5", "#08519c", "#08306b");
 
     public EconomicHeatDataDTO calculateEconomicData(Precinct precinct) {
-        double medianIncome = precinct.getProperties().getMednInc21(); // Assuming 'MednInc21' field exists
+        double medianIncome = precinct.getProperties().getMednInc21(); 
         int binIndex = BinUtils.determineBinIndex(medianIncome, BIN_EDGES);
         String color = COLORS.get(binIndex);
         String binLabel = BinUtils.createBinLabel(binIndex, BIN_EDGES, "$%,.0f");
@@ -25,7 +25,7 @@ public class EconomicHeatMapService {
         data.setMedianIncome(medianIncome);
         data.setBin(binLabel);
         data.setColor(color);
-
+        data.setPrecinctKey(precinct.getProperties().getSrPrecKey());
         return data;
     }
 

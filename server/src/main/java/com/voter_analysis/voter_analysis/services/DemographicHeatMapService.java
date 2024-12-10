@@ -26,6 +26,7 @@ public class DemographicHeatMapService {
             data.setPercentage(percentage);
             data.setBin(binLabel);
             data.setColor(color);
+            data.setPrecinctKey(precinct.getProperties().getSrPrecKey());
 
             demographicDataMap.put(demographicGroup, data);
         }

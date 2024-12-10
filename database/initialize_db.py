@@ -144,6 +144,79 @@ def parse_gingles_file_name(file_name):
         region_type = 'rural'
 
     return analysis_type, region_type
+def import_ei_analysis_data(state_id, data_directory, state_name):
+    """
+    Import EI analysis data for a specific state.
+    
+    Args:
+        state_id (int): The ID of the state (e.g., 1 for Alabama, 6 for California).
+        data_directory (str): The directory containing EI analysis data.
+        state_name (str): The name of the state.
+    """
+    ei_analysis_dir = os.path.join(data_directory, 'ei-analysis-json')
+    if not os.path.exists(ei_analysis_dir):
+        print(f"EI analysis directory not found for state id {state_id}. Skipping.")
+        return
+
+    # Traverse subdirectories (economic, race, region)
+    for analysis_type in ['economic', 'race', 'region']:
+        analysis_subdir = os.path.join(ei_analysis_dir, analysis_type)
+        if not os.path.exists(analysis_subdir):
+            print(f"No data for {analysis_type} analysis in {state_name}. Skipping.")
+            continue
+
+        for file_name in os.listdir(analysis_subdir):
+            if file_name.endswith('.json'):
+                file_path = os.path.join(analysis_subdir, file_name)
+                candidate_name = extract_candidate_name(file_name)
+                import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name)
+def import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name):
+    """
+    Import a single EI analysis JSON file into the database.
+    
+    Args:
+        state_id (int): The ID of the state.
+        file_path (str): The path to the EI analysis JSON file.
+        analysis_type (str): The type of analysis (economic, race, region).
+        candidate_name (str): The name of the candidate.
+    """
+    file_name = os.path.basename(file_path)
+    print(f"Importing {file_name} ({analysis_type}) for candidate {candidate_name} in state {state_id}")
+
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    document = {
+        "stateId": state_id,
+        "analysisType": analysis_type,
+        "candidateName": candidate_name,
+        "fileName": file_name,
+        "data": data
+    }
+
+    try:
+        db.ei_analysis.insert_one(document)
+        print(f"Inserted {file_name} for {analysis_type} analysis for candidate {candidate_name}.")
+    except BulkWriteError as bwe:
+        print(f"Bulk write error for {file_name}: {bwe.details}")
+    except Exception as e:
+        print(f"Error inserting {file_name}: {e}")
+def extract_candidate_name(file_name):
+    """
+    Extract the candidate's name from the file name.
+    
+    Args:
+        file_name (str): The name of the file.
+    
+    Returns:
+        str: The extracted candidate name.
+    """
+    if "biden" in file_name.lower():
+        return "Biden"
+    elif "trump" in file_name.lower():
+        return "Trump"
+    else:
+        return "Unknown"
 def import_cd_representatives(state_id, data_directory,state):
     """Import Congressional District Representatives data for a specific state."""
     cd_representative_file = os.path.join(data_directory, "cd-representative", f"{state}_cd_representatives.json")
@@ -154,10 +227,6 @@ def import_cd_representatives(state_id, data_directory,state):
     print(f"Importing {cd_representative_file} for state {state_id}")
     with open(cd_representative_file, 'r') as f:
         data_list = json.load(f)
-
-    # Add stateId to each document
-    for item in data_list:
-        item["stateId"] = state_id
 
     try:
         db.cd_representatives.insert_many(data_list)
@@ -187,6 +256,7 @@ def initialize_state_data(state, data_directory):
             print(f"File {geojson_file} not found. Skipping.")
     import_gingles_data(state_id, data_directory)
     import_cd_representatives(state_id, data_directory,state)
+    import_ei_analysis_data(state_id, data_directory, state)
 
 def initialize_db():
     """Initialize database: clear, load data, and then apply schemas."""

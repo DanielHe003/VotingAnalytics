@@ -35,6 +35,7 @@ public class UnifiedService {
     private final RegionTypeHeatMapService regionTypeService;
     private final PovertyHeatMapService povertyService;
     private final PoliticalIncomeHeatMapService politicalIncomeService;
+    private final EIAnalysisRepository eiAnalysisRepository;
    
 
     public UnifiedService(
@@ -50,7 +51,8 @@ public class UnifiedService {
             PovertyHeatMapService povertyService,
             PoliticalIncomeHeatMapService politicalIncomeService, 
             GinglesAnalysisRepository ginglesAnalysisRepository,
-            GinglesMapper ginglesMapper) {
+            GinglesMapper ginglesMapper,
+            EIAnalysisRepository eiAnalysisRepository) {
         this.congressionalDistrictRepository = congressionalDistrictRepository;
         this.precinctRepository = precinctRepository;
         this.stateRepository = stateRepository;
@@ -64,6 +66,7 @@ public class UnifiedService {
         this.politicalIncomeService = politicalIncomeService;
         this.ginglesAnalysisRepository = ginglesAnalysisRepository;
         this.ginglesMapper = ginglesMapper;
+        this.eiAnalysisRepository = eiAnalysisRepository;
     }
     //Frequently accessed repo methods 
     @Cacheable(value = "precinctsByState", key = "#stateId")
@@ -135,39 +138,28 @@ public class UnifiedService {
         State state = getStateByStateName(stateName);
         return stateMapper.toStateSummaryDTO(state);
     }
-    //Use case 4-7
+    //Use case 4-7 Retrieve paginated precinct geojson data
     @Cacheable(value = "precinctGeometries", key = "#stateId + '-' + #page + '-' + #size")
     public PaginatedFeatureCollectionDTO getPrecinctGeometries(int stateId, int page, int size) {
-        System.out.println("State ID is " + stateId);
+        
+        // Fetch paginated precincts by state from the database
         Page<Precinct> precinctsPage = getPaginatedPrecinctsByState(stateId, page, size);
-        System.out.println("Number of precincts are " + precinctsPage.getNumberOfElements());
-    
+        
+        // Map each precinct to a FeatureDTO
         List<FeatureDTO> features = precinctsPage.stream()
-            .map(precinct -> {
-                // Map to FeatureDTO with only geometry and minimal properties
-                Map<String, Object> properties = new HashMap<>();
-                properties.put("stateId", precinct.getProperties().getStateId());
-                properties.put("precinctKey", precinct.getProperties().getSrPrecKey());
-    
-                FeatureDTO feature = new FeatureDTO();
-                feature.setGeometry(precinctMapper.toGeometryDTO(precinct.getGeometry()));
-                feature.setProperties(properties);
-                return feature;
-            })
-            .collect(Collectors.toList());
-    
+        .map(precinctMapper::mapToFeatureDTO)
+        .collect(Collectors.toList());
+        //From the features create a feature collection geojson front end is going to use
         FeatureCollectionDTO featureCollection = new FeatureCollectionDTO();
         featureCollection.setFeatures(features);
     
-        // Create PaginatedFeatureCollectionDTO
-        PaginatedFeatureCollectionDTO paginatedResponse = new PaginatedFeatureCollectionDTO();
-        paginatedResponse.setPageNumber(precinctsPage.getNumber());
-        paginatedResponse.setPageSize(precinctsPage.getSize());
-        paginatedResponse.setTotalElements(precinctsPage.getTotalElements());
-        paginatedResponse.setTotalPages(precinctsPage.getTotalPages());
-        paginatedResponse.setFeatureCollection(featureCollection);
-    
-        return paginatedResponse;
+        // Encapsulate geojson with relevant pagination metadata
+        return new PaginatedFeatureCollectionDTO(
+        precinctsPage.getNumber(),
+        precinctsPage.getSize(),
+        precinctsPage.getTotalElements(),
+        precinctsPage.getTotalPages(),featureCollection);
+        
     }
     //Use Case #4
     @Cacheable(value = "demographicHeatMap", key = "#stateId + '-' + #demographicGroup")
@@ -176,26 +168,16 @@ public class UnifiedService {
     
         List<DemographicHeatDataDTO> dataList = precincts.stream()
             .map(precinct -> {
-                DemographicHeatDataDTO data = demographicService.calculateDemographicData(
+                return demographicService.calculateDemographicData(
                     precinct,
                     Arrays.asList(demographicGroup)
                 ).get(demographicGroup);
-    
-                DemographicHeatDataDTO dto = new DemographicHeatDataDTO();
-                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
-                dto.setPercentage(data.getPercentage());
-                dto.setBin(data.getBin());
-                dto.setColor(data.getColor());
-                return dto;
             })
             .collect(Collectors.toList());
     
         Map<String, String> legend = demographicService.getLegend();
     
-        DemographicHeatMapDTO response = new DemographicHeatMapDTO();
-        response.setData(dataList);
-        response.setLegend(legend);
-        return response;
+        return new DemographicHeatMapDTO(dataList, legend);
     }
     //Use case 5
     @Cacheable(value = "economicHeatMap", key = "#stateId")
@@ -203,24 +185,12 @@ public class UnifiedService {
         List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<EconomicHeatDataDTO> dataList = precincts.stream()
-            .map(precinct -> {
-                EconomicHeatDataDTO data = economicService.calculateEconomicData(precinct);
-    
-                EconomicHeatDataDTO dto = new EconomicHeatDataDTO();
-                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
-                dto.setMedianIncome(data.getMedianIncome());
-                dto.setBin(data.getBin());
-                dto.setColor(data.getColor());
-                return dto;
-            })
+            .map(economicService::calculateEconomicData)
             .collect(Collectors.toList());
     
         Map<String, String> legend = economicService.getLegend();
     
-        EconomicHeatMapDTO response = new EconomicHeatMapDTO();
-        response.setData(dataList);
-        response.setLegend(legend);
-        return response;
+        return new EconomicHeatMapDTO(dataList, legend);
     }
     //Also use case 5
     @Cacheable(value = "regionTypeHeatMap", key = "#stateId")
@@ -228,23 +198,12 @@ public class UnifiedService {
         List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<RegionTypeHeatDataDTO> dataList = precincts.stream()
-            .map(precinct -> {
-                RegionTypeHeatDataDTO data = regionTypeService.calculateRegionTypeData(precinct);
-    
-                RegionTypeHeatDataDTO dto = new RegionTypeHeatDataDTO();
-                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
-                dto.setType(data.getType());
-                dto.setColor(data.getColor());
-                return dto;
-            })
-            .collect(Collectors.toList());
+        .map(regionTypeService::calculateRegionTypeData)
+        .collect(Collectors.toList());
     
         Map<String, String> legend = regionTypeService.getLegend();
     
-        RegionTypeHeatMapDTO response = new RegionTypeHeatMapDTO();
-        response.setData(dataList);
-        response.setLegend(legend);
-        return response;
+        return new RegionTypeHeatMapDTO(dataList, legend);
     }
     //Use case 6
     @Cacheable(value = "povertyHeatMap", key = "#stateId")
@@ -252,24 +211,12 @@ public class UnifiedService {
         List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<PovertyHeatDataDTO> dataList = precincts.stream()
-            .map(precinct -> {
-                PovertyHeatDataDTO data = povertyService.calculatePovertyData(precinct);
-    
-                PovertyHeatDataDTO dto = new PovertyHeatDataDTO();
-                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
-                dto.setPovertyPercentage(data.getPovertyPercentage());
-                dto.setBin(data.getBin());
-                dto.setColor(data.getColor());
-                return dto;
-            })
+            .map(povertyService::calculatePovertyData)
             .collect(Collectors.toList());
     
         Map<String, String> legend = povertyService.getLegend();
     
-        PovertyHeatMapDTO response = new PovertyHeatMapDTO();
-        response.setData(dataList);
-        response.setLegend(legend);
-        return response;
+        return new PovertyHeatMapDTO(dataList, legend);
     }
     //Use case 7
     @Cacheable(value = "politicalIncomeHeatMap", key = "#stateId")
@@ -277,25 +224,12 @@ public class UnifiedService {
         List<Precinct> precincts = getPrecinctsByState(stateId);
     
         List<PoliticalIncomeHeatDataDTO> dataList = precincts.stream()
-            .map(precinct -> {
-                PoliticalIncomeHeatDataDTO data = politicalIncomeService.calculatePoliticalIncomeData(precinct);
-    
-                PoliticalIncomeHeatDataDTO dto = new PoliticalIncomeHeatDataDTO();
-                dto.setPrecinctKey(precinct.getProperties().getSrPrecKey());
-                dto.setMedianIncome(data.getMedianIncome());
-                dto.setBin(data.getBin());
-                dto.setColor(data.getColor());
-                dto.setDominantParty(data.getDominantParty());
-                return dto;
-            })
+            .map(politicalIncomeService::calculatePoliticalIncomeData)
             .collect(Collectors.toList());
     
         Map<String, String> legend = politicalIncomeService.getLegend();
     
-        PoliticalIncomeHeatMapDTO response = new PoliticalIncomeHeatMapDTO();
-        response.setData(dataList);
-        response.setLegend(legend);
-        return response;
+        return new PoliticalIncomeHeatMapDTO(dataList, legend);
     }
     
     
@@ -325,10 +259,6 @@ public class UnifiedService {
         return feature;
     }
     
-    
-
-    
-
     //Use case #12
     @Cacheable(value = "raceGinglesData", key = "#stateId + '-' + #racialGroup")
     public ScatterPlotDTO<RaceGinglesDTO> getRaceGinglesData(int stateId, String racialGroup) {
@@ -378,9 +308,8 @@ public class UnifiedService {
     @Cacheable(value = "incomeRaceGinglesData", key = "#stateId + '-' + #racialGroup")
     public ScatterPlotDTO<IncomeRaceGinglesDTO> getIncomeRaceGinglesData(int stateId, String racialGroup) {
         List<GinglesAnalysis> analyses = getGinglesAnalysisByStateAndAnalysisType(stateId, "income_race");
-        System.out.println("analyses are + " + analyses);
         String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
-
+        
         if (databaseField == null) {
             throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
         }
@@ -406,6 +335,116 @@ public class UnifiedService {
                 .map(precinctMapper::toGinglesTableDTO)
                 .collect(Collectors.toList());
     }
+    //Use case #17 
+    // Service method for Race Analysis
+    @Cacheable(value = "raceAnalysis", key = "#stateId + '-' + #racialGroup + '-' + #candidateName")
+    public List<EIAnalysisDTO> getRaceAnalysis(int stateId, String racialGroup, String candidateName) {
+        System.out.println("Fetching race analysis for stateId: " + stateId + ", racialGroup: " + racialGroup + ", candidateName: " + candidateName);
+    
+        String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
+        if (databaseField == null) {
+            System.out.println("Invalid racial group: " + racialGroup);
+            throw new IllegalArgumentException("Invalid racial group: " + racialGroup);
+        }
+    
+        System.out.println("Mapped racial group to database field: " + databaseField);
+    
+        // Fetch all EIAnalysis entries
+        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndRace(
+            stateId, candidateName, databaseField
+        );
+        System.out.println("Number of analyses fetched: " + analyses.size());
+    
+        String nonField = "Non " + databaseField;
+    
+        // Process the fetched data
+        List<EIAnalysisDTO> result = analyses.stream()
+            .flatMap(analysis -> analysis.getData().stream()
+                .filter(d -> {
+                    boolean matches = d.getRace() != null && (d.getRace().equals(databaseField) || d.getRace().equals(nonField));
+                    if (!matches) {
+                        System.out.println("Data entry does not match racialGroup: " + d.getRace());
+                    }
+                    return matches;
+                })
+                .map(d -> {
+                    System.out.println("Mapping data entry to DTO: " + d);
+                    return EIAnalysisDTO.fromDataEntry(analysis, d);
+                })
+            )
+            .collect(Collectors.toList());
+    
+        System.out.println("Number of results after processing: " + result.size());
+        return result;
+    }
+    
+
+    // Service method for Economic Analysis
+    @Cacheable(value = "economicAnalysis", key = "#stateId + '-' + #economicGroup + '-' + #candidateName")
+    public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup, String candidateName) {
+        System.out.println("Fetching economic analysis for stateId: " + stateId + ", economicGroup: " + economicGroup + ", candidateName: " + candidateName);
+    
+        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupEconomic(
+            stateId, candidateName, economicGroup
+        );
+        System.out.println("Number of analyses fetched: " + analyses.size());
+    
+        String nonField = "Non " + economicGroup;
+    
+        List<EIAnalysisDTO> result = analyses.stream()
+            .flatMap(analysis -> analysis.getData().stream()
+                .filter(d -> {
+                    boolean matches = d.getGroup() != null && (d.getGroup().equals(economicGroup) || d.getGroup().equals(nonField));
+                    if (!matches) {
+                        System.out.println("Data entry does not match economicGroup: " + d.getGroup());
+                    }
+                    return matches;
+                })
+                .map(d -> {
+                    System.out.println("Mapping data entry to DTO: " + d);
+                    return EIAnalysisDTO.fromDataEntry(analysis, d);
+                })
+            )
+            .collect(Collectors.toList());
+    
+        System.out.println("Number of results after processing: " + result.size());
+        return result;
+    }
+    
+
+    // Service method for Region Analysis
+    @Cacheable(value = "regionAnalysis", key = "#stateId + '-' + #regionGroup + '-' + #candidateName")
+    public List<EIAnalysisDTO> getRegionAnalysis(int stateId, String regionGroup, String candidateName) {
+        System.out.println("Fetching region analysis for stateId: " + stateId + ", regionGroup: " + regionGroup + ", candidateName: " + candidateName);
+    
+        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupRegion(
+            stateId, candidateName, regionGroup
+        );
+        System.out.println("Number of analyses fetched: " + analyses.size());
+    
+        String nonField = "Non " + regionGroup;
+    
+        List<EIAnalysisDTO> result = analyses.stream()
+            .flatMap(analysis -> analysis.getData().stream()
+                .filter(d -> {
+                    boolean matches = d.getGroup() != null && (d.getGroup().equals(regionGroup) || d.getGroup().equals(nonField));
+                    if (!matches) {
+                        System.out.println("Data entry does not match regionGroup: " + d.getGroup());
+                    }
+                    return matches;
+                })
+                .map(d -> {
+                    System.out.println("Mapping data entry to DTO: " + d);
+                    return EIAnalysisDTO.fromDataEntry(analysis, d);
+                })
+            )
+            .collect(Collectors.toList());
+    
+        System.out.println("Number of results after processing: " + result.size());
+        return result;
+    }
+    
+
     
     
 

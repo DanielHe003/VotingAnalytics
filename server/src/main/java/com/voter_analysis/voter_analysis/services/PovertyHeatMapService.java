@@ -26,6 +26,7 @@ public class PovertyHeatMapService {
         String binLabel = BinUtils.createBinLabel(binIndex, BIN_EDGES, "%.0f%%");
 
         PovertyHeatDataDTO data = new PovertyHeatDataDTO();
+        data.setPrecinctKey(precinct.getProperties().getSrPrecKey());
         data.setPovertyPercentage(povertyPercentage);
         data.setBin(binLabel);
         data.setColor(color);

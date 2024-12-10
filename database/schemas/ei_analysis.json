@@ -1,0 +1,47 @@
+{
+    "bsonType": "object",
+    "required": ["stateId", "analysisType", "candidateName", "data"],
+    "properties": {
+      "stateId": {
+        "bsonType": "int",
+        "description": "State identifier"
+      },
+      "analysisType": {
+        "bsonType": "string",
+        "description": "Type of analysis: race, economic, or region"
+      },
+      "candidateName": {
+        "bsonType": "string",
+        "description": "Name of the candidate: Biden, Trump, etc."
+      },
+      "fileName": {
+        "bsonType": "string",
+        "description": "The name of the file from which the data is imported"
+      },
+      "data": {
+        "bsonType": "object",
+        "required": ["x", "y"],
+        "properties": {
+          "group": {
+            "bsonType": "string",
+            "description": "Group name (e.g., racial category, economic group)"
+          },
+          "x": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "double"
+            },
+            "description": "Array of x-axis values"
+          },
+          "y": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "double"
+            },
+            "description": "Array of y-axis values"
+          }
+        }
+      }
+    }
+  }
+  

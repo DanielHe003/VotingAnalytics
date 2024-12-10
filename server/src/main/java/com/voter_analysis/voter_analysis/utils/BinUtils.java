@@ -12,7 +12,6 @@ public class BinUtils {
                 return i;
             }
         }
-        // If value is greater than or equal to the last bin edge
         return binEdges.size() - 2;
     }
 
