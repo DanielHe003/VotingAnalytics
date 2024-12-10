@@ -24,5 +24,6 @@ public class StateSummaryDTO {
     private double povertyRate;
     private double medianIncome;
     private Map<String, Object> incomeDistribution; 
+    private Map<String, Long> congressionalPartySummary;
 
 }

@@ -36,6 +36,7 @@ public class UnifiedService {
     private final PovertyHeatMapService povertyService;
     private final PoliticalIncomeHeatMapService politicalIncomeService;
     private final EIAnalysisRepository eiAnalysisRepository;
+    private final CongressionalRepresentativeRepository congressionalRepresentativeRepository;
    
 
     public UnifiedService(
@@ -52,7 +53,8 @@ public class UnifiedService {
             PoliticalIncomeHeatMapService politicalIncomeService, 
             GinglesAnalysisRepository ginglesAnalysisRepository,
             GinglesMapper ginglesMapper,
-            EIAnalysisRepository eiAnalysisRepository) {
+            EIAnalysisRepository eiAnalysisRepository,
+            CongressionalRepresentativeRepository congressionalRepresentativeRepository) {
         this.congressionalDistrictRepository = congressionalDistrictRepository;
         this.precinctRepository = precinctRepository;
         this.stateRepository = stateRepository;
@@ -67,6 +69,7 @@ public class UnifiedService {
         this.ginglesAnalysisRepository = ginglesAnalysisRepository;
         this.ginglesMapper = ginglesMapper;
         this.eiAnalysisRepository = eiAnalysisRepository;
+        this.congressionalRepresentativeRepository = congressionalRepresentativeRepository;
     }
     //Frequently accessed repo methods 
     @Cacheable(value = "precinctsByState", key = "#stateId")
@@ -135,8 +138,35 @@ public class UnifiedService {
     //Use case #3
     @Cacheable(value = "stateSummary", key = "#stateName")
     public StateSummaryDTO getStateSummary(String stateName){
-        State state = getStateByStateName(stateName);
-        return stateMapper.toStateSummaryDTO(state);
+        // Map stateName to stateId (ignoring case)
+        int stateId;
+        switch (stateName.toLowerCase()) {
+            case "alabama":
+                stateId = 1;
+                break;
+            case "cali":
+            case "california":
+                stateId = 6;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid state name: " + stateName);
+        }
+
+        // Fetch state by ID and map to DTO
+        State state = getStateByStateName(stateName); // Ensure this method uses stateId appropriately
+        StateSummaryDTO dto = stateMapper.toStateSummaryDTO(state);
+
+        // Fetch congressional representatives for this state
+        List<CongressionalRepresentative> representatives = congressionalRepresentativeRepository.findByStateId(stateId);
+
+        // Summarize representatives by party
+        Map<String, Long> partySummary = representatives.stream()
+            .collect(Collectors.groupingBy(CongressionalRepresentative::getParty, Collectors.counting()));
+
+        // Add this summary to the DTO
+        dto.setCongressionalPartySummary(partySummary);
+
+        return dto;
     }
     //Use case 4-7 Retrieve paginated precinct geojson data
     @Cacheable(value = "precinctGeometries", key = "#stateId + '-' + #page + '-' + #size")
@@ -242,11 +272,33 @@ public class UnifiedService {
         // Fetch all districts for the given state
         List<CongressionalDistrict> districts = getCongressionalDistrictsByState(stateId);
     
-        // Map districts to CongressionalRepresentationDTOs
-        return districts.stream()
+        // Convert districts to DTOs without representative info for now
+        List<CongressionalRepresentationDTO> dtos = districts.stream()
             .map(congressionalDistrictMapper::toRepresentationDTO)
             .collect(Collectors.toList());
+    
+        // Fetch congressional representatives for this state
+        List<CongressionalRepresentative> representatives = congressionalRepresentativeRepository.findByStateId(stateId);
+    
+        // Create a map of districtId -> CongressionalRepresentative
+        Map<Integer, CongressionalRepresentative> repMap = representatives.stream()
+            .collect(Collectors.toMap(CongressionalRepresentative::getDistrictId, rep -> rep));
+    
+        // Enrich each DTO with representative details if available
+        for (CongressionalRepresentationDTO dto : dtos) {
+            CongressionalRepresentative rep = repMap.get(dto.getDistrictId());
+            if (rep != null) {
+                dto.setRepresentative(rep.getRepresentative());
+                dto.setParty(rep.getParty());
+                dto.setRacialEthnicGroup(rep.getRace());
+            } else {
+                System.out.println("No representative data found for districtId: " + dto.getDistrictId());
+            }
+        }
+    
+        return dtos;
     }
+    
     //Use case #9
     @Cacheable(value = "districtMap", key = "#stateId + '-' + #cdId")
     public FeatureDTO getDistrictMap(int stateId, int cdId) {

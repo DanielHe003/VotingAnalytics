@@ -51,9 +51,6 @@ public interface CongressionalDistrictMapper {
     
     @Mapping(source = "properties.stateId", target = "stateId")
     @Mapping(source = "properties.districtId", target = "districtId")
-    @Mapping(target = "representative", expression = "java(getRepresentativeName(district))")
-    @Mapping(target = "party", expression = "java(getRepresentativeParty(district))")
-    @Mapping(target = "racialEthnicGroup", expression = "java(getRepresentativeRacialGroup(district))")
     @Mapping(source = "properties.mednInc21", target = "averageHouseholdIncome")
     @Mapping(source = "properties.povertyPct", target = "povertyPercentage")
     @Mapping(expression = "java(calculatePercentage(district.getProperties().getUrban(), district.getProperties().getTotPop()))", target = "urbanPercentage")

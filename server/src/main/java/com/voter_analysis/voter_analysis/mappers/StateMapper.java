@@ -22,25 +22,25 @@ public interface StateMapper {
     @Mapping(source = "geometry.coordinates", target = "coordinates")
     GeometryDTO toStateGeometryDTO(State state);
 
-    @Mapping(source = "properties.name", target = "State Name")
-    @Mapping(source = "properties.totPop", target = "Total Population")
-    @Mapping(source = "properties.pctDem", target = "Democratic %")
-    @Mapping(source = "properties.pctRep", target = "Republican %")
-    @Mapping(source = "properties.prsDem01", target = "Democratic Votes")
-    @Mapping(source = "properties.prsRep01", target = "Republican Votes")
-    @Mapping(source = "properties.totVotes", target = "Total Votes")
-    @Mapping(source = "properties.urban", target = "Urban Population")
-    @Mapping(source = "properties.rural", target = "Rural Population")
-    @Mapping(source = "properties.suburban", target = "Suburban Population")
-    @Mapping(source = "properties.povertyPct", target = "Poverty Rate")
-    @Mapping(source = "properties.mednInc21", target = "Median Income")
+    @Mapping(source = "properties.name", target = "name")
+    @Mapping(source = "properties.totPop", target = "totalPopulation")
+    @Mapping(source = "properties.pctDem", target = "pctDem")
+    @Mapping(source = "properties.pctRep", target = "pctRep")
+    @Mapping(source = "properties.prsDem01", target = "prsDem01")
+    @Mapping(source = "properties.prsRep01", target = "prsRep01")
+    @Mapping(source = "properties.totVotes", target = "totVotes")
+    @Mapping(source = "properties.urban", target = "urbanPop")
+    @Mapping(source = "properties.rural", target = "ruralPop")
+    @Mapping(source = "properties.suburban", target = "suburbanPop")
+    @Mapping(source = "properties.povertyPct", target = "povertyRate")
+    @Mapping(source = "properties.mednInc21", target = "medianIncome")
     @Mapping(target = "racialEthnicPopulation", expression = "java(mapRacialEthnicPopulation(state))")
     @Mapping(target = "incomeDistribution", expression = "java(mapIncomeDistribution(state))")
     StateSummaryDTO toStateSummaryDTO(State state);
 
-    default Map<String, Long> mapRacialEthnicPopulation(State state) {
+    default Map<String, Object> mapRacialEthnicPopulation(State state) {
         State.Properties properties = state.getProperties();
-        Map<String, Long> racialEthnicPopulation = new HashMap<>();
+        Map<String, Object> racialEthnicPopulation = new HashMap<>();
         racialEthnicPopulation.put("White", properties.getPopWht());
         racialEthnicPopulation.put("Black", properties.getPopBlk());
         racialEthnicPopulation.put("Hispanic/Latino", properties.getPopHisLat());
@@ -58,10 +58,7 @@ public interface StateMapper {
         incomeDistribution.put("25K-50K", properties.getK25To30K21() + properties.getK30To35K21() + properties.getK35To40K21() + properties.getK40To45K21() + properties.getK45To50K21());
         incomeDistribution.put("50K-100K", properties.getK50To60K21()+properties.getK60To75K21()+properties.getK75To100K21());
         incomeDistribution.put("100K-200K", properties.getK100To125K21()+properties.getK125To150K21()+properties.getK150To200K21());
-        incomeDistribution.put("200K+", properties.getK200KMor21());   
-        incomeDistribution.put("Title", "Income Distrubution");
-        incomeDistribution.put("xAxisTitle", "Income Bracket");
-        incomeDistribution.put("yAxisTitle", "Population");    
+        incomeDistribution.put("200K+", properties.getK200KMor21());     
         return incomeDistribution;
     }
     default FeatureDTO toFeatureDTO(State state) {
