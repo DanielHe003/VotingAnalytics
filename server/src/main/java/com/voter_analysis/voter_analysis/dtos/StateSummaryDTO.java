@@ -17,12 +17,12 @@ public class StateSummaryDTO {
     private long prsDem01;
     private long prsRep01;
     private long totVotes;
-    private Map<String, Long> racialEthnicPopulation; 
+    private Map<String, Object> racialEthnicPopulation; 
     private long urbanPop;
     private long ruralPop;
     private long suburbanPop;
     private double povertyRate;
     private double medianIncome;
-    private Map<String, Long> incomeDistribution; 
+    private Map<String, Object> incomeDistribution; 
 
 }

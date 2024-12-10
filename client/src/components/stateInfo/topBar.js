@@ -19,7 +19,7 @@ class TopBar extends React.Component {
       name: "Select State",
       options: [
         { id: "Alabama", name: "Alabama", districtsCount: 7 },
-        { id: "California", name: "California", districtsCount: 52 },
+        { id: "California", name: "California", districtsCount: 53 },
       ],
     },
     { name: "Select District" },
@@ -30,9 +30,6 @@ class TopBar extends React.Component {
         { id: "race", name: "Population by Race" },
         { id: "region", name: "Population (Region)" },
         { id: "income", name: "Income Distribution" },
-
-
-        // UPLOAD THE CODE FOR SEAWULF
         { id: "precinct", name: "Precinct Analysis" },
       ],
     },
@@ -138,6 +135,7 @@ class TopBar extends React.Component {
             />
           ))}
 
+        {/* Precinct Dropdown */}
         {this.props.selectedTrend === "precinct" && (
             <FilterDropdown
               number={3}
@@ -153,7 +151,7 @@ class TopBar extends React.Component {
               onChange={this.handleChange("SubTrend")}
             />
           )}
-
+          {/* Demographics DropDown */}
           {this.props.selectedSubTrend === "demographic" && (
 
             <FilterDropdown 
@@ -173,8 +171,7 @@ class TopBar extends React.Component {
 
           <button
             onClick={this.handleResetFilters}
-            className="reset-filters-button"
-          >
+            className="reset-filters-button">
             Reset Filters
           </button>
         </div>
