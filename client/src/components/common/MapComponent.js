@@ -161,7 +161,7 @@ class MapComponent extends React.Component {
   fitMapToGeoJsonData = (geoJsonLayer) => {
     if (geoJsonLayer) {
       const bounds = geoJsonLayer.getBounds();
-      this.mapRef.current.fitBounds(bounds, { padding: [10, 10] });
+      this.mapRef.current.fitBounds(bounds);
     }
   };
 
@@ -172,6 +172,8 @@ class MapComponent extends React.Component {
       return null;
     }
 
+    
+
     return (
       <div className="legend">
         <h4>Legend</h4>
@@ -179,7 +181,7 @@ class MapComponent extends React.Component {
           {Object.entries(heatMapLegend).map(([range, color], index) => (
             <li key={index}>
               <span className="color-box" style={{ backgroundColor: color }}></span>
-              {range}
+              {(range)}
             </li>
           ))}
         </ul>

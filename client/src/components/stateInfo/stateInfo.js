@@ -118,6 +118,8 @@ class StateInfo extends React.Component {
 
         const californiaData = await ApiService.fetchData("states/california/map");
         const alabamaData = await ApiService.fetchData("states/alabama/map");            
+        // console.log(californiaData);
+        // console.log(alabamaData);
         this.setState({ mapData: {
           type: "FeatureCollection",
           features: [alabamaData, californiaData],

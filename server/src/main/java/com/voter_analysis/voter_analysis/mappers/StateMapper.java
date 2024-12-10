@@ -22,18 +22,18 @@ public interface StateMapper {
     @Mapping(source = "geometry.coordinates", target = "coordinates")
     GeometryDTO toStateGeometryDTO(State state);
 
-    @Mapping(source = "properties.name", target = "name")
-    @Mapping(source = "properties.totPop", target = "totalPopulation")
-    @Mapping(source = "properties.pctDem", target = "pctDem")
-    @Mapping(source = "properties.pctRep", target = "pctRep")
-    @Mapping(source = "properties.prsDem01", target = "prsDem01")
-    @Mapping(source = "properties.prsRep01", target = "prsRep01")
-    @Mapping(source = "properties.totVotes", target = "totVotes")
-    @Mapping(source = "properties.urban", target = "urbanPop")
-    @Mapping(source = "properties.rural", target = "ruralPop")
-    @Mapping(source = "properties.suburban", target = "suburbanPop")
-    @Mapping(source = "properties.povertyPct", target = "povertyRate")
-    @Mapping(source = "properties.mednInc21", target = "medianIncome")
+    @Mapping(source = "properties.name", target = "State Name")
+    @Mapping(source = "properties.totPop", target = "Total Population")
+    @Mapping(source = "properties.pctDem", target = "Democratic %")
+    @Mapping(source = "properties.pctRep", target = "Republican %")
+    @Mapping(source = "properties.prsDem01", target = "Democratic Votes")
+    @Mapping(source = "properties.prsRep01", target = "Republican Votes")
+    @Mapping(source = "properties.totVotes", target = "Total Votes")
+    @Mapping(source = "properties.urban", target = "Urban Population")
+    @Mapping(source = "properties.rural", target = "Rural Population")
+    @Mapping(source = "properties.suburban", target = "Suburban Population")
+    @Mapping(source = "properties.povertyPct", target = "Poverty Rate")
+    @Mapping(source = "properties.mednInc21", target = "Median Income")
     @Mapping(target = "racialEthnicPopulation", expression = "java(mapRacialEthnicPopulation(state))")
     @Mapping(target = "incomeDistribution", expression = "java(mapIncomeDistribution(state))")
     StateSummaryDTO toStateSummaryDTO(State state);
@@ -50,25 +50,18 @@ public interface StateMapper {
         racialEthnicPopulation.put("Multiracial", properties.getPopTwoMor());
         return racialEthnicPopulation;
     }
-    default Map<String, Long> mapIncomeDistribution(State state) {
+    default Map<String, Object> mapIncomeDistribution(State state) {
         State.Properties properties = state.getProperties();
-        Map<String, Long> incomeDistribution = new HashMap<>();
-        incomeDistribution.put("<10K", properties.getLess10K21());
-        incomeDistribution.put("10K-15K", properties.getK10To15K21());
-        incomeDistribution.put("15K-20K", properties.getK15To20K21());
-        incomeDistribution.put("20K-25K", properties.getK20To25K21());
-        incomeDistribution.put("25K-30K", properties.getK25To30K21());
-        incomeDistribution.put("30K-35K", properties.getK30To35K21());
-        incomeDistribution.put("35K-40K", properties.getK35To40K21());
-        incomeDistribution.put("40K-45K", properties.getK40To45K21());
-        incomeDistribution.put("45K-50K", properties.getK45To50K21());
-        incomeDistribution.put("50K-60K", properties.getK50To60K21());
-        incomeDistribution.put("60K-75K", properties.getK60To75K21());
-        incomeDistribution.put("75K-100K", properties.getK75To100K21());
-        incomeDistribution.put("100K-125K", properties.getK100To125K21());
-        incomeDistribution.put("125K-150K", properties.getK125To150K21());
-        incomeDistribution.put("150K-200K", properties.getK150To200K21());
-        incomeDistribution.put("200K+", properties.getK200KMor21());
+        Map<String, Object> incomeDistribution = new HashMap<>();
+
+        incomeDistribution.put("Below $25K", properties.getLess10K21()+properties.getK10To15K21()+properties.getK15To20K21()+properties.getK20To25K21());
+        incomeDistribution.put("25K-50K", properties.getK25To30K21() + properties.getK30To35K21() + properties.getK35To40K21() + properties.getK40To45K21() + properties.getK45To50K21());
+        incomeDistribution.put("50K-100K", properties.getK50To60K21()+properties.getK60To75K21()+properties.getK75To100K21());
+        incomeDistribution.put("100K-200K", properties.getK100To125K21()+properties.getK125To150K21()+properties.getK150To200K21());
+        incomeDistribution.put("200K+", properties.getK200KMor21());   
+        incomeDistribution.put("Title", "Income Distrubution");
+        incomeDistribution.put("xAxisTitle", "Income Bracket");
+        incomeDistribution.put("yAxisTitle", "Population");    
         return incomeDistribution;
     }
     default FeatureDTO toFeatureDTO(State state) {
