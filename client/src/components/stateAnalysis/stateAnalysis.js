@@ -168,8 +168,8 @@ class StateAnalysis extends React.Component {
         <ChartContainer
           type="density"
           data={this.state.chartData} 
-          height={500}
-          width={800}
+          height={200}
+          width={900}
           label=""
         />
       );
