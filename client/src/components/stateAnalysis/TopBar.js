@@ -20,6 +20,7 @@ class TopBar extends React.Component {
             { id: "EI", name: "Ecological Inference" },
             { id: "Gingles", name: "Gingles 2/3 Analysis" },
             { id: "MCMC", name: "MCMC Analysis" },
+            { id: "ComparePlans", name: "Compare Plans" },
           ],
         },
       ],
@@ -187,10 +188,10 @@ class TopBar extends React.Component {
               label="Select Ethnic Group"
               name="Select Option"
               options={[
-                { id: "white", name: "White" },
-                { id: "black", name: "Black" },
-                { id: "hispanic", name: "Hispanic" },
-                { id: "asian", name: "Asian" },
+                { id: "White", name: "White" },
+                { id: "Black", name: "Black" },
+                { id: "Hispanic", name: "Hispanic" },
+                { id: "Asian", name: "Asian" },
               ]}
               value={this.props.selectedSubSubTrend || ""}
               onChange={this.handleChange("SubSubTrend")}

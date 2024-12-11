@@ -8,23 +8,32 @@ import './ChartContainer.css';
 
 class ChartContainer extends React.Component {
   render() {
+
+
     const { 
       data, 
       title, 
       height, 
       width, 
-      selectedDistrict, 
       type, 
       xAxisTitle, 
       yAxisTitle, 
       label,
-      titleRender
+      titleRender,
     } = this.props;
 
-    console.log(data);
-
+    // console.log(data.trumpData);
+    // console.log(data.bidenData);
+    console.log({
+      groups: [data.bidenData[0],data.bidenData[1] 
+      ],
+    })
     return (
+
       <>
+
+
+      {/* State Summary */}
       {titleRender && (
         <>
         <div className="chartBox">
@@ -49,19 +58,22 @@ class ChartContainer extends React.Component {
             categoryData={data} 
             height={height} 
             width={width} 
-            selectedDistrict={selectedDistrict} 
           />
         )}
 
        
+
         {type === 'density' && (
           <DensityChartComponent 
-            title={title} 
-            data={data} 
+            // title={title} 
+            data={{
+              groups: [data.bidenData[0],data.bidenData[1] 
+              ],
+            }} 
             height={height} 
             width={width} 
-            xLabel={xAxisTitle} 
-            yLabel={yAxisTitle} 
+            // xLabel={xAxisTitle} 
+            // yLabel={yAxisTitle} 
           />
         )}
 

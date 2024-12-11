@@ -3,21 +3,31 @@ import TopBar from "./TopBar";
 import ChartContainer from "../common/ChartContainer";
 import axios from "axios";
 import "./StateAnalysis.css";
-import ApiService from "../common/ApiService";
-axios.defaults.baseURL = 'http://localhost:8080/';
-
+axios.defaults.baseURL = "http://localhost:8080/";
 
 class StateAnalysis extends React.Component {
   state = {
-    baseUrl: "http://localhost:8080",
     showPopup: false,
     chartData: null,
     dataAvailable: false,
   };
 
   componentDidUpdate(prevProps) {
-    if(prevProps !== this.props){
-      this.fetchGingles();
+    console.log(this.props.selectedSubSubTrend);
+    if (prevProps !== this.props) {
+      console.log("Updated");
+      if (this.props.selectedSubTrend) {
+        if (this.props.selectedSubSubTrend) {
+          if (this.props.selectedTrend === "Gingles") {
+            this.fetchGingles();
+            this.renderChart();
+          } else if (this.props.selectedTrend === "EI") {
+            console.log("in ei");
+            this.fetchEIData();
+            this.renderChart();
+          }
+        }
+      }
     }
   }
 
@@ -30,22 +40,31 @@ class StateAnalysis extends React.Component {
       throw error;
     }
   };
- 
+
   fetchGingles = async () => {
     try {
-      if (!this.props.selectedSubSubTrend || !this.props.selectedSubTrend) return;
-  
+      if (!this.props.selectedSubSubTrend || !this.props.selectedSubTrend)
+        return;
+
       this.setState({ dataAvailable: false });
-  
-      const stateId = this.props.selectedState === "Alabama" ? 1 :
-                      this.props.selectedState === "California" ? 6 : null;
-  
+
+      const stateId =
+        this.props.selectedState === "Alabama"
+          ? 1
+          : this.props.selectedState === "California"
+          ? 6
+          : null;
+
       const urlMap = {
-        "race": `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`,
-        "income": `states/${stateId}/gingles/income${this.props.selectedSubSubTrend ? `?regionType=${this.props.selectedSubSubTrend}` : ""}`,
-        "income-race": `states/${stateId}/gingles/income-race/${this.props.selectedSubSubTrend}`
+        race: `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`,
+        income: `states/${stateId}/gingles/income${
+          this.props.selectedSubSubTrend
+            ? `?regionType=${this.props.selectedSubSubTrend}`
+            : ""
+        }`,
+        "income-race": `states/${stateId}/gingles/income-race/${this.props.selectedSubSubTrend}`,
       };
-  
+
       if (urlMap[this.props.selectedSubTrend]) {
         const { data } = await axios.get(urlMap[this.props.selectedSubTrend]);
         this.setState({ chartData: data, dataAvailable: true }); // Set dataAvailable to true after fetching data
@@ -54,72 +73,119 @@ class StateAnalysis extends React.Component {
       console.error("Error fetching Gingles analysis:", error);
       this.setState({ dataAvailable: true }); // Set to true even in case of error to prevent indefinite loading
     }
-  };  
-  
-  
-  // Not implementedcdSummaryData
-  fetchSeawulf = async () => { 
   };
 
-  fetchEIData = async () => { 
+  // Not implementedcdSummaryData
+  fetchSeawulf = async () => {};
+
+  fetchEIData = async () => {
     try {
-      if (!this.props.selectedSubSubTrend || !this.props.selectedSubTrend) return;
-  
       this.setState({ dataAvailable: false });
-  
-      const stateId = this.props.selectedState === "Alabama" ? 1 :
-                      this.props.selectedState === "California" ? 6 : null;
-  
+
+      const stateId =
+        this.props.selectedState === "Alabama"
+          ? 1
+          : this.props.selectedState === "California"
+          ? 6
+          : null;
+
       const urlMap = {
-        "racial": `${stateId}/ei-analysis/racial/?racialGroup=${this.props.selectedSubTrend}&candidateName=${this.props.selectedSubSubTrend}`,
-        "economic": `${stateId}/ei-analysis/economic?economicGroup=${this.props.selectedSubTrend}&candidateName=${this.props.selectedSubSubTrend}`,
-        "region": `${stateId}/ei-analysis/region/?regionGroup=${this.props.selectedSubTrend}&candidateName=${this.props.selectedSubSubTrend}`
+        racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
+        economic: `${stateId}/ei-analysis/economic?economicGroup=${this.props.selectedSubSubTrend}&candidateName=`,
+        region: `${stateId}/ei-analysis/region?regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
       };
-  
+
+      console.log("map created");
+
       if (urlMap[this.props.selectedSubTrend]) {
-        const { data } = await axios.get(urlMap[this.props.selectedSubTrend]);
-        this.setState({ chartData: data, dataAvailable: true }); 
+        const bidenUrl = `${urlMap["racial"]}Biden`;
+        const trumpUrl = `${urlMap["racial"]}Trump`;
+
+        const [bidenData, trumpData] = await Promise.all([
+          axios.get(bidenUrl),
+          axios.get(trumpUrl),
+        ]);
+
+        this.setState({
+          chartData: { bidenData: bidenData.data, trumpData: trumpData.data },
+          dataAvailable: true,
+        });
+        console.log("Biden Data:", bidenData.data);
+        console.log("Trump Data:", trumpData.data);
       }
     } catch (error) {
       console.error("Error fetching EI analysis:", error);
-      this.setState({ dataAvailable: true }); 
+      this.setState({ dataAvailable: false });
     }
-
   };
 
-  renderChart = () => {   
+  renderChart = () => {
     if (!this.state.dataAvailable) {
       return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
           <div
             style={{
-              border: '4px solid #f3f3f3', /* Light gray background */
-              borderTop: '4px solid #3498db', /* Blue color for the spinner */
-              borderRadius: '50%',
-              width: '50px',
-              height: '50px',
-              animation: 'spin 1s linear infinite', /* Spinner animation */
+              border: "4px solid #f3f3f3" /* Light gray background */,
+              borderTop: "4px solid #3498db" /* Blue color for the spinner */,
+              borderRadius: "50%",
+              width: "50px",
+              height: "50px",
+              animation: "spin 1s linear infinite" /* Spinner animation */,
             }}
           ></div>
         </div>
       );
     }
-  
+
     if (this.props.selectedTrend === "Gingles") {
       if (!this.state.chartData || !this.state.chartData.dataPoints) {
-        return <div>No data available</div>; 
+        return <div>No data available</div>;
       }
-      return <ChartContainer type="scatter" data={this.state.chartData} height={500} width={800} label="" />;
+      return (
+        <ChartContainer
+          type="scatter"
+          data={this.state.chartData}
+          height={500}
+          width={800}
+          label=""
+        />
+      );
     }
-  
-    // Handle other cases (MCMC, EI) here...
+
+    if (this.props.selectedTrend === "EI") {
+      console.log(this.state.bidenData);
+      if (!this.state.chartData.bidenData || !this.state.chartData.trumpData) {
+        return <div>No data available</div>;
+      }
+      return (
+        <ChartContainer
+          type="density"
+          data={this.state.chartData} 
+          height={500}
+          width={800}
+          label=""
+        />
+      );
+    }
+
     return null;
   };
-  
 
   renderSideTable = () => {
     const { selectedTrend } = this.props;
-    if (selectedTrend === "Gingles" || selectedTrend === "MCMC" || selectedTrend === "EI") return null;
+    if (
+      selectedTrend === "Gingles" ||
+      selectedTrend === "MCMC" ||
+      selectedTrend === "EI"
+    )
+      return null;
     return null;
   };
 
@@ -139,11 +205,20 @@ class StateAnalysis extends React.Component {
           setSelectedSubSubTrend={this.props.setSelectedSubSubTrend}
         />
         <div className="content-container">
-        <div className="map-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-        {this.renderChart()        }
-      </div>
+          <div
+            className="map-container"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {this.renderChart()}
+          </div>
 
-          {this.renderSideTable() !== null && <div className="chart-container">{this.renderSideTable()}</div>}
+          {this.renderSideTable() !== null && (
+            <div className="chart-container">{this.renderSideTable()}</div>
+          )}
         </div>
       </>
     );
