@@ -14,8 +14,6 @@ class TopBar extends React.Component {
     };
   }
 
-
-
   filterOptions = [
     {
       name: "Select State",
@@ -25,18 +23,9 @@ class TopBar extends React.Component {
       ],
     },
     { name: "Select District" },
-    {
-      name: "Select Trend",
-      options: [
-        { id: "voting", name: "Voting Distribution" },
-        { id: "race", name: "Population by Race" },
-        { id: "region", name: "Population (Region)" },
-        { id: "income", name: "Income Distribution" },
-        { id: "precinct", name: "Precinct Analysis" },
-      ],
-    },
+
   ];
-  
+
   handleChange = (type) => (event) => {
     const value = event.target.value;
     const reset =
@@ -48,7 +37,7 @@ class TopBar extends React.Component {
     this.props[`setSelected${type.charAt(0).toUpperCase() + type.slice(1)}`](
       value
     );
-  }; 
+  };
 
   handleResetFilters = () => {
     this.setState({
@@ -101,57 +90,79 @@ class TopBar extends React.Component {
     return districts;
   }
 
+  renderSubOptions() {
+    if (this.props.selectedDistrict === "All Districts") {
+      return (
+        <FilterDropdown
+          number={2}
+          label="Select Trend"
+          options={ [
+              { id: "voting", name: "Voting Distribution" },
+              { id: "race", name: "Population by Race" },
+              { id: "region", name: "Population (Region)" },
+              { id: "income", name: "Income Distribution" },
+              { id: "precinct", name: "Precinct Analysis" },
+            ]
+          }
+          value={this.props.selectedSubTrend || ""}
+          onChange={this.handleChange("SubTrend")}
+        />
+      );
+    }
+    return null;
+  }
+
+  renderSubSubOptions() {
+    if (this.props.selectedSubTrend === "demographic") {
+      return (
+        <FilterDropdown
+          number={4}
+          label="Select Ethnic Group"
+          options={[
+            { id: "white", name: "White" },
+            { id: "black", name: "Black" },
+            { id: "hispanic", name: "Hispanic" },
+            { id: "asian", name: "Asian" },
+          ]}
+          value={this.props.selectedSubSubTrend || ""}
+          onChange={this.handleChange("SubSubTrend")}
+        />
+      );
+    }
+    return null;
+  }
+
   render() {
-    console.log(this.state.selectedDistrict);
     return (
       <div className="top-bar-container">
         <div className="filters-container">
-          
-        {
-   true && (
-    <FilterDropdown
-      key={0}
-      number={0}
-      label="Select State"
-      options={this.filterOptions[0].options}
-      value={this.state.selectedState || ""}
-      onChange={this.handleChange("state")}
-    />
-  )
-}
+          {true && (
+            <FilterDropdown
+              key={0}
+              number={0}
+              label="Select State"
+              options={this.filterOptions[0].options}
+              value={this.state.selectedState || ""}
+              onChange={this.handleChange("state")}
+            />
+          )}
 
-{
-  (
-    <FilterDropdown
-      key={1}
-      number={1}
-      label="Select District"
-      options={this.getDistrictOptions()}
-      value={this.state.selectedDistrict || ""}
-      onChange={this.handleChange("district")}
-      disabled={!this.state.selectedState}
-    />
-  )
-}
+          {
+            <FilterDropdown
+              key={1}
+              number={1}
+              label="Select District"
+              options={this.getDistrictOptions()}
+              value={this.state.selectedDistrict || ""}
+              onChange={this.handleChange("district")}
+              disabled={!this.state.selectedState}
+            />
+          }
 
-{
-  this.state.selectedState && (
-    <FilterDropdown
-      key={2}
-      number={2}
-      label="Select Trend"
-      options={this.filterOptions[2].options}
-      value={this.state.selectedTrend || ""}
-      onChange={this.handleChange("trend")}
-    />
-  )
-}
+      
 
-
-
-
-        {/* Precinct Dropdown */}
-        {this.props.selectedTrend === "precinct" && (
+          {/* Precinct Dropdown */}
+          {this.props.selectedTrend === "precinct" && (
             <FilterDropdown
               number={3}
               label="Chose Sub Trend"
@@ -166,27 +177,14 @@ class TopBar extends React.Component {
               onChange={this.handleChange("SubTrend")}
             />
           )}
-          {/* Demographics DropDown */}
-          {this.props.selectedSubTrend === "demographic" && (
 
-            <FilterDropdown 
-
-              number={4}
-              label="Select Ethnic Group"
-              options={[
-                { id: "white", name: "White" },
-                { id: "black", name: "Black" },
-                { id: "hispanic", name: "Hispanic" },
-                { id: "asian", name: "Asian" },
-              ]}
-              value={this.props.selectedSubSubTrend || ""}
-              onChange={this.handleChange("SubSubTrend")}
-            />
-          )}
+          {this.renderSubOptions()}
+          {this.renderSubSubOptions()}
 
           <button
             onClick={this.handleResetFilters}
-            className="reset-filters-button">
+            className="reset-filters-button"
+          >
             Reset Filters
           </button>
         </div>

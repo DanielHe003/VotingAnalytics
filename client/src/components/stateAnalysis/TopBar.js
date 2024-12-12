@@ -42,16 +42,7 @@ class TopBar extends React.Component {
           value
         );
   
-        if (type === 'state') {
-          // this.setState({
-          //   selectedTrend: '',
-          //   selectedSubTrend: '',
-          //   selectedSubSubTrend: '',
-          // });
-          // this.props.setSelectedTrend('');
-          // this.props.setSelectedSubTrend('');
-          // this.props.setSelectedSubSubTrend('');
-        } else if (type === 'trend') {
+      if (type === 'trend') {
           this.setState({
             selectedSubTrend: '',
             selectedSubSubTrend: '',

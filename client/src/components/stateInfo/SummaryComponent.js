@@ -4,22 +4,16 @@ import './SummaryComponent.css';
 import SummaryBox from './SummaryBox';
 
 class SummaryComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      prevSelectedTrend: null,
-      prevData: null,
-      chartData: null
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.selectedTrend !== this.props.selectedTrend) {
-      
-    }
-  }  
+  
   render() {
+    if(this.props.data === null){
+      return (
+        <></>
+      )
+    }
     const { data, selectedTrend } = this.props;
+    console.log(data);
+
 
     const charts = {
       voting: {
@@ -75,25 +69,22 @@ class SummaryComponent extends Component {
     return (
       <div className="state-summary container">
         <div className="mainContent">
-          
           <div className="chartsColumn">
-            {charts[selectedTrend] && (
-              
+            {charts !== null && charts[selectedTrend] && (
               <ChartContainer
-  key={selectedTrend} // Update the key prop when selectedTrend changes
-  data={{
-    labels: charts[selectedTrend].labels,
-    values: charts[selectedTrend].values
-  }}
-  title={charts[selectedTrend].title}
-  type="bar"
-  height={300}
-  titleRender={true}
-  width={700}
-  label="Count"
-  xAxisTitle={charts[selectedTrend].xAxisTitle}
-  yAxisTitle={charts[selectedTrend].yAxisTitle}
-/>
+                data={{
+                  labels: charts[selectedTrend].labels,
+                  values: charts[selectedTrend].values
+                }}
+                title={charts[selectedTrend].title}
+                titleRender={true}
+                type="bar"
+                height={300}
+                width={700}
+                label="Count"
+                xAxisTitle={charts[selectedTrend].xAxisTitle}
+                yAxisTitle={charts[selectedTrend].yAxisTitle}
+              />
             )}
           </div>
 

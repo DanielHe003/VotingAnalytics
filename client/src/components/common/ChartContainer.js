@@ -27,7 +27,6 @@ class ChartContainer extends React.Component {
         {/* State Summary */}
         {titleRender && (
           <>
-            {window.alert("th")}
             <div className="chartBox">
               <h4 className="title">{title}</h4>
               {type === "bar" && (
@@ -43,6 +42,7 @@ class ChartContainer extends React.Component {
             </div>
           </>
         )}
+        
         {type === "table" && (
           <TableComponent categoryData={data} height={height} width={width} />
         )}
