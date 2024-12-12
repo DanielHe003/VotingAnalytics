@@ -13,14 +13,16 @@ class StateAnalysis extends React.Component {
   };
 
   componentDidUpdate(prevProps) {
-    console.log(this.props.selectedSubSubTrend);
+    console.log(this.props.selectedTrend);
     if (prevProps !== this.props) {
+      this.setState({ dataAvailable: false , chartData: null});
       console.log("Updated");
-      if (this.props.selectedSubTrend) {
-        if (this.props.selectedSubSubTrend) {
+      if (this.props.selectedSubSubTrend) {
+        if (this.props.selectedSubTrend) {
           if (this.props.selectedTrend === "Gingles") {
+            // window.alert("In here");
             this.fetchGingles();
-            this.renderChart();
+            // this.renderChart();
           } else if (this.props.selectedTrend === "EI") {
             console.log("in ei");
             this.fetchEIData();
@@ -31,22 +33,13 @@ class StateAnalysis extends React.Component {
     }
   }
 
-  fetchData = async (endpoint) => {
-    try {
-      const { data } = await axios.get(`${this.state.baseUrl}/${endpoint}`);
-      return data;
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      throw error;
-    }
-  };
 
   fetchGingles = async () => {
     try {
       if (!this.props.selectedSubSubTrend || !this.props.selectedSubTrend)
         return;
 
-      this.setState({ dataAvailable: false });
+      this.setState({ dataAvailable: false , chartData: null});
 
       const stateId =
         this.props.selectedState === "Alabama"
@@ -56,31 +49,28 @@ class StateAnalysis extends React.Component {
           : null;
 
       const urlMap = {
-        race: `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`,
-        income: `states/${stateId}/gingles/income${
-          this.props.selectedSubSubTrend
-            ? `?regionType=${this.props.selectedSubSubTrend}`
-            : ""
-        }`,
+        "race": `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`,
+        "income": `states/${stateId}/gingles/income${this.props.selectedSubSubTrend ? `?regionType=${this.props.selectedSubSubTrend}`: ""}`,
         "income-race": `states/${stateId}/gingles/income-race/${this.props.selectedSubSubTrend}`,
       };
 
       if (urlMap[this.props.selectedSubTrend]) {
         const { data } = await axios.get(urlMap[this.props.selectedSubTrend]);
-        this.setState({ chartData: data, dataAvailable: true }); // Set dataAvailable to true after fetching data
+        console.log(urlMap[this.props.selectedSubTrend]);
+        console.log(data);
+        this.setState({ chartData: data, dataAvailable: true });
       }
     } catch (error) {
       console.error("Error fetching Gingles analysis:", error);
-      this.setState({ dataAvailable: true }); // Set to true even in case of error to prevent indefinite loading
+      this.setState({ dataAvailable: false });
     }
   };
 
-  // Not implementedcdSummaryData
   fetchSeawulf = async () => {};
 
   fetchEIData = async () => {
     try {
-      this.setState({ dataAvailable: false });
+      this.setState({ dataAvailable: false , chartData: null});
 
       const stateId =
         this.props.selectedState === "Alabama"
@@ -98,8 +88,8 @@ class StateAnalysis extends React.Component {
       console.log("map created");
 
       if (urlMap[this.props.selectedSubTrend]) {
-        const bidenUrl = `${urlMap["racial"]}Biden`;
-        const trumpUrl = `${urlMap["racial"]}Trump`;
+        const bidenUrl = `${urlMap[this.props.selectedSubTrend]}Biden`;
+        const trumpUrl = `${urlMap[this.props.selectedSubTrend]}Trump`;
 
         const [bidenData, trumpData] = await Promise.all([
           axios.get(bidenUrl),
@@ -160,12 +150,13 @@ class StateAnalysis extends React.Component {
     }
 
     if (this.props.selectedTrend === "EI") {
-      console.log(this.state.bidenData);
       if (!this.state.chartData.bidenData || !this.state.chartData.trumpData) {
         return <div>No data available</div>;
       }
+      console.log(this.state.chartData);
       return (
-        <ChartContainer
+
+      <ChartContainer
           type="density"
           data={this.state.chartData} 
           height={200}
@@ -213,7 +204,9 @@ class StateAnalysis extends React.Component {
               alignItems: "center",
             }}
           >
-            {this.renderChart()}
+          {this.renderChart() !== null && (
+            <div>{this.renderChart()}</div>
+          )}
           </div>
 
           {this.renderSideTable() !== null && (

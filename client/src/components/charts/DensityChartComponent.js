@@ -17,7 +17,7 @@ const DEFAULT_COLORS = [
 ];
 
 const getRandomColor = (index) => {
-  return DEFAULT_COLORS[index % DEFAULT_COLORS.length] || 'rgb(0, 0, 0)'; // default to black if index is out of range
+  return DEFAULT_COLORS[index % DEFAULT_COLORS.length] || 'rgb(0, 0, 0)';
 };
 
 const mapGroupToCorrectTerm = (group) => {
@@ -29,7 +29,15 @@ const mapGroupToCorrectTerm = (group) => {
     'POP_HISLAT': 'Hispanic',
     'Non POP_HISLAT': 'Non-Hispanic',
     'Non POP_ASN': "Non-Asian",
-    'POP_ASN': "Asian"
+    'POP_ASN': "Asian",
+    "LOW_INC": "Low Income",
+    "Non LOW_INC": "Non-Low Income",
+    "LOW_MID_INC": "Low-Mid Income",
+    "Non LOW_MID_INC": "Non Low-Mid Income",
+    "UP_MID_INC": "Upper Middle Income",
+    "Non UP_MID_INC": "Non-Upper Middle Income",
+    "UP_INC": "Upper Income",
+    "Non UP_INC": "Non-Upper Income",
   };
   return mappingDict[group] || group;
 };
