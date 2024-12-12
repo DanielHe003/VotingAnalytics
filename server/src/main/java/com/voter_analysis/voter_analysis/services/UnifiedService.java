@@ -389,9 +389,9 @@ public class UnifiedService {
     }
     //Use case #17 
     // Service method for Race Analysis
-    @Cacheable(value = "raceAnalysis", key = "#stateId + '-' + #racialGroup + '-' + #candidateName")
-    public List<EIAnalysisDTO> getRaceAnalysis(int stateId, String racialGroup, String candidateName) {
-        System.out.println("Fetching race analysis for stateId: " + stateId + ", racialGroup: " + racialGroup + ", candidateName: " + candidateName);
+    @Cacheable(value = "raceAnalysis", key = "#stateId + '-' + #racialGroup + '-' + #candidateName + '-' + #regionType")
+    public List<EIAnalysisDTO> getRaceAnalysis(int stateId, String racialGroup, String candidateName, String regionType) {
+        System.out.println("Fetching race analysis for stateId: " + stateId + ", racialGroup: " + racialGroup + ", candidateName: " + candidateName + ", regionType: " + regionType);
     
         String databaseField = RacialCategoryMapper.getDatabaseField(racialGroup);
         if (databaseField == null) {
@@ -401,10 +401,19 @@ public class UnifiedService {
     
         System.out.println("Mapped racial group to database field: " + databaseField);
     
-        // Fetch all EIAnalysis entries
-        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndRace(
-            stateId, candidateName, databaseField
-        );
+        List<EIAnalysis> analyses;
+        if (regionType != null && !regionType.isEmpty()) {
+            // Query that includes region_type
+            analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndRaceAndRegionType(
+                stateId, candidateName, databaseField, regionType
+            );
+        } else {
+            // Query without region_type
+            analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndRaceAndRegionType(
+                stateId, candidateName, databaseField, regionType
+            );
+        }
+    
         System.out.println("Number of analyses fetched: " + analyses.size());
     
         String nonField = "Non " + databaseField;
@@ -430,50 +439,56 @@ public class UnifiedService {
         return result;
     }
     
+    
 
     // Service method for Economic Analysis
-    @Cacheable(value = "economicAnalysis", key = "#stateId + '-' + #economicGroup + '-' + #candidateName")
-    public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup, String candidateName) {
-        System.out.println("Fetching economic analysis for stateId: " + stateId + ", economicGroup: " + economicGroup + ", candidateName: " + candidateName);
+@Cacheable(value = "economicAnalysis", key = "#stateId + '-' + #economicGroup + '-' + #candidateName + '-' + #regionType")
+public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup, String candidateName, String regionType) {
+    System.out.println("Fetching economic analysis for stateId: " + stateId + ", economicGroup: " + economicGroup + ", candidateName: " + candidateName + ", regionType: " + regionType);
 
-        // Map the user input to the corresponding database field
-        String databaseField = EconomicCategoryMapper.getDatabaseField(economicGroup);
-        if (databaseField == null) {
-            System.out.println("Invalid economic group: " + economicGroup);
-            throw new IllegalArgumentException("Invalid economic group: " + economicGroup);
-        }
-
-        System.out.println("Mapped economic group to database field: " + databaseField);
-
-        // Fetch all EIAnalysis entries
-        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupEconomic(
-            stateId, candidateName, databaseField
-        );
-        System.out.println("Number of analyses fetched: " + analyses.size());
-
-        String nonField = "Non " + databaseField;
-
-        // Process the fetched data
-        List<EIAnalysisDTO> result = analyses.stream()
-            .flatMap(analysis -> analysis.getData().stream()
-                .filter(d -> {
-                    boolean matches = d.getGroup() != null && (d.getGroup().equals(databaseField) || d.getGroup().equals(nonField));
-                    if (!matches) {
-                        System.out.println("Data entry does not match economicGroup: " + d.getGroup());
-                    }
-                    return matches;
-                })
-                .map(d -> {
-                    System.out.println("Mapping data entry to DTO: " + d);
-                    return EIAnalysisDTO.fromDataEntry(analysis, d);
-                })
-            )
-            .collect(Collectors.toList());
-
-        System.out.println("Number of results after processing: " + result.size());
-        return result;
+    String databaseField = EconomicCategoryMapper.getDatabaseField(economicGroup);
+    if (databaseField == null) {
+        System.out.println("Invalid economic group: " + economicGroup);
+        throw new IllegalArgumentException("Invalid economic group: " + economicGroup);
     }
-    
+
+    System.out.println("Mapped economic group to database field: " + databaseField);
+
+    List<EIAnalysis> analyses;
+    if (regionType != null && !regionType.isEmpty()) {
+        analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupEconomicAndRegionType(
+            stateId, candidateName, databaseField, regionType
+        );
+    } else {
+        analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupEconomicAndRegionType(
+            stateId, candidateName, databaseField, regionType
+        );
+    }
+
+    System.out.println("Number of analyses fetched: " + analyses.size());
+
+    String nonField = "Non " + databaseField;
+
+    List<EIAnalysisDTO> result = analyses.stream()
+        .flatMap(analysis -> analysis.getData().stream()
+            .filter(d -> {
+                boolean matches = d.getGroup() != null && (d.getGroup().equals(databaseField) || d.getGroup().equals(nonField));
+                if (!matches) {
+                    System.out.println("Data entry does not match economicGroup: " + d.getGroup());
+                }
+                return matches;
+            })
+            .map(d -> {
+                System.out.println("Mapping data entry to DTO: " + d);
+                return EIAnalysisDTO.fromDataEntry(analysis, d);
+            })
+        )
+        .collect(Collectors.toList());
+
+    System.out.println("Number of results after processing: " + result.size());
+    return result;
+}
+
 
     // Service method for Region Analysis
     @Cacheable(value = "regionAnalysis", key = "#stateId + '-' + #regionGroup + '-' + #candidateName")

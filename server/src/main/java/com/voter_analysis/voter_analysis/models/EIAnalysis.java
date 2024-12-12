@@ -29,6 +29,9 @@ public class EIAnalysis {
     @Field("fileName")
     private String fileName;
 
+    @Field("region_type")
+    private String regionType;
+
     private List<AnalysisData> data;
 
     @Data

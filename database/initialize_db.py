@@ -145,43 +145,40 @@ def parse_gingles_file_name(file_name):
 
     return analysis_type, region_type
 def import_ei_analysis_data(state_id, data_directory, state_name):
-    """
-    Import EI analysis data for a specific state.
-    
-    Args:
-        state_id (int): The ID of the state (e.g., 1 for Alabama, 6 for California).
-        data_directory (str): The directory containing EI analysis data.
-        state_name (str): The name of the state.
-    """
     ei_analysis_dir = os.path.join(data_directory, 'ei-analysis-json')
     if not os.path.exists(ei_analysis_dir):
         print(f"EI analysis directory not found for state id {state_id}. Skipping.")
         return
 
-    # Traverse subdirectories (economic, race, region)
-    for analysis_type in ['economic', 'race', 'region']:
+    analysis_types = ['economic', 'race', 'region']
+    region_types = ['rural', 'suburban', 'urban']
+
+    for analysis_type in analysis_types:
         analysis_subdir = os.path.join(ei_analysis_dir, analysis_type)
         if not os.path.exists(analysis_subdir):
             print(f"No data for {analysis_type} analysis in {state_name}. Skipping.")
             continue
 
+        # First, import top-level files with region_type = None
         for file_name in os.listdir(analysis_subdir):
-            if file_name.endswith('.json'):
-                file_path = os.path.join(analysis_subdir, file_name)
+            file_path = os.path.join(analysis_subdir, file_name)
+            if file_name.endswith('.json') and os.path.isfile(file_path):
                 candidate_name = extract_candidate_name(file_name)
-                import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name)
-def import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name):
-    """
-    Import a single EI analysis JSON file into the database.
-    
-    Args:
-        state_id (int): The ID of the state.
-        file_path (str): The path to the EI analysis JSON file.
-        analysis_type (str): The type of analysis (economic, race, region).
-        candidate_name (str): The name of the candidate.
-    """
+                import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name, region_type=None)
+
+        # Then, check for region_type directories
+        for rt in region_types:
+            rt_dir = os.path.join(analysis_subdir, rt)
+            if os.path.exists(rt_dir) and os.path.isdir(rt_dir):
+                for file_name in os.listdir(rt_dir):
+                    if file_name.endswith('.json'):
+                        file_path = os.path.join(rt_dir, file_name)
+                        candidate_name = extract_candidate_name(file_name)
+                        import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name, region_type=rt)
+
+def import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate_name, region_type=None):
     file_name = os.path.basename(file_path)
-    print(f"Importing {file_name} ({analysis_type}) for candidate {candidate_name} in state {state_id}")
+    print(f"Importing {file_name} ({analysis_type}) for candidate {candidate_name} in state {state_id} with region_type={region_type}")
 
     with open(file_path, 'r') as f:
         data = json.load(f)
@@ -191,6 +188,7 @@ def import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate
         "analysisType": analysis_type,
         "candidateName": candidate_name,
         "fileName": file_name,
+        "region_type": region_type,
         "data": data
     }
 
@@ -201,6 +199,7 @@ def import_single_ei_analysis_file(state_id, file_path, analysis_type, candidate
         print(f"Bulk write error for {file_name}: {bwe.details}")
     except Exception as e:
         print(f"Error inserting {file_name}: {e}")
+
 def extract_candidate_name(file_name):
     """
     Extract the candidate's name from the file name.

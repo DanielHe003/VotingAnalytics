@@ -168,13 +168,10 @@ public class UnifiedController {
     public ResponseEntity<List<EIAnalysisDTO>> getRacialAnalysisResults(
             @PathVariable int stateId,
             @RequestParam String racialGroup,
-            @RequestParam String candidateName) {
+            @RequestParam String candidateName,
+            @RequestParam(required = false) String regionType) {
     
-        System.out.println("Entering getRacialAnalysisResults");
-        System.out.println("stateId: " + stateId + ", racialGroup: " + racialGroup + ", candidateName: " + candidateName);
-    
-        List<EIAnalysisDTO> results = unifiedService.getRaceAnalysis(stateId, racialGroup, candidateName);
-        System.out.println("Results size: " + results.size());
+        List<EIAnalysisDTO> results = unifiedService.getRaceAnalysis(stateId, racialGroup, candidateName, regionType);
         return ResponseEntity.ok(results);
     }
     
@@ -186,23 +183,15 @@ public class UnifiedController {
     public ResponseEntity<List<EIAnalysisDTO>> getEconomicAnalysisResults(
             @PathVariable int stateId,
             @RequestParam String economicGroup,
-            @RequestParam String candidateName) {
-
-        List<EIAnalysisDTO> results = unifiedService.getEconomicAnalysis(stateId, economicGroup, candidateName);
+            @RequestParam String candidateName,
+            @RequestParam(required = false) String regionType) {
+    
+        // regionType can be null if not provided
+        List<EIAnalysisDTO> results = unifiedService.getEconomicAnalysis(stateId, economicGroup, candidateName, regionType);
         return ResponseEntity.ok(results);
     }
+    
 
-    /**
-     * Use Case #17: Candidate results for region groups
-     */
-    @GetMapping("/{stateId}/ei-analysis/region")
-    public ResponseEntity<List<EIAnalysisDTO>> getRegionAnalysisResults(
-            @PathVariable int stateId,
-            @RequestParam String regionGroup,
-            @RequestParam String candidateName) {
 
-        List<EIAnalysisDTO> results = unifiedService.getRegionAnalysis(stateId, regionGroup, candidateName);
-        return ResponseEntity.ok(results);
-    }
 
 }
