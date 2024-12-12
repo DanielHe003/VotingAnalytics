@@ -435,18 +435,29 @@ public class UnifiedService {
     @Cacheable(value = "economicAnalysis", key = "#stateId + '-' + #economicGroup + '-' + #candidateName")
     public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup, String candidateName) {
         System.out.println("Fetching economic analysis for stateId: " + stateId + ", economicGroup: " + economicGroup + ", candidateName: " + candidateName);
-    
+
+        // Map the user input to the corresponding database field
+        String databaseField = EconomicCategoryMapper.getDatabaseField(economicGroup);
+        if (databaseField == null) {
+            System.out.println("Invalid economic group: " + economicGroup);
+            throw new IllegalArgumentException("Invalid economic group: " + economicGroup);
+        }
+
+        System.out.println("Mapped economic group to database field: " + databaseField);
+
+        // Fetch all EIAnalysis entries
         List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupEconomic(
-            stateId, candidateName, economicGroup
+            stateId, candidateName, databaseField
         );
         System.out.println("Number of analyses fetched: " + analyses.size());
-    
-        String nonField = "Non " + economicGroup;
-    
+
+        String nonField = "Non " + databaseField;
+
+        // Process the fetched data
         List<EIAnalysisDTO> result = analyses.stream()
             .flatMap(analysis -> analysis.getData().stream()
                 .filter(d -> {
-                    boolean matches = d.getGroup() != null && (d.getGroup().equals(economicGroup) || d.getGroup().equals(nonField));
+                    boolean matches = d.getGroup() != null && (d.getGroup().equals(databaseField) || d.getGroup().equals(nonField));
                     if (!matches) {
                         System.out.println("Data entry does not match economicGroup: " + d.getGroup());
                     }
@@ -458,7 +469,7 @@ public class UnifiedService {
                 })
             )
             .collect(Collectors.toList());
-    
+
         System.out.println("Number of results after processing: " + result.size());
         return result;
     }

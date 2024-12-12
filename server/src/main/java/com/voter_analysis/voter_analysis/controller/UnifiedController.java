@@ -119,7 +119,7 @@ public class UnifiedController {
         List<CongressionalRepresentationDTO> representations = unifiedService.getDistrictRepresentationList(stateId);
         return ResponseEntity.ok(representations);
     }
-    //Use Case #10
+    //Use Case #9
     @GetMapping("/states/{stateId}/districtMap/{cdId}")
     public ResponseEntity<FeatureDTO> getDistrictMap(
             @PathVariable int stateId,
