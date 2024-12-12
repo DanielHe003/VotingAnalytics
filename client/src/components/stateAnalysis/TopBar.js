@@ -1,6 +1,6 @@
-import React from 'react';
-import FilterDropdown from '../common/FilterDropdown';
-import './TopBar.css';
+import React from "react";
+import FilterDropdown from "../common/FilterDropdown";
+import "./TopBar.css";
 
 class TopBar extends React.Component {
   constructor(props) {
@@ -8,25 +8,26 @@ class TopBar extends React.Component {
     this.state = {
       filterOptions: [
         {
-          name: 'Select State',
+          name: "Select State",
           options: [
-            { id: 'Alabama', name: 'Alabama', districtsCount: 7 },
-            { id: 'California', name: 'California', districtsCount: 52 },
+            { id: "Alabama", name: "Alabama", districtsCount: 7 },
+            { id: "California", name: "California", districtsCount: 52 },
           ],
         },
         {
-          name: 'Select Trend',
+          name: "Select Trend",
           options: [
-            { id: 'EI', name: 'Ecological Inference' },
-            { id: 'Gingles', name: 'Gingles 2/3 Analysis' },
-            { id: 'MCMC', name: 'MCMC Analysis' },
+            { id: "EI", name: "Ecological Inference" },
+            { id: "Gingles", name: "Gingles 2/3 Analysis" },
+            { id: "MCMC", name: "MCMC Analysis" },
           ],
         },
       ],
-      selectedState: '',
-      selectedTrend: '',
-      selectedSubTrend: '',
-      selectedSubSubTrend: '',
+      selectedState: "",
+      selectedTrend: "",
+      selectedSubTrend: "",
+      selectedSubSubTrend: "",
+      selectedSubSubSubTrend: "",
     };
   }
 
@@ -37,22 +38,22 @@ class TopBar extends React.Component {
         [`selected${type.charAt(0).toUpperCase() + type.slice(1)}`]: value,
       },
       () => {
-        this.props[`setSelected${type.charAt(0).toUpperCase() + type.slice(1)}`](
-          value
-        );
-  
-      if (type === 'trend') {
+        this.props[
+          `setSelected${type.charAt(0).toUpperCase() + type.slice(1)}`
+        ](value);
+
+        if (type === "trend") {
           this.setState({
-            selectedSubTrend: '',
-            selectedSubSubTrend: '',
+            selectedSubTrend: "",
+            selectedSubSubTrend: "",
           });
-          this.props.setSelectedSubTrend('');
-          this.props.setSelectedSubSubTrend('');
-        } else if (type === 'SubTrend') {
+          this.props.setSelectedSubTrend("");
+          this.props.setSelectedSubSubTrend("");
+        } else if (type === "SubTrend") {
           this.setState({
-            selectedSubSubTrend: '',
+            selectedSubSubTrend: "",
           });
-          this.props.setSelectedSubSubTrend('');
+          this.props.setSelectedSubSubTrend("");
         }
       }
     );
@@ -60,20 +61,20 @@ class TopBar extends React.Component {
 
   handleResetFilters = () => {
     this.setState({
-      selectedState: '',
-      selectedTrend: '',
-      selectedSubTrend: '',
-      selectedSubSubTrend: '',
+      selectedState: "",
+      selectedTrend: "",
+      selectedSubTrend: "",
+      selectedSubSubTrend: "",
     });
-    this.props.setSelectedState('');
-    this.props.setSelectedTrend('');
-    this.props.setSelectedSubTrend('');
-    this.props.setSelectedSubSubTrend('');
+    this.props.setSelectedState("");
+    this.props.setSelectedTrend("");
+    this.props.setSelectedSubTrend("");
+    this.props.setSelectedSubSubTrend("");
   };
 
   renderSubOptions = (trend) => {
     switch (trend) {
-      case 'Gingles':
+      case "Gingles":
         return (
           <FilterDropdown
             key="ginglesSubOptions"
@@ -81,15 +82,15 @@ class TopBar extends React.Component {
             label="Select Sub-Option"
             name="Select Option"
             options={[
-              { id: 'race', name: 'Race' },
-              { id: 'income', name: 'Income' },
-              { id: 'income-race', name: 'Income-Race' },
+              { id: "race", name: "Race" },
+              { id: "income", name: "Income" },
+              { id: "income-race", name: "Income-Race" },
             ]}
-            value={this.props.selectedSubTrend || ''}
-            onChange={this.handleChange('SubTrend')}
+            value={this.props.selectedSubTrend || ""}
+            onChange={this.handleChange("SubTrend")}
           />
         );
-      case 'EI':
+      case "EI":
         return (
           <FilterDropdown
             key="ginglesSubOptions"
@@ -97,12 +98,11 @@ class TopBar extends React.Component {
             label="Select Sub-Option"
             name="Select Option"
             options={[
-              { id: 'racial', name: 'Racial' },
-              { id: 'economic', name: 'Economic' },
-              { id: 'region', name: 'Region' },
+              { id: "racial", name: "Racial" },
+              { id: "economic", name: "Economic" },
             ]}
-            value={this.props.selectedSubTrend || ''}
-            onChange={this.handleChange('SubTrend')}
+            value={this.props.selectedSubTrend || ""}
+            onChange={this.handleChange("SubTrend")}
           />
         );
       default:
@@ -113,7 +113,7 @@ class TopBar extends React.Component {
   renderSubSubOptions = (subTrend) => {
     if (subTrend) {
       switch (subTrend) {
-        case 'race':
+        case "race":
           return (
             <FilterDropdown
               key="raceSubOptions"
@@ -121,16 +121,16 @@ class TopBar extends React.Component {
               label="Select Ethnic Group"
               name="Select Option"
               options={[
-                { id: 'white', name: 'White' },
-                { id: 'black', name: 'Black' },
-                { id: 'hispanic', name: 'Hispanic' },
-                { id: 'asian', name: 'Asian' },
+                { id: "white", name: "White" },
+                { id: "black", name: "Black" },
+                { id: "hispanic", name: "Hispanic" },
+                { id: "asian", name: "Asian" },
               ]}
-              value={this.props.selectedSubSubTrend || ''}
-              onChange={this.handleChange('SubSubTrend')}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
             />
           );
-        case 'income':
+        case "income":
           return (
             <FilterDropdown
               key="raceSubOptions"
@@ -138,15 +138,15 @@ class TopBar extends React.Component {
               label="Select Region Type"
               name="Select Option"
               options={[
-                { id: 'urban', name: 'Urban' },
-                { id: 'suburban', name: 'Suburban' },
-                { id: 'rural', name: 'Rural' },
+                { id: "urban", name: "Urban" },
+                { id: "suburban", name: "Suburban" },
+                { id: "rural", name: "Rural" },
               ]}
-              value={this.props.selectedSubSubTrend || ''}
-              onChange={this.handleChange('SubSubTrend')}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
             />
           );
-        case 'income-race':
+        case "income-race":
           return (
             <FilterDropdown
               key="incomeRaceSubOptions"
@@ -154,16 +154,16 @@ class TopBar extends React.Component {
               label="Select Ethnic Group"
               name="Select Option"
               options={[
-                { id: 'white', name: 'White' },
-                { id: 'black', name: 'Black' },
-                { id: 'hispanic', name: 'Hispanic' },
-                { id: 'asian', name: 'Asian' },
+                { id: "white", name: "White" },
+                { id: "black", name: "Black" },
+                { id: "hispanic", name: "Hispanic" },
+                { id: "asian", name: "Asian" },
               ]}
-              value={this.props.selectedSubSubTrend || ''}
-              onChange={this.handleChange('SubSubTrend')}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
             />
           );
-        case 'racial':
+        case "racial":
           return (
             <FilterDropdown
               key="raceSubOptions"
@@ -171,16 +171,16 @@ class TopBar extends React.Component {
               label="Select Ethnic Group"
               name="Select Option"
               options={[
-                { id: 'White', name: 'White' },
-                { id: 'Black', name: 'Black' },
-                { id: 'Hispanic', name: 'Hispanic' },
-                { id: 'Asian', name: 'Asian' },
+                { id: "White", name: "White" },
+                { id: "Black", name: "Black" },
+                { id: "Hispanic", name: "Hispanic" },
+                { id: "Asian", name: "Asian" },
               ]}
-              value={this.props.selectedSubSubTrend || ''}
-              onChange={this.handleChange('SubSubTrend')}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
             />
           );
-        case 'economic':
+        case "economic":
           return (
             <FilterDropdown
               key="raceSubOptions"
@@ -188,29 +188,13 @@ class TopBar extends React.Component {
               label="Select Ethnic Group"
               name="Select Option"
               options={[
-                { id: 'low', name: '0k-35k' },
-                { id: 'low_mid', name: '35K-120K' },
-                { id: 'upper_mid', name: '60K-120K' },
-                { id: 'upper', name: '125K+' },
+                { id: "low", name: "0k-35k" },
+                { id: "low_mid", name: "35K-120K" },
+                { id: "upper_mid", name: "60K-120K" },
+                { id: "upper", name: "125K+" },
               ]}
-              value={this.props.selectedSubSubTrend || ''}
-              onChange={this.handleChange('SubSubTrend')}
-            />
-          );
-        case 'region':
-          return (
-            <FilterDropdown
-              key="raceSubOptions"
-              number={3}
-              label="Select Region Type"
-              name="Select Option"
-              options={[
-                { id: 'urban', name: 'Urban' },
-                { id: 'suburban', name: 'Suburban' },
-                { id: 'rural', name: 'Rural' },
-              ]}
-              value={this.props.selectedSubSubTrend || ''}
-              onChange={this.handleChange('SubSubTrend')}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
             />
           );
         default:
@@ -232,19 +216,43 @@ class TopBar extends React.Component {
               label={filter.name}
               options={filter.options}
               value={
-                this.state[`selected${filter.name.replace('Select ', '')}`] || ''
+                this.state[`selected${filter.name.replace("Select ", "")}`] ||
+                ""
               }
               onChange={this.handleChange(
-                filter.name === 'Select State' ? 'state' : 'trend'
+                filter.name === "Select State" ? "state" : "trend"
               )}
-              disabled={filter.name === 'Select Trend' && !this.props.selectedState}
+              disabled={
+                filter.name === "Select Trend" && !this.props.selectedState
+              }
             />
           ))}
 
           {this.renderSubOptions(this.props.selectedTrend)}
           {this.renderSubSubOptions(this.props.selectedSubTrend)}
 
-          <button onClick={this.handleResetFilters} className="reset-filters-button">
+          {(this.props.selectedSubTrend === "racial" ||
+            this.props.selectedSubTrend === "economic") && (
+            <FilterDropdown
+              key="regionOptions"
+              number={4}
+              label="Select Region"
+              name="Select Option"
+              options={[
+                { id: "all", name: "All Regions" },
+                { id: "urban", name: "Urban" },
+                { id: "suburban", name: "Suburban" },
+                { id: "rural", name: "Rural" },
+              ]}
+              value={this.props.selectedSubSubSubTrend || "all"}
+              onChange={this.handleChange("SubSubSubTrend")}
+            />
+          )}
+
+          <button
+            onClick={this.handleResetFilters}
+            className="reset-filters-button"
+          >
             Reset Filters
           </button>
         </div>

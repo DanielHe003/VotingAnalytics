@@ -70,32 +70,40 @@ class StateAnalysis extends React.Component {
 
   fetchEIData = async () => {
     try {
-      this.setState({ dataAvailable: false , chartData: null});
-
+      this.setState({ dataAvailable: false, chartData: null });
+  
       const stateId =
         this.props.selectedState === "Alabama"
           ? 1
           : this.props.selectedState === "California"
           ? 6
           : null;
-
+      
+          const regionTypeParam =
+          this.props.selectedSubSubSubTrend === "urban" ||
+          this.props.selectedSubSubSubTrend === "suburban" ||
+          this.props.selectedSubSubSubTrend === "rural"
+            ? `&regionType=${this.props.selectedSubSubSubTrend}`
+            : "";
+              
+          window.alert(regionTypeParam);
       const urlMap = {
         racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
-        economic: `${stateId}/ei-analysis/economic?economicGroup=${this.props.selectedSubSubTrend}&candidateName=`,
-        region: `${stateId}/ei-analysis/region?regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
+        economic: `${stateId}/ei-analysis/economic?&economicGroup=${this.props.selectedSubSubTrend}&candidateName=`,
       };
-
+  
       console.log("map created");
-
+  
       if (urlMap[this.props.selectedSubTrend]) {
-        const bidenUrl = `${urlMap[this.props.selectedSubTrend]}Biden`;
-        const trumpUrl = `${urlMap[this.props.selectedSubTrend]}Trump`;
-
+        console.log(urlMap[this.props.selectedSubTrend]);
+        const bidenUrl = `${urlMap[this.props.selectedSubTrend]}Biden${regionTypeParam}`;
+        const trumpUrl = `${urlMap[this.props.selectedSubTrend]}Trump${regionTypeParam}`;
+  
         const [bidenData, trumpData] = await Promise.all([
           axios.get(bidenUrl),
           axios.get(trumpUrl),
         ]);
-
+  
         this.setState({
           chartData: { bidenData: bidenData.data, trumpData: trumpData.data },
           dataAvailable: true,
@@ -108,6 +116,7 @@ class StateAnalysis extends React.Component {
       this.setState({ dataAvailable: false });
     }
   };
+  
 
   renderChart = () => {
     if (!this.state.dataAvailable) {
@@ -194,6 +203,8 @@ class StateAnalysis extends React.Component {
           setSelectedSubTrend={this.props.setSelectedSubTrend}
           selectedSubSubTrend={this.props.selectedSubSubTrend}
           setSelectedSubSubTrend={this.props.setSelectedSubSubTrend}
+          selectedSubSubSubTrend={this.props.selectedSubSubSubTrend}
+          setSelectedSubSubSubTrend={this.props.setSelectedSubSubSubTrend}
         />
         <div className="content-container">
           <div
