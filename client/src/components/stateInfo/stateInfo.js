@@ -19,7 +19,7 @@ class StateInfo extends React.Component {
 
   componentDidMount() {
     this.fetchMapData();
-    // this.fetchSummaryData(this.props.selectedState);
+    this.fetchSummaryData(this.props.selectedState);
   }
 
   componentDidUpdate(prevProps) {
@@ -32,14 +32,14 @@ class StateInfo extends React.Component {
 
     if (
       prevProps.selectedDistrict !== this.props.selectedDistrict &&
-      this.props.selectedDistrict !== "All Districts"
+      this.props.selectedDistrict !== "0"
     ) {
       this.fetchCDSummaryData();
     }
 
     if (
       prevProps.selectedDistrict !== this.props.selectedDistrict &&
-      this.props.selectedDistrict === "All Districts"
+      this.props.selectedDistrict === "0"
     ) {
       this.fetchSummaryData(this.props.selectedState);
       // this.fetchCDSummaryData();
@@ -189,20 +189,41 @@ class StateInfo extends React.Component {
   };
 
   fetchSummaryData = async () => {
+    this.setState({ cdSummaryData: null });
     const state = this.props.selectedState;
     if (state && !this.state.summaryData[state]) {
       try {
+        // Fetching state summary data
         const data = await ApiService.fetchStateSummary(state);
         console.log(data);
         this.setState((prevState) => ({
           summaryData: { ...prevState.summaryData, [state]: data },
         }));
+  
+        // Fetching district representation data
+        const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
+        const response = await axios.get(`/states/${stateId}/districtRepresentation`);
+        const cdData = response.data; 
+        
+        const graphData = cdData.map(district => ({
+          "District #": district.districtId,
+          "Representative Name": district.representative,
+          "Representative Party": district.party,
+          "Racial/Ethnic Group": district.racialEthnicGroup
+        }));
+        const sortedGraphData = graphData.sort((a, b) => {
+          return a["District #"] - b["District #"];
+        });
+        
+        this.setState({ cdSummaryData: sortedGraphData }, () => {
+          console.log("cdSummaryData updated:", this.state.cdSummaryData);
+        });
       } catch (error) {
         window.alert("Error fetching summary data");
       }
     }
   };
-
+  
   getDistrictNumber(value) {
     const match = value.match(/^\D+\s*(\d+)$/);
     if (!match) {
@@ -213,11 +234,7 @@ class StateInfo extends React.Component {
 
   fetchCDSummaryData = async () => {
     try {
-      const selectedDistrictNumber = this.props.selectedDistrict
-        ? this.getDistrictNumber(this.props.selectedDistrict)
-        : null;
-
-      this.props.setSelectedTrend("Select Trend");
+      const selectedDistrictNumber = this.props.selectedDistrict ? this.getDistrictNumber(this.props.selectedDistrict) : null;
 
       if (!selectedDistrictNumber) {
         console.warn("Selected district number is null or invalid.");
@@ -259,9 +276,9 @@ class StateInfo extends React.Component {
         );
         return;
       }
-
-      this.setState({ cdSummaryData: districtData }, () => {
-        console.log("cdSummaryData updated:", this.state.cdSummaryData);
+        
+      this.setState({ specificDistrict: districtData }, () => {
+        console.log("cdSummaryData updated:", this.state.specificDistrict);
       });
     } catch (error) {
       console.error("Error fetching CD summary data:", error);
@@ -310,6 +327,7 @@ class StateInfo extends React.Component {
                             this.state.summaryData[this.props.selectedState]
                           }
                           selectedTrend={this.props.selectedTrend}
+                          cdSummaryData={this.state.cdSummaryData}
                         />
                       )}
                     </div>
@@ -337,7 +355,7 @@ class StateInfo extends React.Component {
             this.props.selectedDistrict !== "All Districts" && (
               <>
                 <div className="chart-container">
-                  <CDSummary data={this.state.cdSummaryData} />
+                  <CDSummary data={this.state.specificDistrict} />
                 </div>
               </>
             )}

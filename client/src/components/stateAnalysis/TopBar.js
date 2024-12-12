@@ -20,7 +20,6 @@ class TopBar extends React.Component {
             { id: 'EI', name: 'Ecological Inference' },
             { id: 'Gingles', name: 'Gingles 2/3 Analysis' },
             { id: 'MCMC', name: 'MCMC Analysis' },
-            { id: 'ComparePlans', name: 'Compare Plans' },
           ],
         },
       ],
@@ -99,7 +98,7 @@ class TopBar extends React.Component {
             name="Select Option"
             options={[
               { id: 'racial', name: 'Racial' },
-              { id: 'economic', name: 'Economic Group' },
+              { id: 'economic', name: 'Economic' },
               { id: 'region', name: 'Region' },
             ]}
             value={this.props.selectedSubTrend || ''}

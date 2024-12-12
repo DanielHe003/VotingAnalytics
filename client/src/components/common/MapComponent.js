@@ -38,16 +38,16 @@ class MapComponent extends React.Component {
           modifiedProperties.set("State", value === 1 ? "Alabama" : value === 6 ? "California" : value);
           break;
         case "percentage":
-          modifiedProperties.set("Percentage (%)", value);
+          modifiedProperties.set("Percentage (%)", value.toFixed(2)); 
           break;
         case "povertyPercentage":
-          modifiedProperties.set("Poverty Percentage (%)", value);
+          modifiedProperties.set("Poverty Percentage (%)", value.toFixed(2)); 
           break;
         case "type":
           modifiedProperties.set("Region Type", value);
           break;
         case "medianIncome":
-          modifiedProperties.set("Median Income ($)", value)
+          modifiedProperties.set("Median Income ($)", value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }));
           break;
         case "districtId":
           modifiedProperties.set("District ID", value);
@@ -62,6 +62,7 @@ class MapComponent extends React.Component {
     }
     return modifiedProperties;
   };
+  
 
   onFeatureClick = (e) => {
     const { properties } = e.target.feature;
