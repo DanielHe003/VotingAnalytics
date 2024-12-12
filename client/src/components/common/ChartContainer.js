@@ -20,11 +20,8 @@ class ChartContainer extends React.Component {
       titleRender,
     } = this.props;
 
-    // console.log(data.trumpData);
-    // console.log(data.bidenData);
-    console.log({
-      groups: [data.bidenData[0], data.bidenData[1]],
-    });
+    console.log(data);
+
     return (
       <>
         {/* State Summary */}
@@ -45,49 +42,76 @@ class ChartContainer extends React.Component {
             </div>
           </>
         )}
-
+        
         {type === "table" && (
           <TableComponent categoryData={data} height={height} width={width} />
         )}
 
-<div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px" }}>
-  {type === "density" && (
-    <div style={{
-      border: "2px solid #ccc", 
-      borderRadius: "10px", 
-      padding: "10px",
-      boxShadow: "0 0 0 2px blue" // Add blue highlight
-    }}>
-      <h3 style={{ textAlign: "center", fontWeight: "bold", color: "blue" }}>Support for Biden (Democrat)</h3>
-      <DensityChartComponent
-        data={{
-          groups: [data.bidenData[0], data.bidenData[1]],
-        }}
-        height={height}
-        width={width}
-      />
-    </div>
-  )}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "10px",
+          }}
+        >
+          {type === "density" && (
+            <div
+              style={{
+                border: "2px solid #ccc",
+                borderRadius: "10px",
+                padding: "10px",
+                boxShadow: "0 0 0 2px blue",
+              }}
+            >
+              <h3
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "blue",
+                }}
+              >
+                Support for Biden (Democrat)
+              </h3>
+              <DensityChartComponent
+                data={{
+                  groups: [data.bidenData[0], data.bidenData[1]],
+                }}
+                height={height}
+                width={width}
+              />
+            </div>
+          )}
 
-  {type === "density" && (
-    <div style={{
-      // border: "2px solid #ccc", 
-      borderRadius: "10px", 
-      padding: "10px",
-      marginTop: "20px",
-      boxShadow: "0 0 0 2px red" 
-    }}>
-      <h3 style={{ textAlign: "center", fontWeight: "bold", color: "red" }}>Support for Trump (Republican)</h3>
-      <DensityChartComponent
-        data={{
-          groups: [data.trumpData[0], data.trumpData[1]],
-        }}
-        height={height}
-        width={width}
-      />
-    </div>
-  )}
-</div>
+          {type === "density" && (
+            <div
+              style={{
+                // border: "2px solid #ccc",
+                borderRadius: "10px",
+                padding: "10px",
+                marginTop: "20px",
+                boxShadow: "0 0 0 2px red",
+              }}
+            >
+              <h3
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "red",
+                }}
+              >
+                Support for Trump (Republican)
+              </h3>
+              <DensityChartComponent
+                data={{
+                  groups: [data.trumpData[0], data.trumpData[1]],
+                }}
+                height={height}
+                width={width}
+              />
+            </div>
+          )}
+        </div>
 
         {type === "boxandwhisker" && (
           <BoxandWhiskerComponent
@@ -104,8 +128,6 @@ class ChartContainer extends React.Component {
             data={data}
             height={height}
             width={width}
-            dataSets={null}
-            populationStat={null}
           />
         )}
       </>

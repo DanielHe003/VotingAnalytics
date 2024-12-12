@@ -24,16 +24,30 @@ class ChartScatterComponent extends Component {
   }
 
   generateRegressionData = (data, color, label) => {
-
-    const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order: 2});
-    const fitData = data.map((d) => ({
-      x: d.x,
-      y: polynomial.predict(d.x)[1],
-    }));
-
+    let bestR2 = -Infinity;
+    let bestFitData;
+    let bestPredictor;
+  
+    for (let order = 1; order <= 3; order++) {
+      const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order });
+      const fitData = data.map((d) => ({
+        x: d.x,
+        y: polynomial.predict(d.x)[1],
+      }));
+  
+      const r2 = polynomial.r2;
+      if (r2 > bestR2) {
+        bestR2 = r2;
+        bestFitData = fitData;
+        bestPredictor = polynomial;
+      }
+    }
+  
+    console.log(`Best R-squared for ${label}: ${bestR2} (order ${bestPredictor.order})`);
+  
     return {
       label: label,
-      data: fitData,
+      data: bestFitData,
       borderColor: color,
       backgroundColor: `${color}`,
       borderWidth: 3,
@@ -46,33 +60,23 @@ class ChartScatterComponent extends Component {
     if (!data || !Array.isArray(data)) {
       return { democraticData: [], republicanData: [] };
     }
-    console.log(data);
-  
-    const democraticData = data
-      .filter(d => d.raceXAxis !== 0 || d.compositeIndexXaxis !== 0 || d.medianIncomeXaxis !== 0)
-      .filter(d => d.democracticShareYAxis !== 0 || d.democraticVoteShareYaxis !== 0 )
-      .map((d) => ({
-        x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
-        y: d.democracticShareYAxis || d.democraticVoteShareYaxis || 0,
-        pointcolor: d.dominantPartyColor,
-      }));
-  
-    const republicanData = data
-      .filter(d => d.raceXAxis !== 0 || d.compositeIndexXaxis !== 0 || d.medianIncomeXaxis !== 0)
-      .filter(d => d.republicanShareYaxis !== 0 || d.republicanVoteShareYaxis !== 0 )
-      .map((d) => ({
-        x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
-        y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0,
-        pointcolor: d.dominantPartyColor,
-      }));
-  
+
+    const democraticData = data.map((d) => ({
+      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+      y: d.democracticShareYAxis || d.democraticVoteShareYaxis || 0,
+    })).filter((d) => d.x !== 0 && d.y !== 0);
+    
+    const republicanData = data.map((d) => ({
+      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+      y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0,
+    })).filter((d) => d.x !== 0 && d.y !== 0);
+    
     return {
       democraticData,
       republicanData,
     };
   };
-  
-  
+
   renderChart = () => {
     const chartCanvas = document.getElementById("myChart");
     const { democraticData, republicanData } = this.generateDataForRegression(this.props.data.dataPoints);
@@ -126,6 +130,8 @@ class ChartScatterComponent extends Component {
             },
           },
           y: {
+            min: 0,
+            max: 100,
             title: {
               display: true,
               text: this.props.data.yaxisLabel,
@@ -144,7 +150,6 @@ class ChartScatterComponent extends Component {
   };
 
   render() {
-    console.log(this.props.data.dataPoints)
     return (
       <div style={{ width: `${this.props.width}px`, height: `${this.props.height}px` }}>
         <canvas 
