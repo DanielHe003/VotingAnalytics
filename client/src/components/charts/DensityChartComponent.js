@@ -1,55 +1,149 @@
-// Example Usage
-//  const data = {
-//   labels: ["0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"],
-//   datasets: [
-//     {
-//       label: "Indian",
-//       data: [0.01, 0.05, 0.2, 0.4, 0.35, 0.15, 0.05, 0.02, 0.01, 0, 0],
-//       backgroundColor: "rgba(255, 99, 132, 0.5)",
-//       borderColor: "rgba(255, 99, 132, 1)",
-//       fill: true,
-//     },....
-// };
-  //   <DensityChartComponents
-  //     title="Probability Density of Support"
-  //     data={data}
-  //     width="800px"
-  //     height="400px"
-  //     xLabel="Support Level"
-  //     yLabel="Probability Density"
-  //   />
-  // </div>
+import React from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+} from "chart.js";
 
-  import React, { Component } from "react";
-  import { Line } from "react-chartjs-2";
-  import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from "chart.js";
-  
-  ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
-  
-  class DensityChartComponent extends Component {
-    render() {
-      const { title, data, width = "800px", height = "220px", xLabel, yLabel } = this.props;
-      const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: "top" },
-          title: { display: true, text: title },
-        },
-        scales: {
-          x: { title: { display: true, text: xLabel } },
-          y: { title: { display: true, text: yLabel }, min: 0, max: 0.5 },
-        },
-        elements: { line: { tension: 0.4 } },
-      };
-  
-      return (
-        <div style={{ textAlign: "center", width: width, height: height, margin: "auto", marginTop: "50px" }}>
-          <Line data={data} options={options} />
-        </div>
-      );
-    }
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
+
+const DEFAULT_COLORS = [
+  'rgb(13, 110, 253)', 'rgb(214, 51, 132)',
+  'rgb(220, 53, 69)', 'rgb(253, 126, 20)', 'rgb(255, 193, 7)', 'rgb(25, 135, 84)',
+  'rgb(32, 201, 151)', 'rgb(13, 202, 240)', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)', 'rgb(108, 117, 125)'
+];
+
+const getRandomColor = (index) => {
+  return DEFAULT_COLORS[index % DEFAULT_COLORS.length] || 'rgb(0, 0, 0)'; // default to black if index is out of range
+};
+
+const mapGroupToCorrectTerm = (group) => {
+  const mappingDict = {
+    'POP_WHT': 'White',
+    'Non POP_WHT': 'Non-White',
+    'POP_BLK': 'Black',
+    'Non POP_BLK': 'Non-Black',
+    'POP_HISLAT': 'Hispanic',
+    'Non POP_HISLAT': 'Non-Hispanic',
+    'Non POP_ASN': "Non-Asian",
+    'POP_ASN': "Asian"
+  };
+  return mappingDict[group] || group;
+};
+
+const DensityChartComponent = ({ data, width, height }) => {
+  console.log("Input Data:", data);
+
+  if (
+    !data ||
+    !data.groups ||
+    !Array.isArray(data.groups) ||
+    data.groups.length === 0 ||
+    !data.groups.every(group => group.x.length === group.y.length)
+  ) {
+    return <p>No valid data provided for the chart.</p>;
   }
-  
-  export default DensityChartComponent;
-  
+
+  const chartData = {
+    datasets: data.groups.map((group, index) => {
+      const color = getRandomColor(index);
+      return {
+        label: `${group.candidateName} (${mapGroupToCorrectTerm(group.group)})`,
+        data: group.x.map((xVal, i) => ({ x: xVal, y: group.y[i] })),
+        borderColor: color,
+        backgroundColor: color.replace('1)', '0.2)'),
+        tension: 0.5,
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: true, 
+      };
+    }),
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: "top",
+        labels: {
+          font: {
+            family: 'Roboto',
+            size: 12
+          }
+        }
+      },
+      // title: {
+      //   display: true,
+      //   text: data.groups.length > 0 ? `Support for ${data.groups[0].candidateName}` : 'Support',
+      //   font: {
+      //     family: 'Roboto',
+      //     size: 25
+      //   }
+      // },
+    },
+    scales: {
+      x: {
+        color: 'black',
+        type: "linear",
+        title: {
+          display: true,
+          color: 'black',
+          text: mapGroupToCorrectTerm(data.groups[0].group),
+          font: {
+            family: 'Roboto',
+            size: 18,
+          }
+        },
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: 'black',
+          font: {
+            family: 'Roboto',
+            size: 14,
+          }
+        },
+        min: 0,
+        max: 1,
+      },
+      y: {
+        title: {
+          color: 'black',
+          display: true,
+          text: "Probability Density",
+          font: {
+            family: 'Roboto',
+            size: 16,
+
+          }
+        },
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: 'black',
+          font: {
+            family: 'Roboto',
+            size: 14,
+          }
+        }
+      },
+    },
+  };
+
+  return (
+    <Line 
+      data={chartData} 
+      options={chartOptions} 
+      width={width} 
+      height={height} 
+    />
+  );
+};
+
+export default DensityChartComponent;

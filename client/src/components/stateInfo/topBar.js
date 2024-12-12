@@ -14,6 +14,8 @@ class TopBar extends React.Component {
     };
   }
 
+
+
   filterOptions = [
     {
       name: "Select State",
@@ -34,7 +36,7 @@ class TopBar extends React.Component {
       ],
     },
   ];
-
+  
   handleChange = (type) => (event) => {
     const value = event.target.value;
     const reset =
@@ -46,7 +48,7 @@ class TopBar extends React.Component {
     this.props[`setSelected${type.charAt(0).toUpperCase() + type.slice(1)}`](
       value
     );
-  };
+  }; 
 
   handleResetFilters = () => {
     this.setState({
@@ -92,7 +94,7 @@ class TopBar extends React.Component {
     const districts = [{ id: "0", name: "All Districts" }];
     for (let i = 1; i <= state.districtsCount; i++) {
       districts.push({
-        id: `District ${String(i).padStart(2, "0")} Estimate`,
+        id: `District ${String(i).padStart(2, "0")}`,
         name: `District ${String(i).padStart(2, "0")}`,
       });
     }
@@ -100,40 +102,53 @@ class TopBar extends React.Component {
   }
 
   render() {
+    console.log(this.state.selectedDistrict);
     return (
       <div className="top-bar-container">
         <div className="filters-container">
-          {this.filterOptions.map((filter, index) => (
-            <FilterDropdown
-              key={index}
-              number={index}
-              label={filter.name}
-              options={
-                filter.name === "Select District"
-                  ? this.getDistrictOptions()
-                  : filter.options
-              }
-              value={
-                this.state[
-                  `selected${filter.name
-                    .replace("Select ", "")
-                    .replace("Sub-Trend", "SubTrend")}`
-                ] || ""
-              }
-              onChange={this.handleChange(
-                filter.name === "Select State"
-                  ? "state"
-                  : filter.name === "Select District"
-                  ? "district"
-                  : filter.name === "Select Trend"
-                  ? "trend"
-                  : "subTrend"
-              )}
-              disabled={
-                filter.name !== "Select State" && !this.state.selectedState
-              }
-            />
-          ))}
+          
+        {
+   true && (
+    <FilterDropdown
+      key={0}
+      number={0}
+      label="Select State"
+      options={this.filterOptions[0].options}
+      value={this.state.selectedState || ""}
+      onChange={this.handleChange("state")}
+    />
+  )
+}
+
+{
+  (
+    <FilterDropdown
+      key={1}
+      number={1}
+      label="Select District"
+      options={this.getDistrictOptions()}
+      value={this.state.selectedDistrict || ""}
+      onChange={this.handleChange("district")}
+      disabled={!this.state.selectedState}
+    />
+  )
+}
+
+{
+  this.state.selectedState && (
+    <FilterDropdown
+      key={2}
+      number={2}
+      label="Select Trend"
+      options={this.filterOptions[2].options}
+      value={this.state.selectedTrend || ""}
+      onChange={this.handleChange("trend")}
+    />
+  )
+}
+
+
+
 
         {/* Precinct Dropdown */}
         {this.props.selectedTrend === "precinct" && (

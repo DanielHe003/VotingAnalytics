@@ -23,16 +23,16 @@ class ChartScatterComponent extends Component {
     }
   }
 
-  generateRegressionData = (data, color) => {
+  generateRegressionData = (data, color, label) => {
 
-    const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order: 2 });
+    const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order: 2});
     const fitData = data.map((d) => ({
       x: d.x,
       y: polynomial.predict(d.x)[1],
     }));
 
     return {
-      label: "",
+      label: label,
       data: fitData,
       borderColor: color,
       backgroundColor: `${color}`,
@@ -46,26 +46,36 @@ class ChartScatterComponent extends Component {
     if (!data || !Array.isArray(data)) {
       return { democraticData: [], republicanData: [] };
     }
-
-    const democraticData = data.map((d) => ({
-      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
-      y: d.deomcracticShareYAxis || d.democraticVoteShareYaxis || 0,
-    }));
-
-    const republicanData = data.map((d) => ({
-      x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
-      y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0,
-    }));
-
+    console.log(data);
+  
+    const democraticData = data
+      .filter(d => d.raceXAxis !== 0 || d.compositeIndexXaxis !== 0 || d.medianIncomeXaxis !== 0)
+      .filter(d => d.democracticShareYAxis !== 0 || d.democraticVoteShareYaxis !== 0 )
+      .map((d) => ({
+        x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+        y: d.democracticShareYAxis || d.democraticVoteShareYaxis || 0,
+        pointcolor: d.dominantPartyColor,
+      }));
+  
+    const republicanData = data
+      .filter(d => d.raceXAxis !== 0 || d.compositeIndexXaxis !== 0 || d.medianIncomeXaxis !== 0)
+      .filter(d => d.republicanShareYaxis !== 0 || d.republicanVoteShareYaxis !== 0 )
+      .map((d) => ({
+        x: d.raceXAxis || d.compositeIndexXaxis || d.medianIncomeXaxis || 0,
+        y: d.republicanShareYaxis || d.republicanVoteShareYaxis || 0,
+        pointcolor: d.dominantPartyColor,
+      }));
+  
     return {
       democraticData,
       republicanData,
     };
   };
-
+  
+  
   renderChart = () => {
     const chartCanvas = document.getElementById("myChart");
-    const { democraticData, republicanData } = this.generateDataForRegression(this.props.data);
+    const { democraticData, republicanData } = this.generateDataForRegression(this.props.data.dataPoints);
     const datasets = [];
 
     datasets.push({
@@ -84,8 +94,9 @@ class ChartScatterComponent extends Component {
       pointRadius: 0.5,
       showLine: false,
     });
-    datasets.push(this.generateRegressionData(democraticData, "blue"));
-    datasets.push(this.generateRegressionData(republicanData, "polynomial", "red"));
+
+    datasets.push(this.generateRegressionData(democraticData, "blue", "Democratic Fit"));
+    datasets.push(this.generateRegressionData(republicanData, "red", "Republican Fit"));
 
     this.chartInstance = new Chart(chartCanvas, {
       type: "scatter",
@@ -107,7 +118,7 @@ class ChartScatterComponent extends Component {
           x: {
             title: {
               display: true,
-              text: this.props.xAxisTitle,
+              text: this.props.data.xaxisLabel,
               font: {
                 size: 16,
                 weight: "bold",
@@ -117,7 +128,7 @@ class ChartScatterComponent extends Component {
           y: {
             title: {
               display: true,
-              text: this.props.yAxisTitle,
+              text: this.props.data.yaxisLabel,
               font: {
                 size: 16,
                 weight: "bold",
@@ -133,6 +144,7 @@ class ChartScatterComponent extends Component {
   };
 
   render() {
+    console.log(this.props.data.dataPoints)
     return (
       <div style={{ width: `${this.props.width}px`, height: `${this.props.height}px` }}>
         <canvas 

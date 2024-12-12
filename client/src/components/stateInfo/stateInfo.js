@@ -5,6 +5,7 @@ import Popup from "../common/Popup";
 import "./StateInfo.css";
 import SummaryComponent from "./SummaryComponent";
 import ApiService from "../common/ApiService";
+import axios from "axios";
 
 class StateInfo extends React.Component {
   state = {
@@ -16,11 +17,18 @@ class StateInfo extends React.Component {
   };
 
   componentDidMount() {
-    this.fetchMapData(this.props.selectedState);
+    this.fetchMapData();
     this.fetchSummaryData(this.props.selectedState);
   }
 
   componentDidUpdate(prevProps) {
+  // Check if the selectedDistrict is no longer "All Districts" or if selectedDistrict has changed
+  if (this.props.selectedDistrict !== prevProps.selectedDistrict) {
+    if (this.props.selectedDistrict !== "All Districts") {
+      this.fetchCDSummaryData();
+    }
+  }
+
     if (prevProps.selectedState !== this.props.selectedState) {
       this.fetchMapData(this.props.selectedState);
       this.fetchSummaryData(this.props.selectedState);
@@ -45,10 +53,7 @@ class StateInfo extends React.Component {
   fetchPrecinctBoundaries = async () => {
   try {
     if (!this.props.selectedState) return;
-
-    const stateId = this.props.selectedState === "Alabama" ? 1 : this.props.selectedState === "California" ? 6 : null;
-    
-    //Working through performance issues for California as we're loading ~20k+ precincts -- trying to determine the most effective method 
+    const stateId = this.props.selectedState === "Alabama" ? 1 : this.props.selectedState === "California" ? 6 : null;    
     const fetchDataForState = async (stateId, page) => ApiService.fetchData(`states/${stateId}/precincts/geometries?page=${page}&size=${6700}`);
     if (stateId === 6) {
       const data = await Promise.all([0, 1, 2].map(page => fetchDataForState(stateId, page)));
@@ -145,18 +150,64 @@ class StateInfo extends React.Component {
     }
   };
   
-  //ENDPOINT AVAILABLE -- PENDING TESTING 
-  // fetchCDSummaryData = async () => {
-  //   if (this.props.selectedDistrict === "All Districts")
-  //     this.fetchSummaryData();
-  //   if (this.state.cdSummaryData) return;
-  //   try {
-  //     const data = await ApiService.fetchStateSummary(this.props.selectedState);
-  //     this.setState({ cdSummaryData: data });
-  //   } catch (error) {
-  //     window.alert("Error fetching CD summary data");
-  //   }
-  // };
+  getDistrictNumber(value) {
+    const match = value.match(/^\D+\s*(\d+)$/);
+    if (!match) {
+        return null; // Return null if no number is found
+    }
+    return parseInt(match[1], 10); // Extract and return the number as an integer
+}
+
+fetchCDSummaryData = async () => {
+  
+  try {
+    const selectedDistrictNumber = this.props.selectedDistrict 
+      ? this.getDistrictNumber(this.props.selectedDistrict) 
+      : null;
+    
+      this.props.setSelectedTrend("Select Trend");
+
+    if (!selectedDistrictNumber) {
+      console.warn("Selected district number is null or invalid.");
+      return;
+    }
+
+    if (!this.props.selectedState) {
+      console.warn("Selected state is missing.");
+      return;
+    }
+
+    const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
+
+    console.log("Fetching data for stateId:", stateId, "and district:", selectedDistrictNumber);
+
+    const { data } = await axios.get(`/states/${stateId}/districtRepresentation`);
+
+    if (!Array.isArray(data)) {
+      console.error("API response is not an array:", data);
+      return;
+    }
+
+    const sortedData = data.sort((a, b) => a.districtId - b.districtId);
+
+    console.log("Sorted data:", sortedData);
+
+    const districtData = sortedData[selectedDistrictNumber - 1];
+
+    if (!districtData) {
+      console.warn(`No data found for district number: ${selectedDistrictNumber}`);
+      return;
+    }
+
+    this.setState({ cdSummaryData: districtData }, () => {
+      console.log("cdSummaryData updated:", this.state.cdSummaryData);
+    });
+  } catch (error) {
+    console.error("Error fetching CD summary data:", error);
+    window.alert("Error fetching CD summary data");
+  }
+};
+
 
   render() {
     return (
@@ -186,24 +237,53 @@ class StateInfo extends React.Component {
           </div>
 
           {/* Right Side */}
-          {this.props.selectedState && (
+          {this.props.selectedState  && this.props.selectedDistrict === "All Districts" && (
             <div className="chart-container">
               <div className="chart-inner-container">
+
                 {this.props.selectedTrend && (
                   <div className="no-trend-selected">
+
                     {this.state.summaryData[this.props.selectedState] && (
                       <SummaryComponent
-                        data={
+                        tag={
                           this.props.selectedDistrict !== "All Districts"
-                            ? this.state.cdSummaryData
-                            : this.state.summaryData[this.props.selectedState]
+                            ? "District"
+                            : "State"
+                        }
+                        data={
+                          this.props.selectedDistrict === "All Districts"
+                            ?  this.state.summaryData[this.props.selectedState] : null
                         }
                         selectedTrend={this.props.selectedTrend}
                       />
                     )}
+
+                    
+
                   </div>
+
+                  
                 )}
+
               </div>
+
+              {this.state.selectedDistrict !== "All Districts" && (
+                      <SummaryComponent
+                        tag={
+                          this.props.selectedDistrict !== "All Districts"
+                            ? "District"
+                            : "State"
+                        }
+                        data={
+                          this.props.selectedDistrict !== "All Districts"
+                            ?  this.state.cdSummaryData : null
+                        }
+                        selectedTrend={this.props.selectedTrend}
+                      />
+                    )}
+
+
               <div className="button-container">
                 {this.props.selectedState && (
                   <button onClick={this.togglePopup} className="action-button">
