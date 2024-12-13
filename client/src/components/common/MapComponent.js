@@ -193,6 +193,7 @@ class MapComponent extends React.Component {
   render() {
     return (
       <div className="map-container">
+        {this.props.title && <h3>{this.props.title}</h3>}
         <div className="map-wrapper" ref={this.containerRef}>
           <LeafletMap
             center={this.initialPosition}

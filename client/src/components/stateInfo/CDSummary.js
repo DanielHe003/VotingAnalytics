@@ -4,7 +4,41 @@ import './CDSummary.css';
 import SummaryBox from './SummaryBox';
 
 class CDSummary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      dataAvailable: !!props.data, // Set initial state based on props
+    };
+  }
+
   render() {
+    const { dataAvailable } = this.state;
+
+    // Show loading spinner if data is not available
+    if (!dataAvailable) {
+      return (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <div
+            style={{
+              border: "4px solid #f3f3f3" /* Light gray background */,
+              borderTop: "4px solid #3498db" /* Blue color for the spinner */,
+              borderRadius: "50%",
+              width: "50px",
+              height: "50px",
+              animation: "spin 2s linear infinite" /* Slower spinner animation */,
+            }}
+          ></div>
+        </div>
+      );
+    }
+
     if (!this.props.data) {
       console.log(this.props.data);
       return <div className="noData">No data available for the selected district.</div>;
@@ -35,38 +69,35 @@ class CDSummary extends Component {
       { title: "Urban (%)", content: `${data.urbanPercentage.toFixed(2) || 0}%` },
     ];
 
-
     return (
       <div className="summaryContainer">
-  <h3>General Information</h3>
-  <hr className="divider" />
-  <div className="summaryBoxes">
-  {summaryBoxes.map((box, index) => (
-  <SummaryBox key={index} title={box.title} content={box.content} />
-  ))}
-  </div>
+        <h3>General Information</h3>
+        <hr className="divider" />
+        <div className="summaryBoxes">
+          {summaryBoxes.map((box, index) => (
+            <SummaryBox key={index} title={box.title} content={box.content} />
+          ))}
+        </div>
 
-  <h3>Representative Details</h3>
-  <hr className="divider" />
-  <div className="summaryBoxes">
-  {summaryBoxes1.map((box, index) => (
-  <SummaryBox key={index} title={box.title} content={box.content} />
-  ))}
-  </div>
+        <h3>Representative Details</h3>
+        <hr className="divider" />
+        <div className="summaryBoxes">
+          {summaryBoxes1.map((box, index) => (
+            <SummaryBox key={index} title={box.title} content={box.content} />
+          ))}
+        </div>
 
-<h3>Demographics & Statistics</h3>
-<hr className="divider" />
-<div className="summaryBoxes">
-{summaryBoxes2.map((box, index) => (
-<SummaryBox key={index} title={box.title} content={box.content} />
-))}
-<br></br>
-{summaryBoxes3.map((box, index) => (
-<SummaryBox key={index} title={box.title} content={box.content} />
-         ))}
-       </div>
-
-
+        <h3>Demographics & Statistics</h3>
+        <hr className="divider" />
+        <div className="summaryBoxes">
+          {summaryBoxes2.map((box, index) => (
+            <SummaryBox key={index} title={box.title} content={box.content} />
+          ))}
+          <br />
+          {summaryBoxes3.map((box, index) => (
+            <SummaryBox key={index} title={box.title} content={box.content} />
+          ))}
+        </div>
       </div>
     );
   }

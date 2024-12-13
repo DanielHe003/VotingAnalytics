@@ -199,22 +199,24 @@ class StateInfo extends React.Component {
         this.setState((prevState) => ({
           summaryData: { ...prevState.summaryData, [state]: data },
         }));
-  
+
         // Fetching district representation data
         const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
-        const response = await axios.get(`/states/${stateId}/districtRepresentation`);
-        const cdData = response.data; 
-        
-        const graphData = cdData.map(district => ({
+        const response = await axios.get(
+          `/states/${stateId}/districtRepresentation`
+        );
+        const cdData = response.data;
+
+        const graphData = cdData.map((district) => ({
           "District #": district.districtId,
           "Representative Name": district.representative,
           "Representative Party": district.party,
-          "Racial/Ethnic Group": district.racialEthnicGroup
+          "Racial/Ethnic Group": district.racialEthnicGroup,
         }));
         const sortedGraphData = graphData.sort((a, b) => {
           return a["District #"] - b["District #"];
         });
-        
+
         this.setState({ cdSummaryData: sortedGraphData }, () => {
           console.log("cdSummaryData updated:", this.state.cdSummaryData);
         });
@@ -223,7 +225,7 @@ class StateInfo extends React.Component {
       }
     }
   };
-  
+
   getDistrictNumber(value) {
     const match = value.match(/^\D+\s*(\d+)$/);
     if (!match) {
@@ -234,7 +236,9 @@ class StateInfo extends React.Component {
 
   fetchCDSummaryData = async () => {
     try {
-      const selectedDistrictNumber = this.props.selectedDistrict ? this.getDistrictNumber(this.props.selectedDistrict) : null;
+      const selectedDistrictNumber = this.props.selectedDistrict
+        ? this.getDistrictNumber(this.props.selectedDistrict)
+        : null;
 
       if (!selectedDistrictNumber) {
         console.warn("Selected district number is null or invalid.");
@@ -276,7 +280,7 @@ class StateInfo extends React.Component {
         );
         return;
       }
-        
+
       this.setState({ specificDistrict: districtData }, () => {
         console.log("cdSummaryData updated:", this.state.specificDistrict);
       });
@@ -310,28 +314,49 @@ class StateInfo extends React.Component {
               onFeatureClick={this.props.setSelectedState}
               selectedTrend={this.props.selectedTrend}
               heatMapLegend={this.state.heatmapLegend}
+              title={this.props.selectedTrend === "ComparePlans" ?  this.props.selectedSubTrend : null}
             />
           </div>
 
           {/* Right Side */}
 
           {this.props.selectedState &&
-            this.props.selectedDistrict === "All Districts" && (
+                    this.props.selectedDistrict === "All Districts" &&
+                    this.props.selectedTrend === "ComparePlans" && (
+                      <>
+          <div className="map-container">
+            <MapComponent
+              geoJsonData={this.state.mapData}
+              onFeatureClick={this.props.setSelectedState}
+              selectedTrend={this.props.selectedTrend}
+              heatMapLegend={this.state.heatmapLegend}
+              title={this.props.selectedTrend === "ComparePlans" ?  this.props.selectedSubSubTrend : null}
+
+            />
+          </div>
+                      </>
+            )}
+
+
+          {this.props.selectedState &&
+            this.props.selectedDistrict === "All Districts" && this.props.selectedTrend !== "ComparePlans" && (
               <div className="chart-container">
                 <div className="chart-inner-container">
-                  {this.props.selectedTrend !== "precinct" && (
-                    <div className="no-trend-selected">
-                      {this.state.summaryData[this.props.selectedState] && (
-                        <SummaryComponent
-                          data={
-                            this.state.summaryData[this.props.selectedState]
-                          }
-                          selectedTrend={this.props.selectedTrend}
-                          cdSummaryData={this.state.cdSummaryData}
-                        />
-                      )}
-                    </div>
-                  )}
+
+                  {this.props.selectedTrend !== "precinct" &&
+                    this.props.selectedTrend !== "ComparePlans" && (
+                      <div className="no-trend-selected">
+                        {this.state.summaryData[this.props.selectedState] && (
+                          <SummaryComponent
+                            data={
+                              this.state.summaryData[this.props.selectedState]
+                            }
+                            selectedTrend={this.props.selectedTrend}
+                            cdSummaryData={this.state.cdSummaryData}
+                          />
+                        )}
+                      </div>
+                    )}
                 </div>
                 <div className="button-container">
                   {this.props.selectedState && (
