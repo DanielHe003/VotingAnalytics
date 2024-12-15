@@ -20,12 +20,36 @@ public class EIAnalysisDTO {
     public static EIAnalysisDTO fromDataEntry(EIAnalysis analysis, EIAnalysis.AnalysisData entry) {
         EIAnalysisDTO dto = new EIAnalysisDTO();
         dto.setCandidateName(analysis.getCandidateName());
-
-        // If race analysis, use `race`; if economic or region, use `group`.
-        // Here, we rely on the calling method to know which field to use.
-        dto.setGroup(entry.getRace() != null ? entry.getRace() : entry.getGroup());
+    
+        // Determine which field to use based on the analysisType
+        String analysisType = analysis.getAnalysisType();
+        String label = null;
+    
+        if ("race".equalsIgnoreCase(analysisType)) {
+            // For race analysis, use the race field
+            label = entry.getRace();
+        } else if ("economic".equalsIgnoreCase(analysisType)) {
+            // For economic analysis, use the group field
+            label = entry.getGroup();
+        } else if ("region".equalsIgnoreCase(analysisType)) {
+            // For region analysis, use the region field
+            label = entry.getRegion();
+        }
+    
+        // Fallback if label is still null (e.g., some data errors)
+        if (label == null) {
+            // If nothing is found, fallback to group or race to avoid null pointer
+            // This can be adjusted as per your data integrity assumptions
+            label = entry.getRace() != null ? entry.getRace() : entry.getGroup();
+            if (label == null) {
+                label = entry.getRegion();
+            }
+        }
+    
+        dto.setGroup(label);
         dto.setX(entry.getXAsDoubles());
         dto.setY(entry.getYAsDoubles());
+    
         return dto;
     }
 }

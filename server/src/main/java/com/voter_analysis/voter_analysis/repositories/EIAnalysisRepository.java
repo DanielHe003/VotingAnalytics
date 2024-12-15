@@ -19,7 +19,10 @@ public interface EIAnalysisRepository extends MongoRepository<EIAnalysis, String
     @Query("{ 'stateId': ?0, 'analysisType': 'economic', 'candidateName': ?1, 'data.group': ?2, 'region_type': ?3 }")
     List<EIAnalysis> findByStateIdAndAnalysisTypeAndCandidateNameAndGroupEconomicAndRegionType(int stateId, String candidateName, String group, String regionType);
 
-    @Query("{ 'stateId': ?0, 'analysisType': 'region', 'candidateName': ?1, 'data.group': ?2 }")
+    @Query("{ 'stateId': ?0, 'analysisType': 'region', 'candidateName': ?1, 'data.region': ?2 }")
     List<EIAnalysis> findByStateIdAndAnalysisTypeAndCandidateNameAndGroupRegion(int stateId, String candidateName, String group);
+    
+    @Query("{ 'stateId': ?0, 'analysisType': 'region', 'candidateName': ?1, 'data.region': ?2 }")
+    List<EIAnalysis> findByStateIdAndAnalysisTypeAndCandidateNameAndRegion(int stateId, String candidateName, String region);
 }
 

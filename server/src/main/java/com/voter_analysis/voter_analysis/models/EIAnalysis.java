@@ -38,6 +38,7 @@ public class EIAnalysis {
     public static class AnalysisData {
         private String group;
         private String race;
+        private String region;
         private Object x; // Changed to Object
         private Object y; // Changed to Object
 

@@ -191,6 +191,20 @@ public class UnifiedController {
         return ResponseEntity.ok(results);
     }
     
+    // Use case #17 candidate results for ei analysis 
+    /**
+ * Use Case #17: Candidate results for region groups
+ */
+    @GetMapping("/{stateId}/ei-analysis/region")
+    public ResponseEntity<List<EIAnalysisDTO>> getRegionAnalysisResults(
+            @PathVariable int stateId,
+            @RequestParam String regionGroup,
+            @RequestParam String candidateName,
+            @RequestParam(required = false) String regionType) {
+
+        List<EIAnalysisDTO> results = unifiedService.getRegionAnalysis(stateId, regionGroup, candidateName);
+        return ResponseEntity.ok(results);
+    }
 
 
 

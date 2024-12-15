@@ -495,7 +495,8 @@ public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup
     public List<EIAnalysisDTO> getRegionAnalysis(int stateId, String regionGroup, String candidateName) {
         System.out.println("Fetching region analysis for stateId: " + stateId + ", regionGroup: " + regionGroup + ", candidateName: " + candidateName);
     
-        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndGroupRegion(
+        // Use the new query method that looks for data.region
+        List<EIAnalysis> analyses = eiAnalysisRepository.findByStateIdAndAnalysisTypeAndCandidateNameAndRegion(
             stateId, candidateName, regionGroup
         );
         System.out.println("Number of analyses fetched: " + analyses.size());
@@ -505,9 +506,9 @@ public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup
         List<EIAnalysisDTO> result = analyses.stream()
             .flatMap(analysis -> analysis.getData().stream()
                 .filter(d -> {
-                    boolean matches = d.getGroup() != null && (d.getGroup().equals(regionGroup) || d.getGroup().equals(nonField));
+                    boolean matches = d.getRegion() != null && (d.getRegion().equals(regionGroup) || d.getRegion().equals(nonField));
                     if (!matches) {
-                        System.out.println("Data entry does not match regionGroup: " + d.getGroup());
+                        System.out.println("Data entry does not match regionGroup: " + d.getRegion());
                     }
                     return matches;
                 })
@@ -521,6 +522,7 @@ public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup
         System.out.println("Number of results after processing: " + result.size());
         return result;
     }
+    
     
 
     
