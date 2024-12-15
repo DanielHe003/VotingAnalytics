@@ -167,28 +167,30 @@ class MapComponent extends React.Component {
   };
 
   renderLegend = () => {
-    const { heatMapLegend } = this.props;
+    const { heatMapLegend, selectedTrend } = this.props;
 
     if (!heatMapLegend || Object.keys(heatMapLegend).length === 0) {
       return null;
     }
 
-    
-
     return (
       <div className="legend">
-        <h4>Legend</h4>
-        <ul>
-          {Object.entries(heatMapLegend).map(([range, color], index) => (
-            <li key={index}>
-              <span className="color-box" style={{ backgroundColor: color }}></span>
-              {(range)}
-            </li>
-          ))}
-        </ul>
+        {selectedTrend === "precinct" && (
+          <>
+            <h4>Legend</h4>
+            <ul>
+              {Object.entries(heatMapLegend).map(([range, color], index) => (
+                <li key={index}>
+                  <span className="color-box" style={{ backgroundColor: color }}></span>
+                  {range}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
     );
-  };
+};
 
   render() {
     return (

@@ -79,25 +79,18 @@ class StateAnalysis extends React.Component {
           ? 6
           : null;
       
-          const regionTypeParam =
-          this.props.selectedSubSubSubTrend === "urban" ||
-          this.props.selectedSubSubSubTrend === "suburban" ||
-          this.props.selectedSubSubSubTrend === "rural"
-            ? `&regionType=${this.props.selectedSubSubSubTrend}`
-            : "";
-              
-          window.alert(regionTypeParam);
       const urlMap = {
         racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
         economic: `${stateId}/ei-analysis/economic?&economicGroup=${this.props.selectedSubSubTrend}&candidateName=`,
+        region: `${stateId}/ei-analysis/region?&regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
       };
   
       console.log("map created");
   
       if (urlMap[this.props.selectedSubTrend]) {
         console.log(urlMap[this.props.selectedSubTrend]);
-        const bidenUrl = `${urlMap[this.props.selectedSubTrend]}Biden${regionTypeParam}`;
-        const trumpUrl = `${urlMap[this.props.selectedSubTrend]}Trump${regionTypeParam}`;
+        const bidenUrl = `${urlMap[this.props.selectedSubTrend]}Biden`;
+        const trumpUrl = `${urlMap[this.props.selectedSubTrend]}Trump`;
   
         const [bidenData, trumpData] = await Promise.all([
           axios.get(bidenUrl),

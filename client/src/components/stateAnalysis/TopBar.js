@@ -100,6 +100,7 @@ class TopBar extends React.Component {
             options={[
               { id: "racial", name: "Racial" },
               { id: "economic", name: "Economic" },
+              { id: "region", name: "Region" },
             ]}
             value={this.props.selectedSubTrend || ""}
             onChange={this.handleChange("SubTrend")}
@@ -197,6 +198,22 @@ class TopBar extends React.Component {
               onChange={this.handleChange("SubSubTrend")}
             />
           );
+          case "region":
+          return (
+            <FilterDropdown
+              key="regionsuboptions"
+              number={3}
+              label="Select Region Type"
+              name="Select Option"
+              options={[
+                { id: "urban", name: "Urban" },
+                { id: "suburban", name: "Suburban" },
+                { id: "rural", name: "Rural" },
+              ]}
+              value={this.props.selectedSubSubTrend || ""}
+              onChange={this.handleChange("SubSubTrend")}
+            />
+          );
         default:
           return null;
       }
@@ -231,23 +248,6 @@ class TopBar extends React.Component {
           {this.renderSubOptions(this.props.selectedTrend)}
           {this.renderSubSubOptions(this.props.selectedSubTrend)}
 
-          {(this.props.selectedSubTrend === "racial" ||
-            this.props.selectedSubTrend === "economic") && (
-            <FilterDropdown
-              key="regionOptions"
-              number={4}
-              label="Select Region"
-              name="Select Option"
-              options={[
-                { id: "all", name: "All Regions" },
-                { id: "urban", name: "Urban" },
-                { id: "suburban", name: "Suburban" },
-                { id: "rural", name: "Rural" },
-              ]}
-              value={this.props.selectedSubSubSubTrend || "all"}
-              onChange={this.handleChange("SubSubSubTrend")}
-            />
-          )}
 
           <button
             onClick={this.handleResetFilters}
