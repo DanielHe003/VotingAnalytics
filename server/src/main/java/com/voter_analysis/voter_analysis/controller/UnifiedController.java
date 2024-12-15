@@ -191,10 +191,9 @@ public class UnifiedController {
         return ResponseEntity.ok(results);
     }
     
-    // Use case #17 candidate results for ei analysis 
-    /**
- * Use Case #17: Candidate results for region groups
- */
+
+ // Use Case #17: Candidate results for region groups
+
     @GetMapping("/{stateId}/ei-analysis/region")
     public ResponseEntity<List<EIAnalysisDTO>> getRegionAnalysisResults(
             @PathVariable int stateId,
@@ -203,6 +202,33 @@ public class UnifiedController {
             @RequestParam(required = false) String regionType) {
 
         List<EIAnalysisDTO> results = unifiedService.getRegionAnalysis(stateId, regionGroup, candidateName);
+        return ResponseEntity.ok(results);
+    }
+    // GUI-23: Racial Box & Whisker
+    @GetMapping("/{stateId}/boxwhisker/race")
+    public ResponseEntity<List<BoxWhiskerDataDTO>> getRacialBoxWhisker(
+            @PathVariable int stateId,
+            @RequestParam String groupName) {
+        List<BoxWhiskerDataDTO> results = unifiedService.getRacialBoxWhiskerData(stateId, groupName);
+        return ResponseEntity.ok(results);
+    }
+
+    // GUI-25: Economic Box & Whisker
+    @GetMapping("/{stateId}/boxwhisker/economic")
+    public ResponseEntity<List<BoxWhiskerDataDTO>> getEconomicBoxWhisker(
+            @PathVariable int stateId,
+            @RequestParam String groupName) {
+        
+        List<BoxWhiskerDataDTO> results = unifiedService.getEconomicBoxWhiskerData(stateId, groupName);
+        return ResponseEntity.ok(results);
+    }
+
+    // GUI-26: Region Box & Whisker (Optional)
+    @GetMapping("/{stateId}/boxwhisker/region")
+    public ResponseEntity<List<BoxWhiskerDataDTO>> getRegionBoxWhisker(
+            @PathVariable int stateId,
+            @RequestParam String groupName) {
+        List<BoxWhiskerDataDTO> results = unifiedService.getRegionBoxWhiskerData(stateId, groupName);
         return ResponseEntity.ok(results);
     }
 

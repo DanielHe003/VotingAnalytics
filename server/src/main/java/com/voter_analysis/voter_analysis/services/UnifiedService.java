@@ -37,6 +37,7 @@ public class UnifiedService {
     private final PoliticalIncomeHeatMapService politicalIncomeService;
     private final EIAnalysisRepository eiAnalysisRepository;
     private final CongressionalRepresentativeRepository congressionalRepresentativeRepository;
+    private final BoxWhiskerDataRepository boxWhiskerDataRepository;
    
 
     public UnifiedService(
@@ -54,7 +55,8 @@ public class UnifiedService {
             GinglesAnalysisRepository ginglesAnalysisRepository,
             GinglesMapper ginglesMapper,
             EIAnalysisRepository eiAnalysisRepository,
-            CongressionalRepresentativeRepository congressionalRepresentativeRepository) {
+            CongressionalRepresentativeRepository congressionalRepresentativeRepository,
+            BoxWhiskerDataRepository boxWhiskerDataRepository) {
         this.congressionalDistrictRepository = congressionalDistrictRepository;
         this.precinctRepository = precinctRepository;
         this.stateRepository = stateRepository;
@@ -70,6 +72,7 @@ public class UnifiedService {
         this.ginglesMapper = ginglesMapper;
         this.eiAnalysisRepository = eiAnalysisRepository;
         this.congressionalRepresentativeRepository = congressionalRepresentativeRepository;
+        this.boxWhiskerDataRepository = boxWhiskerDataRepository;
     }
     //Frequently accessed repo methods 
     @Cacheable(value = "precinctsByState", key = "#stateId")
@@ -522,7 +525,44 @@ public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup
         System.out.println("Number of results after processing: " + result.size());
         return result;
     }
-    
+
+    // GUI-23: Racial Box & Whisker
+    @Cacheable(value = "boxWhiskerRace", key = "#stateId + '-' + #groupName")
+    public List<BoxWhiskerDataDTO> getRacialBoxWhiskerData(int stateId, String groupName) {
+        return getBoxWhiskerData(stateId, "race", groupName);
+    }
+
+    // GUI-25: Economic Box & Whisker
+    @Cacheable(value = "boxWhiskerEconomic", key = "#stateId + '-' + #groupName")
+    public List<BoxWhiskerDataDTO> getEconomicBoxWhiskerData(int stateId, String groupName) {
+        return getBoxWhiskerData(stateId, "economic", groupName);
+    }
+
+    // GUI-26: Region Box & Whisker
+    @Cacheable(value = "boxWhiskerRegion", key = "#stateId + '-' + #groupName")
+    public List<BoxWhiskerDataDTO> getRegionBoxWhiskerData(int stateId, String groupName) {
+        return getBoxWhiskerData(stateId, "region", groupName);
+    }
+
+    // Helper method to fetch and convert data
+    private List<BoxWhiskerDataDTO> getBoxWhiskerData(int stateId, String analysisType, String groupName) {
+        BoxWhiskerData bwData = boxWhiskerDataRepository.findByStateIdAndAnalysisTypeAndGroupName(stateId, analysisType, groupName);
+        if (bwData == null) {
+            return List.of();
+        }
+
+        return bwData.getData().stream().map(entry -> {
+            BoxWhiskerDataDTO dto = new BoxWhiskerDataDTO();
+            dto.setDistrictId(entry.get("district_id"));
+            dto.setMin(Double.parseDouble(entry.get("min")));
+            dto.setQ1(Double.parseDouble(entry.get("Q1")));
+            dto.setQ2(Double.parseDouble(entry.get("Q2")));
+            dto.setQ3(Double.parseDouble(entry.get("Q3")));
+            dto.setMax(Double.parseDouble(entry.get("max")));
+            dto.setPoints(Double.parseDouble(entry.get("points")));
+            return dto;
+        }).collect(Collectors.toList());
+    }
     
 
     

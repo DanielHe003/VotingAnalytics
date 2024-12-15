@@ -232,6 +232,92 @@ def import_cd_representatives(state_id, data_directory,state):
         print(f"Inserted {len(data_list)} documents for {cd_representative_file}")
     except BulkWriteError as bwe:
         print(f"Bulk write error for {cd_representative_file}: {bwe.details}")
+def simplify_group_name(raw_name):
+    """
+    Simplify the group name by removing '_pct' if present.
+    E.g. 'asian_pct' -> 'asian'
+         'black_pct' -> 'black'
+         'rural_population_pct' -> 'rural_population' or possibly just 'rural'?
+    
+    For region, you might have something like 'rural_population_pct'.
+    Decide how to simplify. For consistency, remove '_pct' only.
+    If needed, also remove '_population' if you want it even simpler.
+    """
+
+    # Remove '_pct' at the end if present
+    if raw_name.endswith('_pct'):
+        raw_name = raw_name[:-4]  # remove '_pct'
+
+    # If you want to also remove '_population', do it here:
+    # if '_population' in raw_name:
+    #    raw_name = raw_name.replace('_population', '')
+
+    return raw_name
+
+        
+def import_box_whisker_data(state_id, data_directory, state_name):
+    """Import Box & Whisker data for a specific state."""
+    bw_dir = os.path.join(data_directory, 'box-whisker-json')
+    if not os.path.exists(bw_dir):
+        print(f"Box & Whisker directory not found for state id {state_id}. Skipping.")
+        return
+
+    # Map directories to analysis types and the key we look for
+    # race -> use "race"
+    # income -> "economic" analysis type, use "economic_group"
+    # region -> use "region"
+    analysis_map = {
+        'race': ('race', 'race'),
+        'income': ('economic', 'economic_group'),
+        'region': ('region', 'region')
+    }
+
+    for analysis_folder, (analysis_type, key_field) in analysis_map.items():
+        analysis_subdir = os.path.join(bw_dir, analysis_folder)
+        if not os.path.exists(analysis_subdir):
+            print(f"No {analysis_folder} data for {state_name}. Skipping.")
+            continue
+
+        # For each JSON file in this folder
+        for file_name in os.listdir(analysis_subdir):
+            if file_name.endswith('.json'):
+                file_path = os.path.join(analysis_subdir, file_name)
+                print(f"Importing Box & Whisker: {file_name} (analysis: {analysis_type}) for state {state_id}")
+
+                with open(file_path, 'r') as f:
+                    data_list = json.load(f)
+
+                if not data_list:
+                    print(f"No data in {file_name}, skipping.")
+                    continue
+
+                # Extract the groupName from the first entry
+                first_entry = data_list[0]
+                if key_field not in first_entry:
+                    print(f"Warning: '{key_field}' not found in {file_name}, skipping.")
+                    continue
+
+                raw_group_name = first_entry[key_field]
+                group_name = simplify_group_name(raw_group_name)
+
+                # Insert the entire data_list as 'data' field
+                document = {
+                    "stateId": state_id,
+                    "analysisType": analysis_type,
+                    "groupName": group_name,
+                    "data": data_list
+                }
+
+                try:
+                    db.box_whisker_data.insert_one(document)
+                    print(f"Inserted box & whisker data for {file_name} with groupName={group_name}")
+                except BulkWriteError as bwe:
+                    print(f"Bulk write error for {file_name}: {bwe.details}")
+                except Exception as e:
+                    print(f"Error inserting {file_name}: {e}")
+
+
+
         
 def initialize_state_data(state, data_directory):
     """Initialize data for a specific state."""
@@ -256,6 +342,7 @@ def initialize_state_data(state, data_directory):
     import_gingles_data(state_id, data_directory)
     import_cd_representatives(state_id, data_directory,state)
     import_ei_analysis_data(state_id, data_directory, state)
+    import_box_whisker_data(state_id, data_directory, state)
 
 def initialize_db():
     """Initialize database: clear, load data, and then apply schemas."""
