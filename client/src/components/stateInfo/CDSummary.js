@@ -11,6 +11,12 @@ class CDSummary extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.data !== this.props.data) {
+      this.setState({ dataAvailable: !!this.props.data });
+    }
+  }
+
   render() {
     const { dataAvailable } = this.state;
 

@@ -5,7 +5,7 @@ const TableComponent = ({ data, selectedDistrict, width, height }) => {
   // Pagination logic
   const itemsPerPage = 7; // Display 7 rows per page
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(data.values.length / itemsPerPage);
+  const totalPages = data ? Math.ceil(data.values.length / itemsPerPage) : 0;
 
   const styles = {
     table: {
@@ -55,13 +55,23 @@ const TableComponent = ({ data, selectedDistrict, width, height }) => {
       border: '1px solid #ddd',
       margin: '0 5px',
     },
+    loading: {
+      textAlign: 'center',
+      fontSize: '18px',
+      color: '#005BA6',
+      marginTop: '20px',
+    },
   };
 
   // Data preparation for rendering
-  const displayedData = data.values.slice(
+  const displayedData = data ? data.values.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  ) : [];
+
+  if (!data) {
+    return <div style={styles.loading}>Loading data, please wait...</div>;
+  }
 
   return (
     <>

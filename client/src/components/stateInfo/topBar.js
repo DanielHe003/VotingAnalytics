@@ -10,6 +10,7 @@ class TopBar extends React.Component {
       selectedDistrict: "",
       selectedTrend: "",
       selectedSubTrend: "",
+      selectedSubSubTrend: "",
       analysisOptionsAdded: false,
     };
   }
@@ -86,6 +87,14 @@ class TopBar extends React.Component {
     this.props[`setSelected${type.charAt(0).toUpperCase() + type.slice(1)}`](
       value
     );
+    if (type === "trend") {
+      this.setState({
+        selectedSubTrend: "",
+        selectedSubSubTrend: "",
+      });
+      this.props.setSelectedSubTrend("");
+      this.props.setSelectedSubSubTrend("");
+    }
   }; 
 
   handleResetFilters = () => {
@@ -187,13 +196,13 @@ class TopBar extends React.Component {
 {/* COmpare plans ------ */}
 
       {this.props.selectedTrend === "ComparePlans" && (
-            <FilterDropdown
-              number={3}
-              label="Choose Plan 1"
-              options={this.availablePlans[this.props.selectedState === "Alabama" ? 0 : 1].options}
-              onChange={this.handleChange("SubTrend")}
-            />
-          )}
+        <FilterDropdown
+          number={3}
+          label="Choose Plan 1"
+          options={this.availablePlans[this.props.selectedState === "Alabama" ? 0 : 1].options}
+          onChange={this.handleChange("SubTrend")}
+        />
+      )}
 
         {this.props.selectedTrend === "ComparePlans" && (
             <FilterDropdown
