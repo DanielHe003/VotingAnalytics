@@ -13,18 +13,20 @@ const App = () => {
   const [selectedTrend, setSelectedTrend] = useState("");
   const [selectedSubTrend, setSelectedSubTrend] = useState("");
   const [selectedSubSubTrend, setSelectedSubSubTrend] = useState("");
-
+  const [selectedSubSubSubTrend, setSelectedSubSubSubTrend] = useState("");
   const sectionProps = {
     selectedState,
     selectedDistrict,
     selectedTrend,
     selectedSubTrend,
     selectedSubSubTrend,
+    selectedSubSubSubTrend,
     setSelectedState,
     setSelectedDistrict,
     setSelectedTrend,
     setSelectedSubTrend,
     setSelectedSubSubTrend,
+    setSelectedSubSubSubTrend,
   };
 
   const navLinks = [

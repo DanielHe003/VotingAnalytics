@@ -9,9 +9,7 @@ const BarChartComponent = ({ categoryData, height, width, xAxisTitle, yAxisTitle
     '#1ABC9C', '#E67E22', '#34495E', '#16A085', '#5D6D7E',
     '#2E86C1', '#E74C3C', '#27AE60', '#F1C40F', '#9B59B6', 
   ];
-
-  console.log(categoryData);
-  
+ 
   const data = {
     labels: categoryData.labels,
     datasets: [

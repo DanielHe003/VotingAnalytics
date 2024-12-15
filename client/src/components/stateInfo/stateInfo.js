@@ -19,7 +19,8 @@ class StateInfo extends React.Component {
 
   componentDidMount() {
     this.fetchMapData();
-    // this.fetchSummaryData(this.props.selectedState);
+    this.fetchSummaryData(this.props.selectedState);
+    this.fetchCDSummaryData();
   }
 
   componentDidUpdate(prevProps) {
@@ -32,14 +33,14 @@ class StateInfo extends React.Component {
 
     if (
       prevProps.selectedDistrict !== this.props.selectedDistrict &&
-      this.props.selectedDistrict !== "All Districts"
+      this.props.selectedDistrict !== "0"
     ) {
       this.fetchCDSummaryData();
     }
 
     if (
       prevProps.selectedDistrict !== this.props.selectedDistrict &&
-      this.props.selectedDistrict === "All Districts"
+      this.props.selectedDistrict === "0"
     ) {
       this.fetchSummaryData(this.props.selectedState);
       // this.fetchCDSummaryData();
@@ -49,6 +50,10 @@ class StateInfo extends React.Component {
       if (this.props.selectedTrend === "precinct") {
         this.fetchPrecinctBoundaries();
       }
+    }
+
+    if (prevProps.selectedTrend !== this.props.selectedTrend && this.props.selectedTrend !== "precinct") {
+        this.setState({heatmapLegend: null});
     }
 
     if (
@@ -77,27 +82,32 @@ class StateInfo extends React.Component {
         ApiService.fetchData(
           `states/${stateId}/precincts/geometries?page=${page}&size=${6700}`
         );
-      if (stateId === 6) {
-        const data = await Promise.all(
-          [0, 1, 2].map((page) => fetchDataForState(stateId, page))
-        );
-        const mergedData = data.flatMap(
-          (d) => d?.featureCollection?.features || []
-        );
-        this.setState({
-          mapData: { type: "FeatureCollection", features: mergedData },
-        });
-      } else {
-        const data = await fetchDataForState(stateId, 0);
-        const mergedGeoJSON = {
-          type: "FeatureCollection",
-          features: [data["featureCollection"]],
-        };
-        this.setState({
-          mapData: mergedGeoJSON,
-          orginalPrecinctData: mergedGeoJSON,
-        });
-      }
+     
+        if (stateId === 6) {
+          const mergedData = await ApiService.fetchData(
+            `states/${stateId}/precincts/geometries?page=0&size=20100`
+          );
+          console.log(mergedData);
+          const mergedGeoJSON = {
+            type: "FeatureCollection",
+            features: [mergedData["featureCollection"]],
+          };
+          this.setState({
+            mapData: mergedGeoJSON,
+            originalPrecinctData: mergedGeoJSON, 
+          });
+
+        } else {
+          const data = await fetchDataForState(stateId, 0);
+          const mergedGeoJSON = {
+            type: "FeatureCollection",
+            features: [data["featureCollection"]],
+          };
+          this.setState({
+            mapData: mergedGeoJSON,
+            originalPrecinctData: mergedGeoJSON, 
+          });
+        }
     } catch (error) {
       console.error("Error fetching precinct boundaries:", error);
     }
@@ -105,6 +115,7 @@ class StateInfo extends React.Component {
 
   fetchPrecinctHeatMap = async () => {
     try {
+      //window.alert("Fetching");
       if (!this.props.selectedState || !this.props.selectedSubTrend) return;
       const stateId =
         this.props.selectedState === "Alabama"
@@ -122,18 +133,27 @@ class StateInfo extends React.Component {
       };
 
       if (urlMap[this.props.selectedSubTrend]) {
-        const payload = await ApiService.fetchData(
-          urlMap[this.props.selectedSubTrend]
-        );
+
+        if(this.props.selectedSubSubTrend === " "){
+          return;
+        }
+        // console.log(`localhost:8080 urlMap[this.props.selectedSubTrend]`);
+
+        const url = `${urlMap[this.props.selectedSubTrend]}`;
+        const { data } = await axios.get(url);
+        console.log(data);
+
         this.setState({
           mapData: {
             type: "FeatureCollection",
-            features: this.state.orginalPrecinctData.features[0].features.map(
+            features: this.state.originalPrecinctData.features[0].features.map(
               (feature) => {
-                const matchingData = payload.data.find(
+                // console.log(feature.properties.precinctKey);
+                const matchingData = data.data.find(
                   (entry) =>
                     entry.precinctKey === feature.properties.precinctKey
                 );
+                // console.log(matchingData);
                 return {
                   ...feature,
                   properties: {
@@ -144,8 +164,10 @@ class StateInfo extends React.Component {
               }
             ),
           },
-          heatmapLegend: payload.legend,
+          heatmapLegend: data.legend,
         });
+        console.log(this.state.mapData);
+        //window.alert("payload recieved");
       }
     } catch (error) {
       console.error("Error fetching precinct heatmap:", error);
@@ -170,12 +192,10 @@ class StateInfo extends React.Component {
         };
         this.setState({ mapData });
       } else {
-        const californiaData = await ApiService.fetchData(
-          "states/california/map"
-        );
-        const alabamaData = await ApiService.fetchData("states/alabama/map");
-        // console.log(californiaData);
-        // console.log(alabamaData);
+        const californiaData = await ApiService.fetchData("states/California/map");
+        const alabamaData = await ApiService.fetchData("states/Alabama/map");
+        console.log(californiaData);
+        console.log(alabamaData);
         this.setState({
           mapData: {
             type: "FeatureCollection",
@@ -190,18 +210,48 @@ class StateInfo extends React.Component {
 
   fetchSummaryData = async () => {
     const state = this.props.selectedState;
-    if (state && !this.state.summaryData[state]) {
-      try {
+
+    if(!state){
+      return;
+    }
+    
+    if (state && this.state.summaryData[state]) {
+        console.log("Summary data already exists for state:", state);
+        return;
+    }
+
+    try {
+        // Fetching state summary data
         const data = await ApiService.fetchStateSummary(state);
         console.log(data);
+
+        // Update summaryData state
         this.setState((prevState) => ({
-          summaryData: { ...prevState.summaryData, [state]: data },
+            summaryData: { ...prevState.summaryData, [state]: data },
         }));
-      } catch (error) {
-        window.alert("Error fetching summary data");
-      }
+
+        // Fetching district representation data
+        const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
+        const response = await axios.get(`/states/${stateId}/districtRepresentation`);
+        const cdData = response.data;
+
+        const graphData = cdData.map((district) => ({
+            "District #": district.districtId,
+            "Representative Name": district.representative,
+            "Representative Party": district.party,
+            "Racial/Ethnic Group": district.racialEthnicGroup,
+        }));
+        const sortedGraphData = graphData.sort((a, b) => a["District #"] - b["District #"]);
+
+        this.setState({ cdSummaryData: sortedGraphData }, () => {
+            console.log("cdSummaryData updated:", this.state.cdSummaryData);
+        });
+    } catch (error) {
+        console.error("Error fetching summary data:", error);
+        // //window.alert("Error fetching summary data");
     }
-  };
+};
+
 
   getDistrictNumber(value) {
     const match = value.match(/^\D+\s*(\d+)$/);
@@ -216,8 +266,6 @@ class StateInfo extends React.Component {
       const selectedDistrictNumber = this.props.selectedDistrict
         ? this.getDistrictNumber(this.props.selectedDistrict)
         : null;
-
-      this.props.setSelectedTrend("Select Trend");
 
       if (!selectedDistrictNumber) {
         console.warn("Selected district number is null or invalid.");
@@ -260,16 +308,21 @@ class StateInfo extends React.Component {
         return;
       }
 
-      this.setState({ cdSummaryData: districtData }, () => {
-        console.log("cdSummaryData updated:", this.state.cdSummaryData);
+      this.setState({ specificDistrict: districtData }, () => {
+        console.log("cdSummaryData updated:", this.state.specificDistrict);
       });
     } catch (error) {
       console.error("Error fetching CD summary data:", error);
-      window.alert("Error fetching CD summary data");
+      //window.alert("Error fetching CD summary data");
     }
   };
 
+  
   render() {
+
+    // //window.alert(this.props.selectedDistrict);
+    // //window.alert(this.props.selectedTrend);
+
     return (
       <>
         <TopBar
@@ -293,27 +346,51 @@ class StateInfo extends React.Component {
               onFeatureClick={this.props.setSelectedState}
               selectedTrend={this.props.selectedTrend}
               heatMapLegend={this.state.heatmapLegend}
+              selectedState={this.props.selectedState}
+              title={this.props.selectedTrend === "ComparePlans" ?  this.props.selectedSubTrend : null}
             />
           </div>
 
           {/* Right Side */}
 
           {this.props.selectedState &&
-            this.props.selectedDistrict === "All Districts" && (
+                    this.props.selectedDistrict === "All Districts" &&
+                    this.props.selectedTrend === "ComparePlans" && (
+                      <>
+          <div className="map-container">
+            <MapComponent
+              geoJsonData={this.state.mapData}
+              onFeatureClick={this.props.setSelectedState}
+              selectedTrend={this.props.selectedTrend}
+              heatMapLegend={this.state.heatmapLegend}
+              selectedState={this.props.selectedState}
+              title={this.props.selectedTrend === "ComparePlans" ?  this.props.selectedSubSubTrend : null}
+
+            />
+          </div>
+                      </>
+            )}
+
+
+          {this.props.selectedState &&
+            (this.props.selectedDistrict === "All Districts" || this.props.selectedDistrict === "0") && this.props.selectedTrend !== "ComparePlans" && (
               <div className="chart-container">
                 <div className="chart-inner-container">
-                  {this.props.selectedTrend !== "precinct" && (
-                    <div className="no-trend-selected">
-                      {this.state.summaryData[this.props.selectedState] && (
-                        <SummaryComponent
-                          data={
-                            this.state.summaryData[this.props.selectedState]
-                          }
-                          selectedTrend={this.props.selectedTrend}
-                        />
-                      )}
-                    </div>
-                  )}
+
+                  {this.props.selectedTrend !== "precinct" &&
+                    this.props.selectedTrend !== "ComparePlans" && (
+                      <div className="no-trend-selected">
+                        {this.state.summaryData[this.props.selectedState] && (
+                          <SummaryComponent
+                            data={
+                              this.state.summaryData[this.props.selectedState]
+                            }
+                            selectedTrend={this.props.selectedTrend}
+                            cdSummaryData={this.state.cdSummaryData}
+                          />
+                        )}
+                      </div>
+                    )}
                 </div>
                 <div className="button-container">
                   {this.props.selectedState && (
@@ -333,14 +410,17 @@ class StateInfo extends React.Component {
               </div>
             )}
 
-          {this.props.selectedState &&
-            this.props.selectedDistrict !== "All Districts" && (
-              <>
-                <div className="chart-container">
-                  <CDSummary data={this.state.cdSummaryData} />
-                </div>
-              </>
-            )}
+{this.props.selectedState &&
+  (this.props.selectedDistrict !== "All Districts" && this.props.selectedDistrict !== "0") && (
+    <>
+      <div className="chart-container">
+        <CDSummary data={this.state.specificDistrict} />
+      </div>
+    </>
+)}
+
+
+
         </div>
       </>
     );

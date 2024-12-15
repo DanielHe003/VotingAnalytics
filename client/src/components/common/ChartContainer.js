@@ -29,6 +29,9 @@ class ChartContainer extends React.Component {
           <>
             <div className="chartBox">
               <h4 className="title">{title}</h4>
+              {type === "table" && (
+          <TableComponent data={data} height={height} width={width} />
+        )}
               {type === "bar" && (
                 <BarChartComponent
                   categoryData={data}
@@ -43,9 +46,7 @@ class ChartContainer extends React.Component {
           </>
         )}
         
-        {type === "table" && (
-          <TableComponent categoryData={data} height={height} width={width} />
-        )}
+       
 
         <div
           style={{

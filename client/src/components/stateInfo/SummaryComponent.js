@@ -11,12 +11,13 @@ class SummaryComponent extends Component {
         <></>
       )
     }
-    const { data, selectedTrend } = this.props;
-    console.log(data);
+    const { data, cdSummaryData, selectedTrend } = this.props;
+    console.log(cdSummaryData);
 
 
     const charts = {
       voting: {
+        type: "bar",
         labels: ["Republican Party", "Democratic Party"],
         values: [data.prsRep01 || 0, data.prsDem01 || 0],
         title: "Voting Distribution",
@@ -24,6 +25,7 @@ class SummaryComponent extends Component {
         yAxisTitle: "Count"
       },
       race: {
+        type: "bar",
         labels: ["White", "Hispanic", "Black", "Asian", "Others"],
         values: [
           data.popWht || 0,
@@ -37,6 +39,7 @@ class SummaryComponent extends Component {
         yAxisTitle: "Population"
       },
       region: {
+        type: "bar",
         labels: ["Urban", "Suburban", "Rural"],
         values: [data.urban || 0, data.suburban || 0, data.rural || 0],
         title: "Population by Region",
@@ -44,6 +47,7 @@ class SummaryComponent extends Component {
         yAxisTitle: "Population"
       },
       income: {
+        type: "bar",
         labels: ["Below $25K", "$25K–$50K", "$50K–$100K", "$100K–$150K", "Above $150K"],
         values: [
           data.less10K21 + data.k10To15K21 + data.k15To20K21 + data.k20To25K21 || 0,
@@ -55,12 +59,19 @@ class SummaryComponent extends Component {
         title: "Income Distribution",
         xAxisTitle: "Income Bracket",
         yAxisTitle: "Population"
-      }
+      },
+      rep: {
+        title: "State Representatives",
+        type: "table",
+        labels: ["District #", "Representative Name", "Representative Party", "Racial/Ethnic Group"],
+        values: cdSummaryData
+    }
+    
     };
 
     const summaryBoxes = [
       { title: "State Population", content: data.totPop.toLocaleString() || "N/A" },
-      { title: "Average Income", content: `$${Number(data.mednInc21.toFixed(2) || 0).toLocaleString()}` },
+      { title: "Median Income", content: `$${Number(data.mednInc21.toFixed(2) || 0).toLocaleString()}` },
       { title: "People in Poverty", content: `${data.poverty.toLocaleString() || "N/A"}` },
       { title: "Poverty (%)", content: `${data.povertyPct.toFixed(2) || "N/A"}%` },
       { title: "Population Density", content: `${data.density.toFixed(2) || "N/A"}%` }
@@ -78,7 +89,7 @@ class SummaryComponent extends Component {
                 }}
                 title={charts[selectedTrend].title}
                 titleRender={true}
-                type="bar"
+                type={charts[selectedTrend].type}
                 height={300}
                 width={700}
                 label="Count"
@@ -88,6 +99,7 @@ class SummaryComponent extends Component {
             )}
           </div>
 
+          
           <div className="summaryColumn">
             <div className="summaryBoxes">
               {summaryBoxes.map((box, index) => (
