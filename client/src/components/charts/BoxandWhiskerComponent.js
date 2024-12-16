@@ -1,68 +1,72 @@
-// Example Usage
-// const data = [
-//   {
-//     label: 'District 1',
-//     values: [15, 18, 17, 20, 21, 19, 22, 25, 16, 24],
-//     color: 'rgba(75, 192, 192, 0.6)', 
-//   },
-//   {
-//     label: 'District 2',
-//     values: [10, 14, 13, 15, 16, 18, 14, 17, 13, 19],
-//     color: 'rgba(255, 99, 132, 0.6)', 
-//   },
-//   {
-//     label: 'District 3',
-//     values: [22, 25, 24, 20, 18, 27, 26, 23, 21, 28],
-//     color: 'rgba(54, 162, 235, 0.6)', 
-//   }
-// ];
-// const xAxisTitle = 'Districts';
-// const yAxisTitle = 'Values';
-// <BoxandWhiskerComponent data={data} xAxisTitle={xAxisTitle} yAxisTitle={yAxisTitle} height={500} width={700} />
-
 import React from 'react';
 import Plot from 'react-plotly.js';
 
-const BoxandWhiskerComponent = ({ data, xAxisTitle, yAxisTitle, height = 500, width = 700 }) => {
-  const boxPlotData = data.map((district) => ({
-    type: 'box',
-    y: district.values,
-    name: district.label,
-    boxpoints: false, 
-    marker: {
-      color: district.color 
-    },
-  }));
+const BoxandWhiskerComponent = ({ data, height, width }) => {
+    // Extract data for box plot and scatter plot
+    const boxData = data.map((district, index) => ({
+        type: 'box',
+        y: [district.min, district.q1, district.q2, district.q3, district.max], // Box plot data
+        name: `${index + 1}`, // Legend and x-axis label
+        boxpoints: false, // Disable individual points
+        line: {
+            color: 'black',
+            width: 1
+        },
+        marker: {
+            color: 'rgba(0, 0, 0, 0.5)'
+        },
+        showlegend: false
+    }));
 
-  const scatterData = data.map((district) => ({
-    type: 'scatter',
-    mode: 'markers',
-    y: district.values,
-    x: Array(district.values.length).fill(district.label),
-    name: `${district.label} Points`,
-    marker: {
-      color: district.scatterColor || 'rgba(0, 0, 0, 0.6)',
-      size: 6,
-    },
-  }));
+    const scatterData = {
+        type: 'scatter',
+        mode: 'markers',
+        x: data.map((_, index) => `${index + 1}`), // X-axis labels
+        y: data.map((district) => district.points), // Scatter data (enacted points)
+        name: 'Enacted Plan',
+        marker: {
+            color: 'red',
+            size: 10
+        }
+    };
 
-  return (
-    <Plot
-      data={[...boxPlotData, ...scatterData]}
-      layout={{
-        title: 'Box Plot with Scatter Overlay',
-        yaxis: { title: yAxisTitle },
-        xaxis: { title: xAxisTitle },
-        boxmode: 'group', 
-        height,
-        width,
-        hovermode: false, 
-      }}
-      config={{
-        displayModeBar: false, 
-      }}
-    />
-  );
+    // Combine box-and-whisker and scatter data
+    const plotData = [...boxData, scatterData];
+
+    // Calculate x-axis range dynamically
+    const xMin = Math.min(...data.map((_, index) => index + 1)); // Smallest index
+    const xMax = Math.max(...data.map((_, index) => index + 1)); // Largest index
+
+    return (
+        <Plot
+            data={plotData}
+            layout={{
+                title: 'District Data Comparison',
+                height: height || 500,
+                width: width || 800,
+                xaxis: {
+                    title: 'Indexed Districts',
+                    tickangle: -45,
+                    tickmode: 'linear', // Ensure every tick is shown
+                    range: [xMin - 0.5, xMax + 0.5] // Adjust range to include all data points comfortably
+                },
+                yaxis: {
+                    title: 'Data Value'
+                },
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    x: 0.5,
+                    xanchor: 'center',
+                    y: -0.2
+                }
+            }}
+            config={{
+                responsive: true,
+                // displayModeBar: false // Turn off the feature bar
+            }}
+        />
+    );
 };
 
 export default BoxandWhiskerComponent;

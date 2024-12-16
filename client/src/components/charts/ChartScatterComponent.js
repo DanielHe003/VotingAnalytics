@@ -154,8 +154,8 @@ class ChartScatterComponent extends Component {
       <div style={{ width: `${this.props.width}px`, height: `${this.props.height}px` }}>
         <canvas 
           id="myChart" 
-          width={this.props.width - 100} 
-          height={this.props.height - 100} 
+          width={this.props.width} 
+          height={this.props.height} 
           style={{ border: '1px solid #ccc' }} 
         ></canvas>
       </div>

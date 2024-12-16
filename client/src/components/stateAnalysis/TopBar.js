@@ -93,7 +93,23 @@ class TopBar extends React.Component {
       case "EI":
         return (
           <FilterDropdown
-            key="ginglesSubOptions"
+            key="EISubOptions"
+            number={2}
+            label="Select Sub-Option"
+            name="Select Option"
+            options={[
+              { id: "racial", name: "Race" },
+              { id: "economic", name: "Economic" },
+              { id: "region", name: "Region" },
+            ]}
+            value={this.props.selectedSubTrend || ""}
+            onChange={this.handleChange("SubTrend")}
+          />
+        );
+        case "MCMC":
+        return (
+          <FilterDropdown
+            key="MCMC Sub Options"
             number={2}
             label="Select Sub-Option"
             name="Select Option"
@@ -131,22 +147,6 @@ class TopBar extends React.Component {
               onChange={this.handleChange("SubSubTrend")}
             />
           );
-        case "income":
-          return (
-            <FilterDropdown
-              key="raceSubOptions"
-              number={3}
-              label="Select Region Type"
-              name="Select Option"
-              options={[
-                { id: "urban", name: "Urban" },
-                { id: "suburban", name: "Suburban" },
-                { id: "rural", name: "Rural" },
-              ]}
-              value={this.props.selectedSubSubTrend || ""}
-              onChange={this.handleChange("SubSubTrend")}
-            />
-          );
         case "income-race":
           return (
             <FilterDropdown
@@ -167,7 +167,7 @@ class TopBar extends React.Component {
         case "racial":
           return (
             <FilterDropdown
-              key="raceSubOptions"
+              key="raceSubOptions1"
               number={3}
               label="Select Ethnic Group"
               name="Select Option"
@@ -184,14 +184,14 @@ class TopBar extends React.Component {
         case "economic":
           return (
             <FilterDropdown
-              key="raceSubOptions"
+              key="raceSubOption1s"
               number={3}
               label="Select Ethnic Group"
               name="Select Option"
               options={[
                 { id: "low", name: "0k-35k" },
-                { id: "low_mid", name: "35K-120K" },
-                { id: "upper_mid", name: "60K-120K" },
+                { id: "low_middle", name: "35K-120K" },
+                { id: "upper_middle", name: "60K-120K" },
                 { id: "upper", name: "125K+" },
               ]}
               value={this.props.selectedSubSubTrend || ""}
@@ -201,14 +201,14 @@ class TopBar extends React.Component {
           case "region":
           return (
             <FilterDropdown
-              key="regionsuboptions"
+              key="regionsuboptions1"
               number={3}
               label="Select Region Type"
               name="Select Option"
               options={[
-                { id: "urban", name: "Urban" },
-                { id: "suburban", name: "Suburban" },
-                { id: "rural", name: "Rural" },
+                { id: "Urban", name: "Urban" },
+                { id: "Suburban", name: "Suburban" },
+                { id: "Rural", name: "Rural" },
               ]}
               value={this.props.selectedSubSubTrend || ""}
               onChange={this.handleChange("SubSubTrend")}

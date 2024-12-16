@@ -28,6 +28,10 @@ class StateAnalysis extends React.Component {
             this.fetchEIData();
             this.renderChart();
           }
+          else if (this.props.selectedTrend === "MCMC") {
+            console.log("in mcmc");
+            this.fetchSeawulf();
+          }
         }
       }
     }
@@ -66,7 +70,40 @@ class StateAnalysis extends React.Component {
     }
   };
 
-  fetchSeawulf = async () => {};
+  fetchSeawulf = async () => {
+    try {
+      this.setState({ dataAvailable: false, chartData: null });
+  
+      const stateId =
+        this.props.selectedState === "Alabama"
+          ? 1
+          : this.props.selectedState === "California"
+          ? 6
+          : null;
+      
+          const urlMap = {
+            racial: `${stateId}/boxwhisker/race?groupName=${this.props.selectedSubSubTrend.toLowerCase()}`,
+            economic: `${stateId}/boxwhisker/economic?groupName=${this.props.selectedSubSubTrend.toLowerCase()}_income`,
+            region: `${stateId}/boxwhisker/region?&groupName=${this.props.selectedSubSubTrend.toLowerCase()}_population`,
+          };
+            
+      console.log("map created");
+  
+      if (urlMap[this.props.selectedSubTrend]) {
+        console.log(urlMap[this.props.selectedSubTrend]);
+        const {data} = await axios.get(urlMap[this.props.selectedSubTrend]);
+        this.setState({
+          chartData: data,
+          dataAvailable: true,
+        });
+
+        console.log("Seawulf Data:", data);
+      }
+    } catch (error) {
+      console.error("Error fetching EI analysis:", error);
+      this.setState({ dataAvailable: false });
+    }
+  };
 
   fetchEIData = async () => {
     try {
@@ -79,11 +116,14 @@ class StateAnalysis extends React.Component {
           ? 6
           : null;
       
+        const subsubtrend = this.props.selectedSubSubTrend.replace(/middle/gi, 'mid');
+        console.log(subsubtrend);
+      
       const urlMap = {
         racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
-        economic: `${stateId}/ei-analysis/economic?&economicGroup=${this.props.selectedSubSubTrend}&candidateName=`,
+        income:`${stateId}/ei-analysis/economic?&economicGroup=${subsubtrend}&candidateName=`,
         region: `${stateId}/ei-analysis/region?&regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
-      };
+      }; 
   
       console.log("map created");
   
@@ -103,6 +143,7 @@ class StateAnalysis extends React.Component {
         });
         console.log("Biden Data:", bidenData.data);
         console.log("Trump Data:", trumpData.data);
+        window.alert("Payload recieved!")
       }
     } catch (error) {
       console.error("Error fetching EI analysis:", error);
@@ -112,6 +153,9 @@ class StateAnalysis extends React.Component {
   
 
   renderChart = () => {
+    if(!this.props.selectedTrend){
+      return null;
+    }
     if (!this.state.dataAvailable) {
       return (
         <div
@@ -168,6 +212,23 @@ class StateAnalysis extends React.Component {
       );
     }
 
+    if (this.props.selectedTrend === "MCMC") {
+      if (!this.state.chartData) {
+        return <div>No data available</div>;
+      }
+      console.log(this.state.chartData);
+      return (
+
+      <ChartContainer
+          type="boxandwhisker"
+          data={this.state.chartData} 
+          height={640}
+          width={1700}
+          label=""
+        />
+      );
+    }
+
     return null;
   };
 
@@ -199,24 +260,28 @@ class StateAnalysis extends React.Component {
           selectedSubSubSubTrend={this.props.selectedSubSubSubTrend}
           setSelectedSubSubSubTrend={this.props.setSelectedSubSubSubTrend}
         />
-        <div className="content-container">
-          <div
-            className="map-container"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-          {this.renderChart() !== null && (
-            <div>{this.renderChart()}</div>
-          )}
-          </div>
+        
+        {this.renderChart() !== null && (
 
-          {this.renderSideTable() !== null && (
-            <div className="chart-container">{this.renderSideTable()}</div>
-          )}
-        </div>
+          <div className="content-container">
+            <div
+              className="map-container"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <div>{this.renderChart()}</div>
+            </div>
+
+    {/* Uncomment and use this if the side table should be conditionally rendered as well */}
+    {/* {this.renderSideTable() !== null && (
+      <div className="chart-container">{this.renderSideTable()}</div>
+    )} */}
+  </div>
+)}
+
       </>
     );
   }
