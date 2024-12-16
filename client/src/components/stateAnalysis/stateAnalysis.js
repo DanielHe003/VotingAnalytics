@@ -54,11 +54,12 @@ class StateAnalysis extends React.Component {
 
       const urlMap = {
         "race": `states/${stateId}/gingles/race/${this.props.selectedSubSubTrend}`,
-        "income": `states/${stateId}/gingles/income${this.props.selectedSubSubTrend ? `?regionType=${this.props.selectedSubSubTrend}`: ""}`,
+        "income": `states/${stateId}/gingles/income${this.props.selectedSubSubTrend ? `?groupName=${this.props.selectedSubSubTrend}`: ""}`,
         "income-race": `states/${stateId}/gingles/income-race/${this.props.selectedSubSubTrend}`,
       };
 
       if (urlMap[this.props.selectedSubTrend]) {
+        console.log(urlMap[this.props.selectedSubTrend]);
         const { data } = await axios.get(urlMap[this.props.selectedSubTrend]);
         console.log(urlMap[this.props.selectedSubTrend]);
         console.log(data);
@@ -116,8 +117,8 @@ class StateAnalysis extends React.Component {
           ? 6
           : null;
       
-        const subsubtrend = this.props.selectedSubSubTrend.replace(/middle/gi, 'mid');
-        console.log(subsubtrend);
+      const subsubtrend = this.props.selectedSubSubTrend.replace(/middle/gi, 'mid');
+      console.log(subsubtrend);
       
       const urlMap = {
         racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
@@ -125,7 +126,7 @@ class StateAnalysis extends React.Component {
         region: `${stateId}/ei-analysis/region?&regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
       }; 
   
-      console.log("map created");
+      console.log(`${stateId}/ei-analysis/economic?&economicGroup=${subsubtrend}&candidateName=`);
   
       if (urlMap[this.props.selectedSubTrend]) {
         console.log(urlMap[this.props.selectedSubTrend]);
@@ -143,7 +144,7 @@ class StateAnalysis extends React.Component {
         });
         console.log("Biden Data:", bidenData.data);
         console.log("Trump Data:", trumpData.data);
-        window.alert("Payload recieved!")
+        // window.alert("Payload recieved!")
       }
     } catch (error) {
       console.error("Error fetching EI analysis:", error);

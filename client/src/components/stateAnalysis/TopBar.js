@@ -172,10 +172,10 @@ class TopBar extends React.Component {
               label="Select Ethnic Group"
               name="Select Option"
               options={[
-                { id: "White", name: "White" },
-                { id: "Black", name: "Black" },
-                { id: "Hispanic", name: "Hispanic" },
-                { id: "Asian", name: "Asian" },
+                { id: "white", name: "White" },
+                { id: "black", name: "Black" },
+                { id: "hispanic", name: "Hispanic" },
+                { id: "asian", name: "Asian" },
               ]}
               value={this.props.selectedSubSubTrend || ""}
               onChange={this.handleChange("SubSubTrend")}
@@ -186,7 +186,7 @@ class TopBar extends React.Component {
             <FilterDropdown
               key="raceSubOption1s"
               number={3}
-              label="Select Ethnic Group"
+              label="Select Income Threshold"
               name="Select Option"
               options={[
                 { id: "low", name: "0k-35k" },
@@ -223,6 +223,8 @@ class TopBar extends React.Component {
   };
 
   render() {
+    console.log(this.props.selectedSubTrend);
+
     return (
       <div className="top-bar-container">
         <div className="filters-container">
