@@ -16,7 +16,7 @@
   }
   
   .chartsColumn {
-    flex: 7;
+    flex: 8;
     display: flex;
     flex-direction: column;
     gap: 30px;
@@ -35,7 +35,7 @@
   .summaryBoxes {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Keeps other content aligned left */
+    align-items: flex-start;
   }
   
   .summaryBoxes h3 {

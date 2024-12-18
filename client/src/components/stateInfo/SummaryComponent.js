@@ -59,10 +59,30 @@ class SummaryComponent extends Component {
         xAxisTitle: "Income Bracket",
         yAxisTitle: "Population"
       },
-      rep: {
-        title: "State Representatives",
+      districts: {
+        title: "Congressional Districts",
         type: "table",
-        labels: ["District #", "Representative Name", "Representative Party", "Racial/Ethnic Group"],
+        labels: [
+          "District #",
+          "Rep. Name",
+          "Rep. Party",
+          "Avg. Household Income",
+          "Poverty %",
+          "Urban %",
+          "Rural %",
+          "Suburban %",
+          "Vote Margin %"
+      ],
+        values: cdSummaryData
+    },
+      rep: {
+        title: "District Representatives",
+        type: "table",
+        labels: [
+          "District #",
+          "Rep. Name",
+          "Rep. Party",
+      ],
         values: cdSummaryData
     }
     
@@ -134,12 +154,13 @@ class SummaryComponent extends Component {
             )}
           </div>
 
-          
+          {this.props.selectedTrend === "start" && (
           <div className="summaryColumn">
           <div className="summaryBoxes">
             <SummaryBox key={1} title="Quick Facts" summaryBoxes={summaryBoxes} />
             </div>
           </div>
+          )}
 
         </div>
       </div>

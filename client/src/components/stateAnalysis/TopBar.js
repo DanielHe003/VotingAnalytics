@@ -17,8 +17,8 @@ class TopBar extends React.Component {
         {
           name: "Select Trend",
           options: [
-            { id: "EI", name: "Ecological Inference" },
             { id: "Gingles", name: "Gingles 2/3 Analysis" },
+            { id: "EI", name: "Ecological Inference" },
             { id: "MCMC", name: "MCMC Analysis" },
           ],
         },

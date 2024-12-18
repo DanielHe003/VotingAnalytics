@@ -174,53 +174,108 @@ class MapComponent extends React.Component {
       return null;
     }
 
+    function convertRanges(ranges) {
+      // Check if at least one key contains ",000"
+      const hasThousands = Object.keys(ranges).some(range => range.includes(',000'));
+    
+      // If no key contains ",000", return the original ranges
+      if (!hasThousands) {
+        return ranges;
+      }
+      
+      const convertedRanges = {};
+    
+      Object.keys(ranges).forEach(range => {
+        const [lower, upper] = range.split(' - ').map(val => parseInt(val.replace(/[$,]/g, ''), 10));
+        const lowerRange = Math.floor(lower / 25000) * 25; // Round down to the nearest 25K
+        const upperRange = Math.floor(upper / 25000) * 25; // Round down to the nearest 25K
+        
+        const newKey = upperRange ? `${lowerRange}K - ${upperRange}K` : `${lowerRange}K+`;
+    
+        convertedRanges[newKey] = ranges[range]; // Keep the corresponding data
+      });
+    
+      return convertedRanges;
+    }
+    
 if (Object.entries(heatMapLegend).some(([range]) => range.includes("Democrat") || range.includes("Republican"))) {
 
-  let income_color_mapping = [];
+  const resultDict = {};
 
-for (let [key, value] of Object.entries(heatMapLegend)) {
-    const parts = key.split(" ");
-    const base_range = `$${parts[0]} - $${parts[1]}`;
-    const democratColor = parts.includes("Democrat") ? value : '';
-    const republicanColor = parts.includes("Republican") ? value : '';
-
-    if (democratColor) {
-        income_color_mapping.push({ range: base_range, democratColor });
+  // Iterate through each key in the data
+  Object.keys(heatMapLegend).forEach(key => {
+    // Extract the range and party (Democrat/Republican)
+    const [range, party] = key.split(" (");
+    const partyName = party.slice(0, -1);  // Remove the closing parenthesis
+    
+    // If the range doesn't exist in the dictionary, create an empty object for it
+    if (!resultDict[range]) {
+      resultDict[range] = { Dcolor: "", Rcolor: "" };
     }
-    if (republicanColor) {
-        income_color_mapping.push({ range: base_range, republicanColor });
+    
+    // Assign the color based on the party
+    if (partyName === "Democrat") {
+      resultDict[range].Dcolor = heatMapLegend[key];
+    } else if (partyName === "Republican") {
+      resultDict[range].Rcolor = heatMapLegend[key];
     }
-}
+  });
 
-// console.log(income_color_mapping);
+  console.log(resultDict);
+
+  
+  
+  const converted = convertRanges(resultDict);
 
   return (
-      <div className="legend">
-          {selectedTrend === "precinct" && (
-              <>
-                  <h4>Legend</h4>
-                  <ul>
-                      {Object.entries(income_color_mapping).map(([range, colors], index) => (
-                          <li key={index}>
-                              <span className="color-box" style={{ backgroundColor: colors["Republican"] }}></span> R
-                              <span className="color-box" style={{ backgroundColor: colors["Democrat"] }}></span> D
-                              {range}
-                          </li>
-                      ))}
-                  </ul>
-              </>
-          )}
-      </div>
+    <div className="legend">
+      {selectedTrend === "precinct" && (
+        <>
+          <h4>Legend</h4>
+          <table>
+            <thead>
+              <tr>
+                <th><center>D</center></th>
+                <th><center>R</center></th>
+                <th><center>Range</center></th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(converted).map(([range, colors], index) => (
+                <tr key={index}>
+                  <td>
+                    <span
+                      className="color-box"
+                      style={{ backgroundColor: colors.Dcolor }}
+                    ></span>
+                  </td>
+                  <td>
+                    <span
+                      className="color-box"
+                      style={{ backgroundColor: colors.Rcolor }}
+                    ></span>
+                  </td>
+                  <td>{range}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </div>
   );
+  
+
 }
 else {
+    const rangeConvert = convertRanges(heatMapLegend);
       return (
         <div className="legend">
           {selectedTrend === "precinct" && (
             <>
               <h4>Legend</h4>
               <ul>
-                {Object.entries(heatMapLegend)
+                {Object.entries(rangeConvert)
                   .filter(([range]) => !(range.includes("Democrat") || range.includes("Republican")))
                   .map(([range, color], index) => (
                     <li key={index}>

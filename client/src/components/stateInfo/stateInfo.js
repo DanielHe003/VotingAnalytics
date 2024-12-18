@@ -6,6 +6,7 @@ import "./StateInfo.css";
 import SummaryComponent from "./SummaryComponent";
 import CDSummary from "./CDSummary";
 import ApiService from "../common/ApiService";
+import ChartContainer from '../common/ChartContainer';
 import axios from "axios";
 
 class StateInfo extends React.Component {
@@ -146,56 +147,121 @@ class StateInfo extends React.Component {
   };
   
   
-  
+  toUpperCase(str) {
+    if (str.length === 0) return str; // Handle empty string case
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+
   fetchPrecinctHeatMap = async () => {
     try {
-      if (!this.props.selectedState || !this.props.selectedSubTrend) return;
-      const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
-
+      const { selectedState, selectedSubTrend, selectedSubSubTrend} = this.props;
+  
+      // Check if required props are set
+      if (!selectedState || !selectedSubTrend || selectedSubSubTrend === " ") return;
+  
+      const stateId = selectedState === "Alabama" ? 1 : 6;
+  
       const urlMap = {
-        demographic: `states/${stateId}/heatmap/demographic/${this.props.selectedSubSubTrend}`,
+        demographic: `states/${stateId}/heatmap/demographic/${selectedSubSubTrend}`,
         economic: `states/${stateId}/heatmap/economic`,
         region: `states/${stateId}/heatmap/region-type`,
         poverty: `states/${stateId}/heatmap/poverty`,
         pil: `states/${stateId}/heatmap/political-income`,
       };
+  
+      const url = urlMap[selectedSubTrend];
+      if (!url) return; // Check if the URL for the selected trend exists
+  
+      const { data } = await axios.get(url);
+      this.setState({ tableData: null }, () => {
+        // console.log('Updated tableData:', this.state.tableData);
+      });
 
-      if (urlMap[this.props.selectedSubTrend]) {
-        if(this.props.selectedSubSubTrend === " "){
-          return;
-        }
-
-        const url = `${urlMap[this.props.selectedSubTrend]}`;
-        const { data } = await axios.get(url);
-        this.setState({
-          mapData: {
-            type: "FeatureCollection",
-            features: this.state.mapData.features.map(
-              (feature) => {
-                const matchingData = data.data.find(
-                  (entry) =>
-                    entry.precinctKey === feature.properties.precinctKey
-                );
-                return {
-                  ...feature,
-                  properties: {
-                    ...feature.properties,
-                    ...matchingData,
-                  },
-                };
-              }
-            ),
-          },
-          heatmapLegend: data.legend,
-        });
-        console.log(this.state.mapData);
-        //window.alert("payload recieved");
-      }
+      const tableMap = {
+        economic: {
+          title: `Precinct by Median Income`,
+          type: "table",
+          labels: ["Precinct #", "Median Income"],
+          values: data.data
+            .sort((a, b) => (b.medianIncome || 0) - (a.medianIncome || 0))
+            .map(entry => ({
+              "Precinct #": entry.precinctKey || 0,
+              "Median Income": `$${(entry.medianIncome || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+            })),
+        },
+        demographic: {
+          title: `Precinct by Demographic: ${this.toUpperCase(this.props.selectedSubSubTrend)}`,
+          type: "table",
+          labels: ["Precinct #", "Population %"],
+          values: data.data
+            .map(entry => ({
+              "Precinct #": entry.precinctKey || 0,
+              "Population %": (entry.percentage || 0).toFixed(2),
+            }))
+            .sort((a, b) => (b["Population %"] || 0) - (a["Population %"] || 0)),
+        },
+        region: {
+          title: `Precinct by Region`,
+          type: "table",
+          labels: ["Precinct #", "Region Type"],
+          values: data.data.map(entry => ({
+            "Precinct #": entry.precinctKey || 0,
+            "Region Type": entry.type || 0,
+          })),
+        },
+        poverty: {
+          title: `Precinct by Poverty %`,
+          type: "table",
+          labels: ["Precinct #", "Poverty %"],
+          values: data.data
+            .sort((a, b) => (b.povertyPercentage || 0) - (a.povertyPercentage || 0))
+            .map(entry => ({
+              "Precinct #": entry.precinctKey || 0,
+              "Poverty %": (entry.povertyPercentage || 0).toFixed(2),
+            })),
+        },
+        pil: {
+          title: `Precinct by Political-Income`,
+          type: "table",
+          labels: ["Precinct #", "Dominant Party", "Median Income Range"],
+          values: data.data.map(entry => ({
+            "Precinct #": entry.precinctKey || 0,
+            "Dominant Party": entry.dominantParty || 0,
+            "Median Income Range": entry.bin || 0,
+          })),
+        },
+      };
+      
+  
+      this.setState({ tableData: tableMap[selectedSubTrend] }, () => {
+        console.log('Updated tableData:', this.state.tableData);
+      });
+      
+  
+      // Update map data by matching precinct data
+      this.setState(prevState => ({
+        mapData: {
+          type: "FeatureCollection",
+          features: prevState.mapData.features.map(feature => {
+            const matchingData = data.data.find(entry => entry.precinctKey === feature.properties.precinctKey);
+            return {
+              ...feature,
+              properties: {
+                ...feature.properties,
+                ...matchingData,
+              },
+            };
+          }),
+        },
+        heatmapLegend: data.legend,
+      }));
+  
     } catch (error) {
       console.error("Error fetching precinct heatmap:", error);
     }
   };
-
+  
   fetchMapData = async () => {
     try {
       const state = this.props.selectedState;
@@ -244,13 +310,18 @@ class StateInfo extends React.Component {
 
         const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
         const {data} = await axios.get(`/states/${stateId}/districtRepresentation`);
-
         const graphData = data.map((district) => ({
-            "District #": district.districtId,
-            "Representative Name": district.representative,
-            "Representative Party": district.party,
-            "Racial/Ethnic Group": district.racialEthnicGroup,
+          "District #": district.districtId,
+          "Rep. Name": district.representative,
+          "Rep. Party": district.party,
+"Avg. Household Income": `$${district.averageHouseholdIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          "Poverty %": district.povertyPercentage.toFixed(2),
+          "Vote Margin %": district.voteMarginPercentage.toFixed(2),
+          "Urban %": district.urbanPercentage.toFixed(2),
+          "Rural %": district.ruralPercentage.toFixed(2),
+          "Suburban %": district.suburbanPercentage.toFixed(2)
         })).sort((a, b) => a["District #"] - b["District #"]);
+      
         this.setState({ cdSummaryData: graphData });
     } catch (error) {
         console.error("Error fetching summary data:", error);
@@ -295,16 +366,14 @@ class StateInfo extends React.Component {
         `/states/${stateId}/districtRepresentation`
       );
 
-      if (!Array.isArray(data)) {
-        console.error("API response is not an array:", data);
-        return;
-      }
 
       const sortedData = data.sort((a, b) => a.districtId - b.districtId);
 
       console.log("Sorted data:", sortedData);
 
       const districtData = sortedData[selectedDistrictNumber - 1];
+
+      this.setState({tableData: districtData});
 
       if (!districtData) {
         console.warn(
@@ -376,7 +445,6 @@ class StateInfo extends React.Component {
                       </>
             )}
 
-
           {this.props.selectedState &&
             (this.props.selectedDistrict === "All Districts" || this.props.selectedDistrict === "0") && this.props.selectedTrend !== "ComparePlans" && (
               <div className="chart-container">
@@ -397,9 +465,31 @@ class StateInfo extends React.Component {
                         )}
                       </div>
                     )}
+
+                  {this.props.selectedTrend === "precinct"  && this.state.tableData && (<>
+                  <center>
+
+                  <ChartContainer 
+                  title={this.state.tableData.title}
+                  height={300}
+                  width={700}
+                  titleRender={true}
+                  type="table"
+                  minCount={8}
+                  data={{
+                    values: this.state.tableData.values,
+                    labels: this.state.tableData.labels
+                  }}
+            />
+                              </center>
+
+
+
+            </>)}
+
                 </div>
                 <div className="button-container">
-                  {this.props.selectedState && (
+                  {this.props.selectedState && this.props.selectedTrend !== "precinct" && (
                     <button
                       onClick={this.togglePopup}
                       className="action-button"

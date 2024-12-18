@@ -18,20 +18,30 @@ class ChartContainer extends React.Component {
       yAxisTitle,
       label,
       titleRender,
+      minCount,
     } = this.props;
 
-    console.log(data);
+    // console.log(data);
 
     return (
       <>
         {/* State Summary */}
         {titleRender && (
           <>
+            <div style={{ paddingTop: "30px" }}>
             <div className="chartBox">
               <h4 className="title">{title}</h4>
-          {type === "table" && (
-          <TableComponent data={data} height={height} width={width} />
-        )}
+              {type === "table" && (
+
+    <TableComponent 
+      data={data} 
+      height={height} 
+      width={width} 
+      minCount={minCount} 
+    />
+
+)}
+
               {type === "bar" && (
                 <BarChartComponent
                   categoryData={data}
@@ -42,6 +52,8 @@ class ChartContainer extends React.Component {
                   yAxisTitle={yAxisTitle}
                 />
               )}
+
+</div>
             </div>
           </>
         )}
@@ -120,6 +132,7 @@ class ChartContainer extends React.Component {
             data={data}
             xAxisTitle={xAxisTitle}
             yAxisTitle={yAxisTitle}
+            title={title}
             height={height}
             width={width}
           />

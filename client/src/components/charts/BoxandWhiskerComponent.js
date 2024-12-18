@@ -1,7 +1,7 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 
-const BoxandWhiskerComponent = ({ data, height, width }) => {
+const BoxandWhiskerComponent = ({ title, data, height, width }) => {
     // Extract data for box plot and scatter plot
     const boxData = data.map((district, index) => ({
         type: 'box',
@@ -41,7 +41,7 @@ const BoxandWhiskerComponent = ({ data, height, width }) => {
         <Plot
             data={plotData}
             layout={{
-                title: 'District Data Comparison',
+                title: title,
                 height: height || 500,
                 width: width || 800,
                 xaxis: {
@@ -51,7 +51,7 @@ const BoxandWhiskerComponent = ({ data, height, width }) => {
                     range: [xMin - 0.5, xMax + 0.5] // Adjust range to include all data points comfortably
                 },
                 yaxis: {
-                    title: 'Data Value'
+                    // title: 'Data Value'
                 },
                 showlegend: true,
                 legend: {

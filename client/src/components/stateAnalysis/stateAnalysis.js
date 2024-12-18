@@ -13,14 +13,9 @@ class StateAnalysis extends React.Component {
   };
 
   componentDidUpdate(prevProps) {
-    console.log(this.props.selectedTrend);
-    if(this.props.selectedTrend !== prevProps.selectedTrend){
-      this.setState({ dataAvailable: false , chartData: null});
-      // window.alert("cleared");
-    }
-
     if (prevProps !== this.props) {
       
+      this.setState({ dataAvailable: false , chartData: null});
 
       console.log("Updated");
       // if (this.props.selectedSubSubTrend) {
@@ -150,8 +145,8 @@ class StateAnalysis extends React.Component {
           chartData: { bidenData: bidenData.data, trumpData: trumpData.data },
           dataAvailable: true,
         });
-        console.log("Biden Data:", bidenData.data);
-        console.log("Trump Data:", trumpData.data);
+        // console.log("Biden Data:", bidenData.data);
+        // console.log("Trump Data:", trumpData.data);
         //window.alert("Payload recieved!")
       }
     } catch (error) {
@@ -189,6 +184,19 @@ class StateAnalysis extends React.Component {
       );
     }
 
+    const economicSubSubTrends = [
+      { id: "low", name: "0k-35k" },
+      { id: "low_middle", name: "35K-120K" },
+      { id: "upper_middle", name: "60K-120K" },
+      { id: "upper", name: "125K+" },
+    ];
+    
+    const getSubSubTrendName = (id) => {
+      const subSubTrend = economicSubSubTrends.find((item) => item.id === id);
+      return subSubTrend ? subSubTrend.name : id; // Return name or id if not found
+    };
+    
+
     if (this.props.selectedTrend === "Gingles") {
       if (!this.state.chartData || !this.state.chartData.dataPoints) {
         return <div>No data available</div>;
@@ -203,6 +211,11 @@ class StateAnalysis extends React.Component {
         />
       );
     }
+
+    function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
 
     if (this.props.selectedTrend === "EI") {
       if (!this.state.chartData.bidenData || !this.state.chartData.trumpData) {
@@ -222,14 +235,28 @@ class StateAnalysis extends React.Component {
     }
 
     if (this.props.selectedTrend === "MCMC") {
-      if (!this.state.chartData) {
+      console.log(this.state.chartData);
+      if (!this.state.chartData && !this.props.selectedSubTrend && !this.state.selectedSubSubTrend) {
         return <div>No data available</div>;
       }
       console.log(this.state.chartData);
+
+
+const title = `Generated and Enacted Plan Analysis for ${
+  capitalizeFirstLetter(this.props.selectedSubTrend)
+} ${
+  this.props.selectedSubTrend === "economic"
+    ? `(${getSubSubTrendName(this.props.selectedSubSubTrend)})`
+    : this.props.selectedSubSubTrend
+    ? `(${capitalizeFirstLetter(this.props.selectedSubSubTrend)})`
+    : "Generated vs. Enacted Plan"
+}`;
+
       return (
 
       <ChartContainer
           type="boxandwhisker"
+          title={title}
           data={this.state.chartData} 
           height={640}
           width={1700}

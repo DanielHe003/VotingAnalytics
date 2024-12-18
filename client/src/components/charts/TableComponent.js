@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-const TableComponent = ({ data, selectedDistrict, width, height }) => {
+const TableComponent = ({ data, minCount, selectedDistrict, width, height }) => {
 
   console.log(data);
   
   // Pagination logic
-  const itemsPerPage = 7; // Display 7 rows per page
+  const itemsPerPage = minCount != null ? minCount : 7;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = data ? Math.ceil(data.values.length / itemsPerPage) : 0;
 
@@ -45,17 +45,16 @@ const TableComponent = ({ data, selectedDistrict, width, height }) => {
     navigationButton: {
       padding: '5px 10px',
       cursor: 'pointer',
-      border: '1px solid #ddd',
+      border: 'none',
       margin: '0 5px',
-      backgroundColor: '#f9f9f9',
-      transition: 'background-color 0.3s ease',
+      backgroundColor: 'transparent', // Make background transparent
+      color: '#005BA6', // Match theme color
+      fontSize: '20px', // Larger font for arrows
+      transition: 'transform 0.3s ease',
     },
-    counter: {
-      padding: '5px 10px',
-      backgroundColor: '#005BA6',
-      color: 'white',
-      border: '1px solid #ddd',
-      margin: '0 5px',
+    disabledButton: {
+      color: '#ccc', // Disabled button color
+      cursor: 'not-allowed',
     },
     loading: {
       textAlign: 'center',
@@ -64,7 +63,7 @@ const TableComponent = ({ data, selectedDistrict, width, height }) => {
       marginTop: '20px',
     },
   };
-
+  
   // Data preparation for rendering
   const displayedData = data ? data.values.slice(
     (currentPage - 1) * itemsPerPage,
@@ -104,24 +103,30 @@ const TableComponent = ({ data, selectedDistrict, width, height }) => {
         </tbody>
       </table>
       {totalPages > 1 && (
-        <div style={styles.pagination}>
-          <button
-            style={styles.navigationButton}
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            Previous
-          </button>
-          <span style={styles.counter}>{`Page ${currentPage} of ${totalPages}`}</span>
-          <button
-            style={styles.navigationButton}
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            Next
-          </button>
-        </div>
-      )}
+  <div style={styles.pagination}>
+    <button
+      style={{
+        ...styles.navigationButton,
+        ...(currentPage === 1 ? styles.disabledButton : {}),
+      }}
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage(currentPage - 1)}
+    >
+      &lt; {/* Left arrow symbol */}
+    </button>
+    <button
+      style={{
+        ...styles.navigationButton,
+        ...(currentPage === totalPages ? styles.disabledButton : {}),
+      }}
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage(currentPage + 1)}
+    >
+      &gt; {/* Right arrow symbol */}
+    </button>
+  </div>
+)}
+
     </>
   );
 };
