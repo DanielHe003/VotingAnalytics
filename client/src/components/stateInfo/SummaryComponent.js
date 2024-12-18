@@ -12,6 +12,7 @@ class SummaryComponent extends Component {
       )
     }
     const { data, cdSummaryData, selectedTrend } = this.props;
+    console.log(data);
     // window.alert(selectedTrend);
     if(selectedTrend === "") this.props.setSelectedTrend("start");
     const charts = {
@@ -110,32 +111,18 @@ class SummaryComponent extends Component {
       { title: "Median Income", content: `$${Number(data.mednInc21.toFixed(2) || 0).toLocaleString()}` },
       { title: "People in Poverty", content: `${data.poverty.toLocaleString() || "N/A"}` },
       { title: "Poverty (%)", content: `${data.povertyPct.toFixed(2) || "N/A"}%` },
-      { title: "Population Density", content: `${data.density.toFixed(2) || "N/A"}%` }
+      { title: "Population Density", content: `${data.density.toFixed(2) || "N/A"}%` },
+      { title: "Political Lean", content: `${this.props.selectedState === "Alabama" ? "Republican" : "Democratic" || "N/A"}` },
+      { title: "# of Districts", content: `${ this.props.selectedState === "Alabama" ? "7" : "53" || "N/A"}` },
+      { title: "Rep. | Dem. ", content: `${ this.props.selectedState === "Alabama" ? "6 | 1 " : "11 | 42" || "N/A"}` },
+      { title: "# of Precincts", content: `${ this.props.selectedState === "Alabama" ? "1971" : "20051" || "N/A"}` }
     ];
 
     return (
       <div className="state-summary container">
         <div className="mainContent">
           <div className="chartsColumn">
-            {selectedTrend === "start" && <>
-            
-            <ChartContainer 
-            title="Ensemble Summary"
-            height={300}
-            width={700}
-            titleRender={true}
-            type="table"
-            data={{
-              values: ensembleData.values,
-              labels: ensembleData.labels
-            }}
-            xAxisTitle={ensembleData.xAxisTitle}
-            yAxisTitle={ensembleData.yAxisTitle}
 
-            />
-            
-            </>
-            }
             {charts !== null && charts[selectedTrend] && (
               <ChartContainer
                 data={{
@@ -154,14 +141,37 @@ class SummaryComponent extends Component {
             )}
           </div>
 
+         
           {this.props.selectedTrend === "start" && (
-          <div className="summaryColumn">
-          <div className="summaryBoxes">
-            <SummaryBox key={1} title="Quick Facts" summaryBoxes={summaryBoxes} />
-            </div>
-          </div>
-          )}
+  <>
+    {/* Summary Boxes on their own line */}
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+      {summaryBoxes.map((box, index) => (
+        <SummaryBox key={index} title={box.title} content={box.content} />
+      ))}
+    </div>
 
+    {/* Chart Container on a new line */}
+    <div style={{ marginTop: '20px' }}>
+      <ChartContainer
+        title="Ensemble Summary"
+        height={300}
+        width={1000}
+        titleRender={true}
+        type="table"
+        data={{
+          values: ensembleData.values,
+          labels: ensembleData.labels
+        }}
+        xAxisTitle={ensembleData.xAxisTitle}
+        yAxisTitle={ensembleData.yAxisTitle}
+      />
+    </div>
+  </>
+)}
+
+
+ 
         </div>
       </div>
     );

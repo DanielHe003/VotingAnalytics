@@ -74,22 +74,86 @@ class MapComponent extends React.Component {
     });
   };
 
+  
   onFeatureMouseOver = (e) => {
     const layer = e.target;
+    
+    console.log(this.props.typeRender);
+    // Change the style for the hovered layer
     layer.setStyle({
       fillColor: "white",
       color: "#005BA6",
       weight: 2.5,
     });
-
-    const modifiedProperties = this.modifyProperties(layer.feature.properties);
-
-    const tooltipContent = Array.from(modifiedProperties)
-      .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
-      .join("<br>");
-
-    layer.bindTooltip(tooltipContent, { sticky: true }).openTooltip();
+    
+    if (this.props.typeRender === false) {
+      const modifiedProperties = this.modifyProperties(layer.feature.properties);
+      console.log(modifiedProperties);
+      
+      // If `modifiedProperties` is a Map, you can iterate over it like this:
+      const tooltipContent = Array.from(modifiedProperties.entries())
+        .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+        .join("<br>");
+      
+      console.log(tooltipContent);
+      
+      // Check if tooltipContent is non-empty and bind it to the layer
+      if (tooltipContent) {
+        layer.bindTooltip(tooltipContent, { sticky: true }).openTooltip();
+      }
+      
+    } else {
+      // Handling specific tooltip case when 'title' is provided
+      const {
+        district,
+        total_population,
+        winner,
+        white_pct,
+        black_pct,
+        hispanic_pct,
+        asian_pct,
+        rural_population_pct,
+        rural_white_pct,
+        rural_black_pct,
+        rural_hispanic_pct,
+        suburban_population_pct,
+        suburban_white_pct,
+        suburban_black_pct,
+        suburban_hispanic_pct,
+        urban_population_pct,
+        urban_white_pct,
+        urban_black_pct,
+        urban_hispanic_pct,
+      } = layer.feature.properties;
+  
+      const tooltipContent = `
+        <div>
+          <strong>District:</strong> ${district}<br>
+          <strong>Total Population:</strong> ${total_population.toLocaleString()}<br>
+          <strong>Winner:</strong> ${winner.charAt(0).toUpperCase() + winner.slice(1).toLocaleString()}<br>
+          <strong>White (%):</strong> ${(white_pct * 100).toFixed(2)}%<br>
+          <strong>Black (%):</strong> ${(black_pct * 100).toFixed(2)}%<br>
+          <strong>Hispanic (%):</strong> ${(hispanic_pct * 100).toFixed(2)}%<br>
+          <strong>Asian (%):</strong> ${(asian_pct * 100).toFixed(2)}%<br>
+          <strong>Rural Population (%):</strong> ${(rural_population_pct * 100).toFixed(2)}%<br>
+          <strong>Rural White (%):</strong> ${(rural_white_pct * 100).toFixed(2)}%<br>
+          <strong>Rural Black (%):</strong> ${(rural_black_pct * 100).toFixed(2)}%<br>
+          <strong>Rural Hispanic (%):</strong> ${(rural_hispanic_pct * 100).toFixed(2)}%<br>
+          <strong>Suburban Population (%):</strong> ${(suburban_population_pct * 100).toFixed(2)}%<br>
+          <strong>Suburban White (%):</strong> ${(suburban_white_pct * 100).toFixed(2)}%<br>
+          <strong>Suburban Black (%):</strong> ${(suburban_black_pct * 100).toFixed(2)}%<br>
+          <strong>Suburban Hispanic (%):</strong> ${(suburban_hispanic_pct * 100).toFixed(2)}%<br>
+          <strong>Urban Population (%):</strong> ${(urban_population_pct * 100).toFixed(2)}%<br>
+          <strong>Urban White (%):</strong> ${(urban_white_pct * 100).toFixed(2)}%<br>
+          <strong>Urban Black (%):</strong> ${(urban_black_pct * 100).toFixed(2)}%<br>
+          <strong>Urban Hispanic (%):</strong> ${(urban_hispanic_pct * 100).toFixed(2)}%<br>
+        </div>
+      `;
+      
+      layer.bindTooltip(tooltipContent, { sticky: true }).openTooltip();
+    }
   };
+  
 
   onFeatureMouseOut = (e) => {
     const layer = e.target;
@@ -341,7 +405,21 @@ else {
 
     return (
       <div className="map-container">
-      {title && <h3>{title}</h3>}
+{title && (
+  <h3
+    style={{
+      backgroundColor: '#005ba6',
+      color: 'white',
+      padding: '6px 10px',
+      borderRadius: '5px',
+      textAlign: 'center',
+      marginBottom: '5px',
+      fontSize: '20px',
+    }}
+  >
+    {title}
+  </h3>
+)}
     
         <div className="map-wrapper" ref={this.containerRef}>
           <LeafletMap

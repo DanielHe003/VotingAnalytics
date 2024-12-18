@@ -143,7 +143,10 @@ class ChartContainer extends React.Component {
             data={data}
             height={height}
             width={width}
-          />
+            selectedState={this.props.selectedState}
+            selectedSubTrend={this.props.selectedSubTrend}
+            selectedSubSubTrend={this.props.selectedSubSubTrend}
+            />
         )}
       </>
     );

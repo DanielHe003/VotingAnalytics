@@ -31,7 +31,7 @@ const TableComponent = ({ data, minCount, selectedDistrict, width, height }) => 
       backgroundColor: '#ffffff',
     },
     cell: {
-      padding: '10px',
+      padding: '5px',
       borderBottom: '1px solid #ddd',
     },
     rowHover: {

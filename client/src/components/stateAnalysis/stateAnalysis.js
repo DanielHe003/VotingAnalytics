@@ -205,9 +205,12 @@ class StateAnalysis extends React.Component {
         <ChartContainer
           type="scatter"
           data={this.state.chartData}
-          height={500}
-          width={800}
+          height={600}
+          width={1000}
           label=""
+          selectedState={this.props.selectedState}
+          selectedSubTrend={this.props.selectedSubTrend}
+          selectedSubSubTrend={this.props.selectedSubSubTrend}
         />
       );
     }
@@ -298,25 +301,18 @@ const title = `Generated and Enacted Plan Analysis for ${
         />
         
         {this.renderChart() !== null && (
-
-          <div className="content-container">
-            <div
-              className="map-container"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <div>{this.renderChart()}</div>
-            </div>
-
-    {/* Uncomment and use this if the side table should be conditionally rendered as well */}
-    {/* {this.renderSideTable() !== null && (
-      <div className="chart-container">{this.renderSideTable()}</div>
-    )} */}
+  <div
+    className="map-container"
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <div>{this.renderChart()}</div>
   </div>
 )}
+
 
       </>
     );

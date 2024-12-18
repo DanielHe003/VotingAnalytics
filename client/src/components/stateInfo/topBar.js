@@ -65,7 +65,7 @@ class TopBar extends React.Component {
     {
       name: "Select Trend",
       options: [
-        {id: "start", name: "Ensemble Summary"},
+        {id: "start", name: "Summary"},
         { id: "voting", name: "Voting Distribution" },
         { id: "race", name: "Population by Race" },
         { id: "region", name: "Population by Region" },
@@ -197,25 +197,33 @@ class TopBar extends React.Component {
 
 {/* COmpare plans ------ */}
 
-      {this.props.selectedTrend === "ComparePlans" && (
-        <FilterDropdown
-          number={3}
-          label="Choose Plan 1"
-          options={this.availablePlans[this.props.selectedState === "Alabama" ? 0 : 1].options}
-          onChange={this.handleChange("SubTrend")}
-        />
-      )}
+{this.props.selectedTrend === "ComparePlans" && (
+  <>
+    <FilterDropdown
+      number={3}
+      label="Choose Plan 1"
+      options={
+        this.availablePlans[this.props.selectedState === "Alabama" ? 0 : 1].options.filter(
+          (option) => option.id !== this.props.selectedSubSubTrend // Exclude the option selected in the second dropdown
+        )
+      }
+      value={this.props.selectedSubTrend || ""}
+      onChange={this.handleChange("SubTrend")}
+    />
 
-        {this.props.selectedTrend === "ComparePlans" && (
-            <FilterDropdown
-              number={4}
-              label="Choose Plan 2"
-              options={this.availablePlans[this.props.selectedState === "Alabama" ? 0 : 1].options}
-               value={this.props.selectedSubSubTrend || ""}
-              onChange={this.handleChange("SubSubTrend")}
-            />
-          )}
-
+    <FilterDropdown
+      number={4}
+      label="Choose Plan 2"
+      options={
+        this.availablePlans[this.props.selectedState === "Alabama" ? 0 : 1].options.filter(
+          (option) => option.id !== this.props.selectedSubTrend // Exclude the option selected in the first dropdown
+        )
+      }
+      value={this.props.selectedSubSubTrend || ""}
+      onChange={this.handleChange("SubSubTrend")}
+    />
+  </>
+)}
 
 
 

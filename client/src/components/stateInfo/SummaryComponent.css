@@ -24,20 +24,14 @@
     justify-content: center;
   }
   
-  .summaryColumn {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 30px;
-  }
-  
+    
   .summaryBoxes {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    flex-wrap: wrap; /* Allow items to wrap to the next line if necessary */
   }
-  
+    
   .summaryBoxes h3 {
     align-self: center; 
     margin: 0.3 auto; 

@@ -47,6 +47,22 @@ class StateInfo extends React.Component {
       // this.fetchCDSummaryData();
     }
 
+    if(prevProps.selectedTrend !== this.props.selectTrend && this.props.selectedTrend === "ComparePlans"){
+
+        if(this.state.mapData !== null) this.setState({mapData: null})
+        if(prevProps.selectedSubTrend !== this.props.selectedSubTrend){
+           this.fetchComparePlans(1);
+          //  window.alert("hi");
+          }
+        if(prevProps.selectedSubSubTrend !== this.props.selectedSubSubTrend){
+          this.fetchComparePlans(2);
+          // window.alert("hi");
+       }
+
+
+    }
+
+
     if (prevProps.selectedTrend !== this.props.selectedTrend) {
       if (this.props.selectedTrend === "precinct") {
         this.fetchPrecinctBoundaries();
@@ -114,6 +130,71 @@ class StateInfo extends React.Component {
   //   }
   // };
 
+  fetchComparePlans = async (type) => {
+    try {
+      const { selectedState, selectedSubTrend, selectedSubSubTrend } = this.props;
+  
+      if (!selectedState) return;
+  
+      const stateId = selectedState === "Alabama" ? 1 : 6;
+      const trendId = type === 1 ? selectedSubTrend : selectedSubSubTrend;
+  
+      const statePlans = {
+        Alabama: [
+          { planId: "minIncomeDeviation1", planNum: 554 },
+          { planId: "minIncomeDeviation2", planNum: 3098 },
+          { planId: "maxIncomeDeviation1", planNum: 4627 },
+          { planId: "maxIncomeDeviation2", planNum: 4141 },
+          { planId: "heavilyRural1", planNum: 3123 },
+          { planId: "heavilyRural2", planNum: 3122 },
+          { planId: "heavilyRural3", planNum: 3121 },
+          { planId: "heavilyRural4", planNum: 3120 },
+          { planId: "enacted", planNum: 0 }
+        ],
+        California: [
+          { planId: "heavilyUrban1", planNum: 3104 },
+          { planId: "heavilyUrban2", planNum: 3746 },
+          { planId: "heavilyUrban3", planNum: 1900 },
+          { planId: "minIncomeDeviation1", planNum: 1202 },
+          { planId: "minIncomeDeviation2", planNum: 3138 },
+          { planId: "maxIncomeDeviation1", planNum: 1935 },
+          { planId: "maxIncomeDeviation2", planNum: 608 },
+          { planId: "heavilySuburban1", planNum: 2392 },
+          { planId: "heavilySuburban2", planNum: 1461 },
+          { planId: "heavilyRural1", planNum: 2185 },
+          { planId: "heavilyRural2", planNum: 1483 },
+          { planId: "heavilyRural3", planNum: 1472 },
+          { planId: "enacted", planNum: 0 }
+        ]
+      };
+  
+      const plans = statePlans[selectedState];
+      if (!plans) throw new Error("State plans not found.");
+  
+      const selectedPlan = plans.find(plan => plan.planId === trendId);
+      if (!selectedPlan) throw new Error("Trend ID does not match any plan.");
+  
+      const planNumber = selectedPlan.planNum;
+      const url = `${stateId}/districtPlans/num/${planNumber}/geojson`;
+  
+      const { data } = await axios.get(url);
+      console.log(data);
+      if (type === 1) {
+        this.setState({ comparePlan2: data });
+      } else if (type === 2) {
+        this.setState({ comparePlan: data });
+      }
+  
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.error("Error: The specified plan ID does not exist (404 Not Found).");
+      } else {
+        console.error("Error fetching GeoJSON data:", error);
+      }
+    }
+  };
+  
+  
   fetchPrecinctBoundaries = async () => {
     try {
       if (!this.props.selectedState) return;
@@ -314,12 +395,12 @@ class StateInfo extends React.Component {
           "District #": district.districtId,
           "Rep. Name": district.representative,
           "Rep. Party": district.party,
-"Avg. Household Income": `$${district.averageHouseholdIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          "Avg. Household Income": `$${district.averageHouseholdIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           "Poverty %": district.povertyPercentage.toFixed(2),
           "Vote Margin %": district.voteMarginPercentage.toFixed(2),
           "Urban %": district.urbanPercentage.toFixed(2),
-          "Rural %": district.ruralPercentage.toFixed(2),
-          "Suburban %": district.suburbanPercentage.toFixed(2)
+          "Suburban %": district.suburbanPercentage.toFixed(2),
+          "Rural %": district.ruralPercentage.toFixed(2),          
         })).sort((a, b) => a["District #"] - b["District #"]);
       
         this.setState({ cdSummaryData: graphData });
@@ -416,7 +497,8 @@ class StateInfo extends React.Component {
           {/* Left Side */}
           <div className="map-container">
             <MapComponent
-              geoJsonData={this.state.mapData}
+              geoJsonData={this.props.selectedTrend === "ComparePlans"? this.state.comparePlan2 : this.state.mapData}
+              typeRender={this.props.selectedTrend === "ComparePlans" ? true: false}
               onFeatureClick={this.props.setSelectedState}
               selectedTrend={this.props.selectedTrend}
               heatMapLegend={this.state.heatmapLegend}
@@ -433,7 +515,8 @@ class StateInfo extends React.Component {
                       <>
           <div className="map-container">
             <MapComponent
-              geoJsonData={this.state.compare}
+              typeRender={this.props.selectedTrend === "ComparePlans" ? true: false}
+              geoJsonData={this.state.comparePlan}
               onFeatureClick={this.props.setSelectedState}
               selectedTrend={this.props.selectedTrend}
               heatMapLegend={this.state.heatmapLegend}
@@ -461,6 +544,7 @@ class StateInfo extends React.Component {
                             selectedTrend={this.props.selectedTrend}
                             setSelectedTrend={this.props.setSelectedTrend}
                             cdSummaryData={this.state.cdSummaryData}
+                            selectedState={this.props.selectedState}
                           />
                         )}
                       </div>
