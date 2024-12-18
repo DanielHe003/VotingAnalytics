@@ -10,10 +10,10 @@ import java.util.*;
 public class EconomicHeatMapService {
 
     private static final List<Double> BIN_EDGES = Arrays.asList(0.0, 25000.0, 50000.0, 75000.0, 100000.0,
-            125000.0, 150000.0, 175000.0, 200000.0, Double.MAX_VALUE);
+            125000.0, Double.MAX_VALUE);
     private static final List<String> COLORS = Arrays.asList(
-            "#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6",
-            "#4292c6", "#2171b5", "#08519c", "#08306b");
+            "#edf8e9", "#c7e9c0", "#a1d99b", "#74c476", "#41ab5d",
+            "#238b45", "#005a32");
 
     public EconomicHeatDataDTO calculateEconomicData(Precinct precinct) {
         double medianIncome = precinct.getProperties().getMednInc21(); 

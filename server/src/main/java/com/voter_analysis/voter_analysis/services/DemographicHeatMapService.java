@@ -8,11 +8,10 @@ import java.util.*;
 
 @Service
 public class DemographicHeatMapService {
-    private static final List<Double> BIN_EDGES = Arrays.asList(0.0, 10.0, 20.0, 30.0, 40.0, 50.0,
-    60.0, 70.0, 80.0, 90.0, 100.0);
+    private static final List<Double> BIN_EDGES = Arrays.asList(0.0, 20.0, 40.0,
+    60.0, 80.0,100.0);
     private static final List<String> COLORS = Arrays.asList(
-        "#fff5eb", "#fee6ce", "#fdd0a2", "#fdae6b", "#fd8d3c",
-        "#f16913", "#d94801", "#a63603", "#7f2704", "#5a1f03");
+        "#feedde", "#fdbe85", "#fd8d3c", "#e6550d", "#a63603");
 
     public Map<String, DemographicHeatDataDTO> calculateDemographicData(Precinct precinct, List<String> demographicGroups) {
         Map<String, DemographicHeatDataDTO> demographicDataMap = new HashMap<>();

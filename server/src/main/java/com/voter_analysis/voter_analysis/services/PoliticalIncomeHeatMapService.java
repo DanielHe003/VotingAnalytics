@@ -10,18 +10,18 @@ import java.util.*;
 public class PoliticalIncomeHeatMapService {
 
     private static final List<Double> BIN_EDGES = Arrays.asList(0.0, 25000.0, 50000.0, 75000.0, 100000.0,
-            125000.0, 150000.0, 175000.0, 200000.0, Double.MAX_VALUE);
+            125000.0, 150000.0, 175000.0, Double.MAX_VALUE);
 
     // Blue to Red gradient colors based on party
     private static final List<String> DEM_COLORS = Arrays.asList(
-        "#d0e1f9", "#a6c8e1", "#7dafca", "#5596b2", "#2d7d9b",
-        "#046583", "#004d6c", "#003655", "#001f3e"
+        "#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6",
+        "#4292c6", "#2171b5","#08519c", "#08306b"
     );
 
     // Updated Republican colors (red shades)
     private static final List<String> REP_COLORS = Arrays.asList(
-        "#fde0dd", "#fab3b1", "#f78686", "#f4595a", "#f12d2f",
-        "#de1416", "#ad1012", "#7d0c0d", "#4c0809"
+        "#fff5f0", "#fee0d2", "#fcbba1", "#fc9272", "#fb6a4a",
+        "#ef3b2c", "#cb181d", "#a50f15", "#67000d"
     );
 
     public PoliticalIncomeHeatDataDTO calculatePoliticalIncomeData(Precinct precinct) {
