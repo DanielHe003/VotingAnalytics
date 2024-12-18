@@ -35,11 +35,11 @@ class ChartScatterComponent extends Component {
         fileSuffix = `POP_${subTrend ? subTrend : ""}.csv`;
       } else if (trend === "income") {
         fileSuffix = `income_${
-          subTrend ? subTrend.toLowerCase() : ""
+          subTrend ? subTrend : ""
         }.csv`.replace(/_$/, ""); 
       } else if (trend === "income-race") {
         fileSuffix = `POP_${
-          subTrend ? subTrend.toUpperCase() : "WHT"
+          subTrend ? subTrend : "WHT"
         }_income.csv`; // Combine race + income
       } else {
         console.error("Invalid trend selected");
@@ -223,7 +223,7 @@ class ChartScatterComponent extends Component {
             name: "Democratic Votes",
             marker: {
               color: "blue",
-              size: 6, // Smaller size for less boldness
+              size: 4, // Smaller size for less boldness
               opacity: 0.3, // Reduced opacity for a less bold appearance
             },
           },
@@ -235,7 +235,7 @@ class ChartScatterComponent extends Component {
             name: "Republican Votes",
             marker: {
               color: "red",
-              size: 6, // Smaller size for less boldness
+              size: 4, // Smaller size for less boldness
               opacity: 0.3, // Reduced opacity for a less bold appearance
             },
           },

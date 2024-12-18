@@ -75,7 +75,7 @@ class StateAnalysis extends React.Component {
 
   fetchSeawulf = async () => {
     try {
-      this.setState({ dataAvailable: false, chartData: null });
+      this.setState({ dataAvailable: false, MCMCData: null });
   
       const stateId =
         this.props.selectedState === "Alabama"
@@ -96,7 +96,7 @@ class StateAnalysis extends React.Component {
         console.log(urlMap[this.props.selectedSubTrend]);
         const {data} = await axios.get(urlMap[this.props.selectedSubTrend]);
         this.setState({
-          chartData: data,
+          MCMCData: data,
           dataAvailable: true,
         });
 
@@ -238,11 +238,11 @@ class StateAnalysis extends React.Component {
     }
 
     if (this.props.selectedTrend === "MCMC") {
-      console.log(this.state.chartData);
-      if (!this.state.chartData && !this.props.selectedSubTrend && !this.state.selectedSubSubTrend) {
+      console.log(this.state.MCMCData);
+      if (!this.state.chartData && !this.props.selectedTrend && !this.props.selectedSubTrend && !this.state.selectedSubSubTrend) {
         return <div>No data available</div>;
       }
-      console.log(this.state.chartData);
+      console.log(this.state.MCMCData);
 
 
 const title = `Generated and Enacted Plan Analysis for ${
@@ -260,7 +260,7 @@ const title = `Generated and Enacted Plan Analysis for ${
       <ChartContainer
           type="boxandwhisker"
           title={title}
-          data={this.state.chartData} 
+          data={this.state.MCMCData} 
           height={640}
           width={1700}
           label=""
