@@ -24,61 +24,33 @@ class ChartScatterComponent extends Component {
   }
 
   generateRegressionData = (data, color, label) => {
-    if (data.length < 2) {
-      return null; // Avoid issues with insufficient data points
+    if (data.length < 3) {
+      return null; 
     }
   
-    // Step 1: Prepare the data for fitting a quadratic function
-    const n = data.length;
-    let sumX = 0, sumX2 = 0, sumX3 = 0, sumX4 = 0;
-    let sumY = 0, sumXY = 0, sumX2Y = 0;
+    const formattedData = data.map(point => [point.x, point.y]);
   
-    // Calculate the sums needed for the system of equations
-    data.forEach((point) => {
-      const x = point.x;
-      const y = point.y;
+    const result = regression.polynomial(formattedData, { order: 2 });
   
-      sumX += x;
-      sumX2 += x * x;
-      sumX3 += x * x * x;
-      sumX4 += x * x * x * x;
+    const coefficients = result.equation; 
+    const [a, b, c] = coefficients;
   
-      sumY += y;
-      sumXY += x * y;
-      sumX2Y += x * x * y;
-    });
-  
-    // Step 2: Solve the system of equations to find a, b, and c
-    // The system of equations for the quadratic fit is:
-    // | n     sumX     sumX2 |   | c |   =   | sumY     |
-    // | sumX  sumX2    sumX3 |   | b |   =   | sumXY    |
-    // | sumX2 sumX3    sumX4 |   | a |   =   | sumX2Y   |
-    
-    // Using Cramer's rule to solve for a, b, c
-    const denom = n * (sumX2 * sumX4 - sumX3 * sumX3) - sumX * (sumX * sumX4 - sumX2 * sumX3) + sumX2 * (sumX * sumX3 - sumX2 * sumX2);
-  
-    const a = (sumY * (sumX2 * sumX4 - sumX3 * sumX3) - sumXY * (sumX * sumX4 - sumX2 * sumX3) + sumX2Y * (sumX * sumX3 - sumX2 * sumX2)) / denom;
-    
-    const b = (n * (sumXY * sumX4 - sumX2Y * sumX3) - sumX * (sumY * sumX4 - sumX2Y * sumX2) + sumX2 * (sumY * sumX3 - sumXY * sumX2)) / denom;
-    
-    const c = (n * (sumX2 * sumX2Y - sumXY * sumX3) - sumX * (sumX * sumX2Y - sumY * sumX3) + sumX2 * (sumX * sumXY - sumY * sumX2)) / denom;
-  
-    // Step 3: Generate smooth points using the quadratic equation y = a * x^2 + b * x + c
     const xMin = Math.min(...data.map((d) => d.x));
     const xMax = Math.max(...data.map((d) => d.x));
     const smoothPoints = [];
-    const step = (xMax - xMin) / 1; // More steps for smoothness
+    const step = (xMax - xMin) / 100;  
   
     for (let x = xMin; x <= xMax; x += step) {
-      const y = a * x * x + b * x + c;  // y = a * x^2 + b * x + c
+      const y = a * x * x + b * x + c;  // y = ax^2 + bx + c
       smoothPoints.push({ x, y });
     }
   
+    // Return the chart configuration object
     return {
       label: label,
       data: smoothPoints,
       borderColor: color,
-      backgroundColor: `${color}`,
+      backgroundColor: `${color}33`, // Add transparency to the background color
       borderWidth: 3,
       pointRadius: 0,
       showLine: true,
