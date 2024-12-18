@@ -12,9 +12,8 @@ class SummaryComponent extends Component {
       )
     }
     const { data, cdSummaryData, selectedTrend } = this.props;
-    console.log(cdSummaryData);
-
-
+    // window.alert(selectedTrend);
+    if(selectedTrend === "") this.props.setSelectedTrend("start");
     const charts = {
       voting: {
         type: "bar",
@@ -69,7 +68,24 @@ class SummaryComponent extends Component {
     
     };
 
-    const summaryBoxes = [
+    const ensembleData = {
+      title: "State Representatives",
+      type: "table",
+      labels: ["Ensemble", "# of Plans", "Population Equality Threshold"],
+      values: [
+        {
+          "Ensemble": 0,
+          "# of Plans": 250,
+          "Population Equality Threshold": 0.5
+        },
+        {
+          "Ensemble": 1,
+          "# of Plans": 5000,
+          "Population Equality Threshold": 0.5
+        }
+      ]
+    };
+        const summaryBoxes = [
       { title: "State Population", content: data.totPop.toLocaleString() || "N/A" },
       { title: "Median Income", content: `$${Number(data.mednInc21.toFixed(2) || 0).toLocaleString()}` },
       { title: "People in Poverty", content: `${data.poverty.toLocaleString() || "N/A"}` },
@@ -81,6 +97,25 @@ class SummaryComponent extends Component {
       <div className="state-summary container">
         <div className="mainContent">
           <div className="chartsColumn">
+            {selectedTrend === "start" && <>
+            
+            <ChartContainer 
+            title="Ensemble Summary"
+            height={300}
+            width={700}
+            titleRender={true}
+            type="table"
+            data={{
+              values: ensembleData.values,
+              labels: ensembleData.labels
+            }}
+            xAxisTitle={ensembleData.xAxisTitle}
+            yAxisTitle={ensembleData.yAxisTitle}
+
+            />
+            
+            </>
+            }
             {charts !== null && charts[selectedTrend] && (
               <ChartContainer
                 data={{
@@ -101,12 +136,11 @@ class SummaryComponent extends Component {
 
           
           <div className="summaryColumn">
-            <div className="summaryBoxes">
-              {summaryBoxes.map((box, index) => (
-                <SummaryBox key={index} title={box.title} content={box.content} />
-              ))}
+          <div className="summaryBoxes">
+            <SummaryBox key={1} title="Quick Facts" summaryBoxes={summaryBoxes} />
             </div>
           </div>
+
         </div>
       </div>
     );

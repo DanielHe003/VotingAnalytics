@@ -14,13 +14,20 @@ class StateAnalysis extends React.Component {
 
   componentDidUpdate(prevProps) {
     console.log(this.props.selectedTrend);
-    if (prevProps !== this.props) {
+    if(this.props.selectedTrend !== prevProps.selectedTrend){
       this.setState({ dataAvailable: false , chartData: null});
+      // window.alert("cleared");
+    }
+
+    if (prevProps !== this.props) {
+      
+
       console.log("Updated");
-      if (this.props.selectedSubSubTrend) {
+      // if (this.props.selectedSubSubTrend) {
         if (this.props.selectedSubTrend) {
+
           if (this.props.selectedTrend === "Gingles") {
-            // window.alert("In here");
+            // //window.alert("In here");
             this.fetchGingles();
             // this.renderChart();
           } else if (this.props.selectedTrend === "EI") {
@@ -32,7 +39,7 @@ class StateAnalysis extends React.Component {
             console.log("in mcmc");
             this.fetchSeawulf();
           }
-        }
+        // }
       }
     }
   }
@@ -40,7 +47,7 @@ class StateAnalysis extends React.Component {
 
   fetchGingles = async () => {
     try {
-      if (!this.props.selectedSubSubTrend || !this.props.selectedSubTrend)
+      if (!this.props.selectedSubTrend)
         return;
 
       this.setState({ dataAvailable: false , chartData: null});
@@ -109,6 +116,7 @@ class StateAnalysis extends React.Component {
   fetchEIData = async () => {
     try {
       this.setState({ dataAvailable: false, chartData: null });
+      //window.alert("in");
   
       const stateId =
         this.props.selectedState === "Alabama"
@@ -122,17 +130,17 @@ class StateAnalysis extends React.Component {
       
       const urlMap = {
         racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
-        income:`${stateId}/ei-analysis/economic?&economicGroup=${subsubtrend}&candidateName=`,
-        region: `${stateId}/ei-analysis/region?&regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
+        economic:`${stateId}/ei-analysis/economic?economicGroup=${subsubtrend}&candidateName=`,
+        region: `${stateId}/ei-analysis/region?regionGroup=${this.props.selectedSubTrend}&candidateName=`,
       }; 
   
-      console.log(`${stateId}/ei-analysis/economic?&economicGroup=${subsubtrend}&candidateName=`);
-  
+      //window.alert("till here");
+      console.log(this.props.selectedSubTrend);
       if (urlMap[this.props.selectedSubTrend]) {
         console.log(urlMap[this.props.selectedSubTrend]);
         const bidenUrl = `${urlMap[this.props.selectedSubTrend]}Biden`;
         const trumpUrl = `${urlMap[this.props.selectedSubTrend]}Trump`;
-  
+        console.log("into here");
         const [bidenData, trumpData] = await Promise.all([
           axios.get(bidenUrl),
           axios.get(trumpUrl),
@@ -144,7 +152,7 @@ class StateAnalysis extends React.Component {
         });
         console.log("Biden Data:", bidenData.data);
         console.log("Trump Data:", trumpData.data);
-        // window.alert("Payload recieved!")
+        //window.alert("Payload recieved!")
       }
     } catch (error) {
       console.error("Error fetching EI analysis:", error);

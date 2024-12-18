@@ -23,7 +23,7 @@ class Navbar extends React.Component {
         <nav className="navbar navbar-expand-lg" style={{ borderBottom: '1px solid #000' }}>
           <div className="container-fluid d-flex flex-column align-items-center">
             <div className="navbar-brand d-flex align-items-center">
-              <img src={LogoIcon} alt="Logo" style={{ height: '80px' }} />
+              <img src={LogoIcon} alt="Logo" style={{ height: '70px' }} />
             </div>
 
             <button

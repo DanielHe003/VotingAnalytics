@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import ChartContainer from '../common/ChartContainer';
 import './CDSummary.css';
-import SummaryBox from './SummaryBox';
+import SummaryBoxComponent from './SummaryBoxComponent';
 
 class CDSummary extends Component {
   constructor(props) {
@@ -81,7 +80,7 @@ class CDSummary extends Component {
         <hr className="divider" />
         <div className="summaryBoxes">
           {summaryBoxes.map((box, index) => (
-            <SummaryBox key={index} title={box.title} content={box.content} />
+            <SummaryBoxComponent key={index} title={box.title} content={box.content} />
           ))}
         </div>
 
@@ -89,7 +88,7 @@ class CDSummary extends Component {
         <hr className="divider" />
         <div className="summaryBoxes">
           {summaryBoxes1.map((box, index) => (
-            <SummaryBox key={index} title={box.title} content={box.content} />
+            <SummaryBoxComponent key={index} title={box.title} content={box.content} />
           ))}
         </div>
 
@@ -97,11 +96,11 @@ class CDSummary extends Component {
         <hr className="divider" />
         <div className="summaryBoxes">
           {summaryBoxes2.map((box, index) => (
-            <SummaryBox key={index} title={box.title} content={box.content} />
+            <SummaryBoxComponent key={index} title={box.title} content={box.content} />
           ))}
           <br />
           {summaryBoxes3.map((box, index) => (
-            <SummaryBox key={index} title={box.title} content={box.content} />
+            <SummaryBoxComponent key={index} title={box.title} content={box.content} />
           ))}
         </div>
       </div>

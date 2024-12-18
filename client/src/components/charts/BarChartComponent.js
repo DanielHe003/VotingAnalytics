@@ -6,9 +6,18 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const BarChartComponent = ({ categoryData, height, width, xAxisTitle, yAxisTitle, label }) => {
   const colors = [
-    '#1ABC9C', '#E67E22', '#34495E', '#16A085', '#5D6D7E',
-    '#2E86C1', '#E74C3C', '#27AE60', '#F1C40F', '#9B59B6', 
-  ];
+    '#1F77B4', // Blue (good for neutrality)
+    '#FF7F0E', // Orange (bright but balanced)
+    '#2CA02C', // Green (pleasant, good contrast)
+    '#D62728', // Red (distinguishable, attention-grabbing)
+    '#9467BD', // Purple (neutral and calming)
+    '#8C564B', // Brown (earthy and neutral)
+    '#E377C2', // Pink (adds a soft variation)
+    '#7F7F7F', // Gray (good for balance)
+    '#BCBD22', // Olive (earthy yellow-green)
+    '#17BECF'  // Cyan (adds cool tone balance)
+];
+
  
   const data = {
     labels: categoryData.labels,
@@ -25,7 +34,11 @@ const BarChartComponent = ({ categoryData, height, width, xAxisTitle, yAxisTitle
 
   const options = {
     responsive: true,
-    plugins: {},
+    plugins: {
+      legend: {
+        display: false, // Removes the legend
+      },
+    },
     scales: {
       x: {
         title: {

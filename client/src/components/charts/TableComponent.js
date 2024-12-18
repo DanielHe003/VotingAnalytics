@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
 const TableComponent = ({ data, selectedDistrict, width, height }) => {
+
+  console.log(data);
   
   // Pagination logic
   const itemsPerPage = 7; // Display 7 rows per page

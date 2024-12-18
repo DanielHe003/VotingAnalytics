@@ -24,7 +24,7 @@ class StateInfo extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    // if(prevProps.selectedTrend === "precinct" && this.props.selectedTrend !== "precinct") this.fetchMapData(this.props.selectedState);
+    if(prevProps.selectedTrend === "precinct" && this.props.selectedTrend !== "precinct") this.fetchMapData(this.props.selectedState);
 
     if (prevProps.selectedState !== this.props.selectedState) {
       this.fetchMapData(this.props.selectedState);
@@ -69,60 +69,88 @@ class StateInfo extends React.Component {
   togglePopup = () =>
     this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
 
+  // fetchPrecinctBoundaries = async () => {
+  //   try {
+  //     if (!this.props.selectedState) return;
+  //     const stateId =
+  //       this.props.selectedState === "Alabama"
+  //         ? 1
+  //         : this.props.selectedState === "California"
+  //         ? 6
+  //         : null;
+  //     const fetchDataForState = async (stateId, page) =>
+  //       ApiService.fetchData(
+  //         `states/${stateId}/precincts/geometries?page=${page}&size=${6700}`
+  //       );
+     
+  //       if (stateId === 6) {
+  //         const mergedData = await ApiService.fetchData(
+  //           `states/${stateId}/precincts/geometries?page=0&size=20100`
+  //         );
+  //         console.log(mergedData);
+  //         const mergedGeoJSON = {
+  //           type: "FeatureCollection",
+  //           features: [mergedData["featureCollection"]],
+  //         };
+  //         this.setState({
+  //           mapData: mergedGeoJSON,
+  //           originalPrecinctData: mergedGeoJSON, 
+  //         });
+
+  //       } else {
+  //         const data = await fetchDataForState(stateId, 0);
+  //         const mergedGeoJSON = {
+  //           type: "FeatureCollection",
+  //           features: [data["featureCollection"]],
+  //         };
+  //         this.setState({
+  //           mapData: mergedGeoJSON,
+  //           originalPrecinctData: mergedGeoJSON, 
+  //         });
+  //       }
+  //   } catch (error) {
+  //     console.error("Error fetching precinct boundaries:", error);
+  //   }
+  // };
+
   fetchPrecinctBoundaries = async () => {
     try {
       if (!this.props.selectedState) return;
-      const stateId =
-        this.props.selectedState === "Alabama"
-          ? 1
-          : this.props.selectedState === "California"
-          ? 6
-          : null;
-      const fetchDataForState = async (stateId, page) =>
-        ApiService.fetchData(
-          `states/${stateId}/precincts/geometries?page=${page}&size=${6700}`
-        );
-     
-        if (stateId === 6) {
-          const mergedData = await ApiService.fetchData(
-            `states/${stateId}/precincts/geometries?page=0&size=20100`
-          );
-          console.log(mergedData);
-          const mergedGeoJSON = {
-            type: "FeatureCollection",
-            features: [mergedData["featureCollection"]],
-          };
-          this.setState({
-            mapData: mergedGeoJSON,
-            originalPrecinctData: mergedGeoJSON, 
-          });
-
-        } else {
-          const data = await fetchDataForState(stateId, 0);
-          const mergedGeoJSON = {
-            type: "FeatureCollection",
-            features: [data["featureCollection"]],
-          };
-          this.setState({
-            mapData: mergedGeoJSON,
-            originalPrecinctData: mergedGeoJSON, 
-          });
-        }
-    } catch (error) {
-      console.error("Error fetching precinct boundaries:", error);
+  
+      const stateName = this.props.selectedState;
+  
+      let geoJSONData;
+  
+      switch (stateName) {
+        case 'Alabama':
+          const alabamaResponse = await fetch('/Alabama_precinct_merged.geojson');
+          geoJSONData = await alabamaResponse.json();
+          break;
+        case 'California':
+          const californiaResponse = await fetch('/California_precinct_merged.geojson');
+          geoJSONData = await californiaResponse.json();
+          break;
+        default:
+          console.error(`No GeoJSON available for state: ${stateName}`);
+          return;
+      }
+  
+      this.setState({
+        mapData: geoJSONData,
+      });
+    console.log('GeoJSON data loaded successfully.');
+      
+  } catch (error) {
+      console.error("Error loading precinct boundaries:", error);
     }
   };
-
+  
+  
+  
   fetchPrecinctHeatMap = async () => {
     try {
-      //window.alert("Fetching");
       if (!this.props.selectedState || !this.props.selectedSubTrend) return;
-      const stateId =
-        this.props.selectedState === "Alabama"
-          ? 1
-          : this.props.selectedState === "California"
-          ? 6
-          : null;
+      const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
 
       const urlMap = {
         demographic: `states/${stateId}/heatmap/demographic/${this.props.selectedSubSubTrend}`,
@@ -133,27 +161,21 @@ class StateInfo extends React.Component {
       };
 
       if (urlMap[this.props.selectedSubTrend]) {
-
         if(this.props.selectedSubSubTrend === " "){
           return;
         }
-        // console.log(`localhost:8080 urlMap[this.props.selectedSubTrend]`);
 
         const url = `${urlMap[this.props.selectedSubTrend]}`;
         const { data } = await axios.get(url);
-        console.log(data);
-
         this.setState({
           mapData: {
             type: "FeatureCollection",
-            features: this.state.originalPrecinctData.features[0].features.map(
+            features: this.state.mapData.features.map(
               (feature) => {
-                // console.log(feature.properties.precinctKey);
                 const matchingData = data.data.find(
                   (entry) =>
                     entry.precinctKey === feature.properties.precinctKey
                 );
-                // console.log(matchingData);
                 return {
                   ...feature,
                   properties: {
@@ -178,24 +200,19 @@ class StateInfo extends React.Component {
     try {
       const state = this.props.selectedState;
       if (state) {
-        const stateId =
-          this.props.selectedState === "Alabama"
-            ? 1
-            : this.props.selectedState === "California"
-            ? 6
-            : null;
+        const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
         const data = await ApiService.fetchMapData(stateId);
-        console.log(data);
+
         const mapData = {
           type: "FeatureCollection",
           features: [data],
         };
+
         this.setState({ mapData });
       } else {
+
         const californiaData = await ApiService.fetchData("states/California/map");
         const alabamaData = await ApiService.fetchData("states/Alabama/map");
-        console.log(californiaData);
-        console.log(alabamaData);
         this.setState({
           mapData: {
             type: "FeatureCollection",
@@ -210,45 +227,33 @@ class StateInfo extends React.Component {
 
   fetchSummaryData = async () => {
     const state = this.props.selectedState;
-
     if(!state){
       return;
     }
     
     if (state && this.state.summaryData[state]) {
-        console.log("Summary data already exists for state:", state);
         return;
     }
 
     try {
-        // Fetching state summary data
-        const data = await ApiService.fetchStateSummary(state);
-        console.log(data);
 
-        // Update summaryData state
+      let summaryData = await ApiService.fetchStateSummary(state);
         this.setState((prevState) => ({
-            summaryData: { ...prevState.summaryData, [state]: data },
+            summaryData: { ...prevState.summaryData, [state]: summaryData },
         }));
 
-        // Fetching district representation data
         const stateId = this.props.selectedState === "Alabama" ? 1 : 6;
-        const response = await axios.get(`/states/${stateId}/districtRepresentation`);
-        const cdData = response.data;
+        const {data} = await axios.get(`/states/${stateId}/districtRepresentation`);
 
-        const graphData = cdData.map((district) => ({
+        const graphData = data.map((district) => ({
             "District #": district.districtId,
             "Representative Name": district.representative,
             "Representative Party": district.party,
             "Racial/Ethnic Group": district.racialEthnicGroup,
-        }));
-        const sortedGraphData = graphData.sort((a, b) => a["District #"] - b["District #"]);
-
-        this.setState({ cdSummaryData: sortedGraphData }, () => {
-            console.log("cdSummaryData updated:", this.state.cdSummaryData);
-        });
+        })).sort((a, b) => a["District #"] - b["District #"]);
+        this.setState({ cdSummaryData: graphData });
     } catch (error) {
         console.error("Error fetching summary data:", error);
-        // //window.alert("Error fetching summary data");
     }
 };
 
@@ -359,7 +364,7 @@ class StateInfo extends React.Component {
                       <>
           <div className="map-container">
             <MapComponent
-              geoJsonData={this.state.mapData}
+              geoJsonData={this.state.compare}
               onFeatureClick={this.props.setSelectedState}
               selectedTrend={this.props.selectedTrend}
               heatMapLegend={this.state.heatmapLegend}
@@ -386,6 +391,7 @@ class StateInfo extends React.Component {
                               this.state.summaryData[this.props.selectedState]
                             }
                             selectedTrend={this.props.selectedTrend}
+                            setSelectedTrend={this.props.setSelectedTrend}
                             cdSummaryData={this.state.cdSummaryData}
                           />
                         )}

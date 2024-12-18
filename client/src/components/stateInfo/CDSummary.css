@@ -19,7 +19,7 @@
 .summary-box {
   border: 2px solid #005ba6;
   border-radius: 10px;
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; */
   display: flex;
   flex-direction: column;
   text-align: left;
@@ -31,7 +31,7 @@
 
 .summary-box.special-box {
   border: 3px solid #ff6600;
-  background-color: #ffe6cc;
+  /* background-color: #ffe6cc; */
   font-weight: bold;
 }
 

@@ -23,38 +23,45 @@ class ChartScatterComponent extends Component {
     }
   }
 
-  generateRegressionData = (data, color, label) => {
-    let bestR2 = -Infinity;
-    let bestFitData;
-    let bestPredictor;
-  
-    for (let order = 1; order <= 3; order++) {
-      const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order });
-      const fitData = data.map((d) => ({
-        x: d.x,
-        y: polynomial.predict(d.x)[1],
-      }));
-  
-      const r2 = polynomial.r2;
-      if (r2 > bestR2) {
-        bestR2 = r2;
-        bestFitData = fitData;
-        bestPredictor = polynomial;
-      }
+generateRegressionData = (data, color, label) => {
+  if (data.length < 2) {
+    return null; // Avoid issues with insufficient data points
+  }
+
+  let bestR2 = -Infinity;
+  let bestPredictor;
+
+  for (let order = 1; order <= 3; order++) {
+    const polynomial = regression.polynomial(data.map((d) => [d.x, d.y]), { order });
+    const r2 = polynomial.r2;
+    if (r2 > bestR2) {
+      bestR2 = r2;
+      bestPredictor = polynomial;
     }
-  
-    console.log(`Best R-squared for ${label}: ${bestR2} (order ${bestPredictor.order})`);
-  
-    return {
-      label: label,
-      data: bestFitData,
-      borderColor: color,
-      backgroundColor: `${color}`,
-      borderWidth: 3,
-      pointRadius: 0,
-      showLine: true,
-    };
+  }
+
+  // Generate smooth points
+  const xMin = Math.min(...data.map((d) => d.x));
+  const xMax = Math.max(...data.map((d) => d.x));
+  const smoothPoints = [];
+  const step = (xMax - xMin) / 100; // 100 steps for smoothness
+
+  for (let x = xMin; x <= xMax; x += step) {
+    const y = bestPredictor.predict(x)[1];
+    smoothPoints.push({ x, y });
+  }
+
+  return {
+    label: label,
+    data: smoothPoints,
+    borderColor: color,
+    backgroundColor: `${color}`,
+    borderWidth: 3,
+    pointRadius: 0,
+    showLine: true,
   };
+};
+
 
   generateDataForRegression = (data) => {
     if (!data || !Array.isArray(data)) {

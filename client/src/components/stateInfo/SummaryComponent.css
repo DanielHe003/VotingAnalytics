@@ -35,7 +35,13 @@
   .summaryBoxes {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-start; /* Keeps other content aligned left */
+  }
+  
+  .summaryBoxes h3 {
+    align-self: center; 
+    margin: 0.3 auto; 
+    text-align: left;
   }
   
   .summary-box {

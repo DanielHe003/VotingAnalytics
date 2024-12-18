@@ -19,7 +19,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 20px;
   box-sizing: border-box;
-  height: 73vh;
+  height: 72vh;
   margin-right: 5px;
 }
 
@@ -30,8 +30,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 0px 20px;
   box-sizing: border-box;
-  max-height: 73vh;
-  min-height: 73vh;
+  max-height: 72vh;
+  min-height: 72vh;
   display: block;
   position: relative;
   text-align: center;

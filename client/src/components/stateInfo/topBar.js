@@ -65,9 +65,10 @@ class TopBar extends React.Component {
     {
       name: "Select Trend",
       options: [
+        {id: "start", name: "Ensemble Summary"},
         { id: "voting", name: "Voting Distribution" },
         { id: "race", name: "Population by Race" },
-        { id: "region", name: "Population (Region)" },
+        { id: "region", name: "Population by Region" },
         { id: "income", name: "Income Distribution" },
         { id: "rep", name: "State Representatives" },
         { id: "precinct", name: "Precinct Analysis" },
