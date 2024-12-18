@@ -115,7 +115,7 @@ class SummaryComponent extends Component {
       { title: "Political Lean", content: `${this.props.selectedState === "Alabama" ? "Republican" : "Democratic" || "N/A"}` },
       { title: "# of Districts", content: `${ this.props.selectedState === "Alabama" ? "7" : "53" || "N/A"}` },
       { title: "Rep. | Dem. ", content: `${ this.props.selectedState === "Alabama" ? "6 | 1 " : "11 | 42" || "N/A"}` },
-      { title: "# of Precincts", content: `${ this.props.selectedState === "Alabama" ? "1971" : "20051" || "N/A"}` }
+      { title: "# of Precincts", content: `${ this.props.selectedState === "Alabama" ? "1,971" : "20,051" || "N/A"}` }
     ];
 
     return (

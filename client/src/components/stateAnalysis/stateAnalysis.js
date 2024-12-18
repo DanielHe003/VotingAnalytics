@@ -110,9 +110,14 @@ class StateAnalysis extends React.Component {
 
   fetchEIData = async () => {
     try {
-      this.setState({ dataAvailable: false, chartData: null });
+      this.setState({ dataAvailable: false, EIData: null });
       //window.alert("in");
-  
+      if(this.props.selectedSubTrend !== "economic"){
+        if(this.props.selectedSubSubTrend === "") {
+          console.log('asdf');
+          return;
+        }
+      }
       const stateId =
         this.props.selectedState === "Alabama"
           ? 1
@@ -122,11 +127,11 @@ class StateAnalysis extends React.Component {
       
       const subsubtrend = this.props.selectedSubSubTrend.replace(/middle/gi, 'mid');
       console.log(subsubtrend);
-      
+      console.log(this.props.selectedSubSubTrend)
       const urlMap = {
         racial: `${stateId}/ei-analysis/racial?racialGroup=${this.props.selectedSubSubTrend}&candidateName=`,
         economic:`${stateId}/ei-analysis/economic?economicGroup=${subsubtrend}&candidateName=`,
-        region: `${stateId}/ei-analysis/region?regionGroup=${this.props.selectedSubTrend}&candidateName=`,
+        region: `${stateId}/ei-analysis/region?regionGroup=${this.props.selectedSubSubTrend}&candidateName=`,
       }; 
   
       //window.alert("till here");
@@ -142,11 +147,11 @@ class StateAnalysis extends React.Component {
         ]);
   
         this.setState({
-          chartData: { bidenData: bidenData.data, trumpData: trumpData.data },
+          EIData: { bidenData: bidenData.data, trumpData: trumpData.data },
           dataAvailable: true,
         });
-        // console.log("Biden Data:", bidenData.data);
-        // console.log("Trump Data:", trumpData.data);
+        console.log("Biden Data:", bidenData.data);
+        console.log("Trump Data:", trumpData.data);
         //window.alert("Payload recieved!")
       }
     } catch (error) {
@@ -221,15 +226,15 @@ class StateAnalysis extends React.Component {
     
 
     if (this.props.selectedTrend === "EI") {
-      if (!this.state.chartData.bidenData || !this.state.chartData.trumpData) {
+      if (!this.state.EIData.bidenData || !this.state.EIData.trumpData) {
         return <div>No data available</div>;
       }
-      console.log(this.state.chartData);
+      console.log(this.state.EIData);
       return (
 
       <ChartContainer
           type="density"
-          data={this.state.chartData} 
+          data={this.state.EIData} 
           height={200}
           width={900}
           label=""
