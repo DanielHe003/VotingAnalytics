@@ -93,18 +93,7 @@ class SummaryComponent extends Component {
       title: "State Representatives",
       type: "table",
       labels: ["Ensemble", "# of Plans", "Population Equality Threshold"],
-      values: [
-        {
-          "Ensemble": 0,
-          "# of Plans": 250,
-          "Population Equality Threshold": 0.5
-        },
-        {
-          "Ensemble": 1,
-          "# of Plans": 5000,
-          "Population Equality Threshold": 0.5
-        }
-      ]
+      values: [],
     };
         const summaryBoxes = [
       { title: "State Population", content: data.totPop.toLocaleString() || "N/A" },
@@ -113,9 +102,10 @@ class SummaryComponent extends Component {
       { title: "Poverty (%)", content: `${data.povertyPct.toFixed(2) || "N/A"}%` },
       { title: "Population Density", content: `${data.density.toFixed(2) || "N/A"}%` },
       { title: "Political Lean", content: `${this.props.selectedState === "Alabama" ? "Republican" : "Democratic" || "N/A"}` },
-      { title: "# of Districts", content: `${ this.props.selectedState === "Alabama" ? "7" : "53" || "N/A"}` },
-      { title: "Rep. | Dem. ", content: `${ this.props.selectedState === "Alabama" ? "6 | 1 " : "11 | 42" || "N/A"}` },
-      { title: "# of Precincts", content: `${ this.props.selectedState === "Alabama" ? "1,971" : "20,051" || "N/A"}` }
+      { title: "Districts: Rep. | Dem.", 
+        content: `${ this.props.selectedState === "Alabama" ? "7 | 6 | 1" : "53 | 11 | 42" || "N/A"}` 
+    },
+            { title: "# of Precincts", content: `${ this.props.selectedState === "Alabama" ? "1,971" : "20,051" || "N/A"}` }
     ];
 
     return (
@@ -146,28 +136,13 @@ class SummaryComponent extends Component {
           {this.props.selectedTrend === "start" && (
   <>
     {/* Summary Boxes on their own line */}
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px' }}>
       {summaryBoxes.map((box, index) => (
         <SummaryBox key={index} title={box.title} content={box.content} />
       ))}
+      {this.props.selectedState === "Alabama" ? <DataTable2 /> : <DataTable />} 
     </div>
 
-    {/* Chart Container on a new line */}
-    <div style={{ marginTop: '20px' }}>
-      <ChartContainer
-        title="Ensemble Summary"
-        height={300}
-        width={1000}
-        titleRender={true}
-        type="table"
-        data={{
-          values: ensembleData.values,
-          labels: ensembleData.labels
-        }}
-        xAxisTitle={ensembleData.xAxisTitle}
-        yAxisTitle={ensembleData.yAxisTitle}
-      />
-    </div>
   </>
 )}
 
@@ -180,3 +155,110 @@ class SummaryComponent extends Component {
 }
 
 export default SummaryComponent;
+
+// CSS for the DataTable component
+const tableStyle = {
+  width: '100%',
+  margin: '10px 20px',
+  fontSize: '16px',
+  textAlign: 'left',
+  padding: '20px',
+  borderCollapse: 'collapse',
+};
+
+const headerStyle = {
+  backgroundColor: '#005BA6',
+  color: 'white',
+  fontWeight: 'bold',
+  padding: '10px',
+};
+
+const rowStyle = {
+  padding: '5px',
+  borderBottom: '1px solid #ddd',
+};
+
+const alternateRowStyle = {
+  backgroundColor: '#f2f2f2',
+};
+
+const DataTable = () => {
+  const data = [
+    { ensemble: 0, plans: 250, threshold: 0.5,  values: [1, 5,  11,   63,   87, 54, 27, 2, 0] },
+    { ensemble: 1, plans: 5000, threshold: 0.5, values: [5, 53, 341, 1109, 1746, 1261, 424, 58, 3]},
+  ];
+
+  return (
+    <div>
+        <h2>Ensemble Summary</h2>
+        <h6>*District Counts are reprsented by (Democratic| Republican)**</h6>
+    <table style={tableStyle}>
+      <thead>
+        <tr>
+          <th style={headerStyle}>Ensemble</th>
+          <th style={headerStyle}># of Plans</th>
+          <th style={headerStyle}>Pop. Equality Threshold</th>
+          <th style={headerStyle}>43/10</th>
+          <th style={headerStyle}>44/9</th>
+          <th style={headerStyle}>45/8</th>
+          <th style={headerStyle}>46/7</th>
+          <th style={headerStyle}>47/6</th>
+          <th style={headerStyle}>48/5</th>
+          <th style={headerStyle}>49/4</th>
+          <th style={headerStyle}>50/3</th>
+          <th style={headerStyle}>51/2</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((item, index) => (
+          <tr key={item.ensemble} style={index % 2 === 0 ? alternateRowStyle : {}}>
+            <td style={rowStyle}>{item.ensemble}</td>
+            <td style={rowStyle}>{item.plans}</td>
+            <td style={rowStyle}>{item.threshold}</td>
+            {item.values.map((value, idx) => (
+              <td key={idx} style={rowStyle}>{value}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+  );
+};
+
+
+const DataTable2 = () => {
+  const data = [
+    { ensemble: 0, plans: 250, threshold: 0.5,  values: [250] },
+    { ensemble: 1, plans: 5000, threshold: 0.5, values: [5000]},
+  ];
+
+  return (
+    <div>
+    <h2>Ensemble Summary</h2>
+    <h6>*District Counts are reprsented by (Democratic| Republican)**</h6>
+    <table style={tableStyle}>
+      <thead>
+        <tr>
+          <th style={headerStyle}>Ensemble</th>
+          <th style={headerStyle}># of Plans</th>
+          <th style={headerStyle}>Pop. Equality Threshold</th>
+          <th style={headerStyle}>0/7</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((item, index) => (
+          <tr key={item.ensemble} style={index % 2 === 0 ? alternateRowStyle : {}}>
+            <td style={rowStyle}>{item.ensemble}</td>
+            <td style={rowStyle}>{item.plans}</td>
+            <td style={rowStyle}>{item.threshold}</td>
+            {item.values.map((value, idx) => (
+              <td key={idx} style={rowStyle}>{value}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+  );
+};

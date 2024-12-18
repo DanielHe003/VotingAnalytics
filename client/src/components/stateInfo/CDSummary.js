@@ -11,8 +11,10 @@ class CDSummary extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.data !== this.props.data) {
-      this.setState({ dataAvailable: !!this.props.data });
+    if (prevProps.data !== this.props.data || prevProps.data1 !== this.props.data1) {
+      this.setState({
+        dataAvailable: !!this.props.data && !!this.props.data1,
+      });
     }
   }
 
@@ -32,12 +34,12 @@ class CDSummary extends Component {
         >
           <div
             style={{
-              border: "4px solid #f3f3f3" /* Light gray background */,
-              borderTop: "4px solid #3498db" /* Blue color for the spinner */,
+              border: "4px solid #f3f3f3", /* Light gray background */
+              borderTop: "4px solid #3498db", /* Blue color for the spinner */
               borderRadius: "50%",
               width: "50px",
               height: "50px",
-              animation: "spin 2s linear infinite" /* Slower spinner animation */,
+              animation: "spin 2s linear infinite", /* Slower spinner animation */
             }}
           ></div>
         </div>
@@ -45,46 +47,39 @@ class CDSummary extends Component {
     }
 
     if (!this.props.data) {
-      console.log(this.props.data);
       return <div className="noData">No data available for the selected district.</div>;
     }
 
-    const { data } = this.props;
+    const { data, data1 } = this.props;
 
-    const summaryBoxes = [
-      { title: "State", content: data.stateId === 1 ? "Alabama" : "California" || "N/A" },
-      { title: "District ID", content: data.districtId || "N/A" },
-    ];
+    console.log(data1);
 
+    // window.alert(data1["pctRep"]);
     const summaryBoxes1 = [
-      { title: "Representative", content: data.representative || "N/A" },
-      { title: "Representative Party", content: data.party || "N/A" },
-      { title: "Racial/Ethnic Group", content: data.racialEthnicGroup || "N/A" },
+      { title: "District ID", content: data.districtId || "N/A" },
+      { title: "Vote Margin (%)", content: `${data.voteMarginPercentage.toFixed(2) || 0}%` },
+      { title: "Republican %", content: data1.pctRep || "N/A" },
+      { title: "Democratic %", content: data1.pctDem || "N/A" },
     ];
 
     const summaryBoxes2 = [
-      { title: "Average Income", content: `$${Number(data.averageHouseholdIncome.toFixed(2) || 0).toLocaleString()}` },
-      { title: "Poverty (%)", content: `${data.povertyPercentage.toFixed(2) || 0}%` },
-      { title: "Vote Margin (%)", content: `${data.voteMarginPercentage.toFixed(2) || 0}%` },
+      { title: "White", content: data1.whitePop || "N/A" },
+      { title: "Black", content: data1.blackPop || "N/A" },
+      { title: "Hispanic", content: data1.hispanicPop || "N/A" },
+      { title: "Asian", content: data1.asianPop || "N/A" },
     ];
 
     const summaryBoxes3 = [
-      { title: "Rural (%)", content: `${data.ruralPercentage.toFixed(2) || 0}%` },
-      { title: "Suburban (%)", content: `${data.suburbanPercentage.toFixed(2) || 0}%` },
-      { title: "Urban (%)", content: `${data.urbanPercentage.toFixed(2) || 0}%` },
+      { title: "Under $25K", content: data1.incomeDistribution['Under $25K'] || "N/A" },
+      { title: "$25K-$50K", content: data1.incomeDistribution['$25K-$50K'] || "N/A" },
+      { title: "$50K-$100K", content: data1.incomeDistribution['$50K-$100K'] || "N/A" },
+      { title: "$100K-$200K", content: data1.incomeDistribution['$100K-$200K'] || "N/A" },
+      { title: "$200K+", content: data1.incomeDistribution['$200K+'] || "N/A" },
     ];
 
     return (
       <div className="summaryContainer">
-        <h3>General Information</h3>
-        <hr className="divider" />
-        <div className="summaryBoxes">
-          {summaryBoxes.map((box, index) => (
-            <SummaryBoxComponent key={index} title={box.title} content={box.content} />
-          ))}
-        </div>
-
-        <h3>Representative Details</h3>
+        <h3>Quick Facts</h3>
         <hr className="divider" />
         <div className="summaryBoxes">
           {summaryBoxes1.map((box, index) => (
@@ -99,10 +94,14 @@ class CDSummary extends Component {
             <SummaryBoxComponent key={index} title={box.title} content={box.content} />
           ))}
           <br />
-          {summaryBoxes3.map((box, index) => (
-            <SummaryBoxComponent key={index} title={box.title} content={box.content} />
-          ))}
-        </div>
+          </div>
+          <h3>Income Distribution</h3>
+          <hr className="divider" />
+          <div className="summaryBoxes">
+            {summaryBoxes3.map((box, index) => (
+              <SummaryBoxComponent key={index} title={box.title} content={box.content} />
+            ))}
+          </div>
       </div>
     );
   }

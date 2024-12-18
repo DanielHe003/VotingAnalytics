@@ -325,7 +325,7 @@ class ChartScatterComponent extends Component {
             },
             yaxis: {
               title: this.props.data.yaxisLabel,
-              range: [0, null], // Minimum is 0, maximum is auto-determined
+              range: [0, 100], // Minimum is 0, maximum is auto-determined
             },
             
             showlegend: true,

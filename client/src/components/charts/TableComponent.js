@@ -93,12 +93,18 @@ const TableComponent = ({ data, minCount, selectedDistrict, width, height, hover
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
-                hoverEffect(index, true); // Pass index for hover effect
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget.style.backgroundColor = index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor);
-                hoverEffect(index, false);
-              }}
+                                if (hoverEffect) {
+
+                    hoverEffect(index, true); // Pass index for hover effect
+                }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor;
+              if (hoverEffect) {
+                    hoverEffect(index, false);
+                }
+            }}
+            
             >
               {data.labels.map((label, index) => (
                 <td key={index} style={styles.cell}>{entry[label]}</td>

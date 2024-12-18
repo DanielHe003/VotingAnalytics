@@ -8,22 +8,18 @@ import {
   PointElement,
 } from "chart.js";
 
-// Registering Chart.js components
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
 
-// Predefined color set for different datasets
 const DEFAULT_COLORS = [
   'rgb(13, 110, 253)', 'rgb(214, 51, 132)',
   'rgb(220, 53, 69)', 'rgb(253, 126, 20)', 'rgb(255, 193, 7)', 'rgb(25, 135, 84)',
   'rgb(32, 201, 151)', 'rgb(13, 202, 240)', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)', 'rgb(108, 117, 125)'
 ];
 
-// Function to get a color from the default set
 const getRandomColor = (index) => {
   return DEFAULT_COLORS[index % DEFAULT_COLORS.length] || 'rgb(0, 0, 0)';
 };
 
-// Function to map group names to more user-friendly terms
 const mapGroupToCorrectTerm = (group) => {
   const mappingDict = {
     'POP_WHT': 'White',
@@ -49,7 +45,6 @@ const mapGroupToCorrectTerm = (group) => {
 const DensityChartComponent = ({ data, width, height }) => {
   console.log("Input Data:", data);
 
-  // Check if the data is valid
   if (
     !data ||
     !data.groups ||
@@ -57,10 +52,9 @@ const DensityChartComponent = ({ data, width, height }) => {
     data.groups.length === 0 ||
     !data.groups.every(group => group.x.length === group.y.length)
   ) {
-    return <p>Please wait.....</p>;
+    return <p>No valid data provided for the chart.</p>;
   }
 
-  // Preparing data for the chart
   const chartData = {
     datasets: data.groups.map((group, index) => {
       const color = getRandomColor(index);
@@ -68,16 +62,15 @@ const DensityChartComponent = ({ data, width, height }) => {
         label: `${group.candidateName} (${mapGroupToCorrectTerm(group.group)})`,
         data: group.x.map((xVal, i) => ({ x: xVal, y: group.y[i] })),
         borderColor: color,
-        backgroundColor: color.replace('1)', '0.2)'), // Adjust opacity here
-        tension: 0.5,
+        backgroundColor: color,
+        tension: 1,
         borderWidth: 2,
-        pointRadius: 0,
-        fill: 'origin', // Fill below all points
+        pointRadius: 0, // Set this to extend the dots
+        fill: true, 
       };
     }),
   };
 
-  // Setting up chart options
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -91,6 +84,14 @@ const DensityChartComponent = ({ data, width, height }) => {
           }
         }
       },
+      // title: {
+      //   display: true,
+      //   text: data.groups.length > 0 ? `Support for ${data.groups[0].candidateName}` : 'Support',
+      //   font: {
+      //     family: 'Roboto',
+      //     size: 25
+      //   }
+      // },
     },
     scales: {
       x: {
@@ -129,7 +130,7 @@ const DensityChartComponent = ({ data, width, height }) => {
           }
         },
         grid: {
-          display: true, // Enable y-axis grid lines
+          display: false,
         },
         ticks: {
           color: 'black',
