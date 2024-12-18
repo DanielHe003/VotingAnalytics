@@ -181,6 +181,10 @@ class MapComponent extends React.Component {
         this.updateGeoJsonLayer(this.state.geoJsonData);
       });
     }
+    if (prevProps.boldItem !== this.props.boldItem && this.props.boldItem) {
+      this.highlightDistrict(this.props.boldItem);
+      console.log('asdfasd');
+    }
   }
 
   componentWillUnmount() {
@@ -191,6 +195,29 @@ class MapComponent extends React.Component {
       this.mapRef.current.removeLayer(this.state.geoJsonLayer);
     }
   }
+
+  highlightDistrict = (districtID) => {
+    if (!this.state.geoJsonLayer) return;
+
+    // window.alert("in here");
+
+    this.state.geoJsonLayer.eachLayer((layer) => {
+      const { districtId } = layer.feature.properties;
+      console.log(layer.feature.properties);
+      if (districtId === districtID) {
+        layer.setStyle({
+          fillColor: "white",  // Change this color as per your requirements
+          color: "black",
+          weight: 2,
+          fillOpacity: 0.7,
+        });
+
+        this.setState({ highlightedDistrictID: districtID });
+      } else {
+        layer.setStyle(this.geoJsonStyle(layer.feature));
+      }
+    });
+  };
 
   handleResize = () => {
     if (this.mapRef.current) {
@@ -285,9 +312,7 @@ if (Object.entries(heatMapLegend).some(([range]) => range.includes("Democrat") |
     }
   });
 
-  console.log(resultDict);
-
-  
+   
   
   const converted = convertRanges(resultDict);
 
@@ -355,7 +380,9 @@ else {
     }
   };    
 
+
   render() {
+    console.log(this.props.geoJsonData);
     const availablePlans = [
       {
         name: "Alabama",

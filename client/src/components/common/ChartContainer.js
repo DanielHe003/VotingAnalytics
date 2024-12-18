@@ -18,6 +18,7 @@ class ChartContainer extends React.Component {
       yAxisTitle,
       label,
       titleRender,
+      hoverEffect,
       minCount,
     } = this.props;
 
@@ -37,6 +38,7 @@ class ChartContainer extends React.Component {
       data={data} 
       height={height} 
       width={width} 
+      hoverEffect={hoverEffect}
       minCount={minCount} 
     />
 

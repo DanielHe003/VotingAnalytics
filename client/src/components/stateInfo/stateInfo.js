@@ -24,6 +24,10 @@ class StateInfo extends React.Component {
     this.fetchCDSummaryData();
   }
 
+  hoverEffect = (value, truth) => {
+      this.setState({boldItem: value})  
+  };
+
   componentDidUpdate(prevProps) {
     if(prevProps.selectedTrend === "precinct" && this.props.selectedTrend !== "precinct") this.fetchMapData(this.props.selectedState);
 
@@ -503,6 +507,7 @@ class StateInfo extends React.Component {
               selectedTrend={this.props.selectedTrend}
               heatMapLegend={this.state.heatmapLegend}
               selectedState={this.props.selectedState}
+              boldItem={this.state.boldItem || 0}
               title={this.props.selectedTrend === "ComparePlans" ?  this.props.selectedSubTrend : null}
             />
           </div>
@@ -541,6 +546,7 @@ class StateInfo extends React.Component {
                             data={
                               this.state.summaryData[this.props.selectedState]
                             }
+                            hoverEffect={this.hoverEffect}
                             selectedTrend={this.props.selectedTrend}
                             setSelectedTrend={this.props.setSelectedTrend}
                             cdSummaryData={this.state.cdSummaryData}

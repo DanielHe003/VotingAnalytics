@@ -12,7 +12,7 @@ class SummaryComponent extends Component {
       )
     }
     const { data, cdSummaryData, selectedTrend } = this.props;
-    console.log(data);
+    // console.log(data);
     // window.alert(selectedTrend);
     if(selectedTrend === "") this.props.setSelectedTrend("start");
     const charts = {
@@ -135,6 +135,7 @@ class SummaryComponent extends Component {
                 height={300}
                 width={700}
                 label="Count"
+                hoverEffect={selectedTrend === "districts" ? this.props.hoverEffect : null}
                 xAxisTitle={charts[selectedTrend].xAxisTitle}
                 yAxisTitle={charts[selectedTrend].yAxisTitle}
               />

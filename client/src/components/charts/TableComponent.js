@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 
-const TableComponent = ({ data, minCount, selectedDistrict, width, height }) => {
+const TableComponent = ({ data, minCount, selectedDistrict, width, height, hoverEffect }) => {
+  // console.log(hoverEffect);
 
-  console.log(data);
-  
   // Pagination logic
   const itemsPerPage = minCount != null ? minCount : 7;
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,7 +62,7 @@ const TableComponent = ({ data, minCount, selectedDistrict, width, height }) => 
       marginTop: '20px',
     },
   };
-  
+
   // Data preparation for rendering
   const displayedData = data ? data.values.slice(
     (currentPage - 1) * itemsPerPage,
@@ -92,8 +91,14 @@ const TableComponent = ({ data, minCount, selectedDistrict, width, height }) => 
                 ...(index % 2 === 0 ? styles.evenRow : styles.oddRow),
                 transition: 'background-color 0.3s ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = styles.rowHover.backgroundColor;
+                hoverEffect(index, true); // Pass index for hover effect
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.backgroundColor = index % 2 === 0 ? styles.evenRow.backgroundColor : styles.oddRow.backgroundColor);
+                hoverEffect(index, false);
+              }}
             >
               {data.labels.map((label, index) => (
                 <td key={index} style={styles.cell}>{entry[label]}</td>
@@ -103,30 +108,29 @@ const TableComponent = ({ data, minCount, selectedDistrict, width, height }) => 
         </tbody>
       </table>
       {totalPages > 1 && (
-  <div style={styles.pagination}>
-    <button
-      style={{
-        ...styles.navigationButton,
-        ...(currentPage === 1 ? styles.disabledButton : {}),
-      }}
-      disabled={currentPage === 1}
-      onClick={() => setCurrentPage(currentPage - 1)}
-    >
-      &lt; {/* Left arrow symbol */}
-    </button>
-    <button
-      style={{
-        ...styles.navigationButton,
-        ...(currentPage === totalPages ? styles.disabledButton : {}),
-      }}
-      disabled={currentPage === totalPages}
-      onClick={() => setCurrentPage(currentPage + 1)}
-    >
-      &gt; {/* Right arrow symbol */}
-    </button>
-  </div>
-)}
-
+        <div style={styles.pagination}>
+          <button
+            style={{
+              ...styles.navigationButton,
+              ...(currentPage === 1 ? styles.disabledButton : {}),
+            }}
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            &lt; {/* Left arrow symbol */}
+          </button>
+          <button
+            style={{
+              ...styles.navigationButton,
+              ...(currentPage === totalPages ? styles.disabledButton : {}),
+            }}
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            &gt; {/* Right arrow symbol */}
+          </button>
+        </div>
+      )}
     </>
   );
 };
