@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 @AllArgsConstructor
@@ -23,7 +24,11 @@ public class StateSummaryDTO {
     private long suburbanPop;
     private double povertyRate;
     private double medianIncome;
-    private Map<String, Object> incomeDistribution; 
+    private LinkedHashMap<String,Long> incomeDistribution;
     private Map<String, Long> congressionalPartySummary;
+    private double populationDensity;  // from state.properties.density
+    private String politicalLean;      // derived from pctDem vs pctRep
+    private int numberOfDistricts;     // count from db
+    private int numberOfPrecincts;     // count from db
 
 }

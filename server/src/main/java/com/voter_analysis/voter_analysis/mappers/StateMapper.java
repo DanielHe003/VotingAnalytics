@@ -6,6 +6,7 @@ import org.mapstruct.factory.Mappers;
 import com.voter_analysis.voter_analysis.models.State;
 import com.voter_analysis.voter_analysis.dtos.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -50,11 +51,11 @@ public interface StateMapper {
         racialEthnicPopulation.put("Multiracial", properties.getPopTwoMor());
         return racialEthnicPopulation;
     }
-    default Map<String, Object> mapIncomeDistribution(State state) {
+    default LinkedHashMap<String, Long> mapIncomeDistribution(State state) {
         State.Properties properties = state.getProperties();
-        Map<String, Object> incomeDistribution = new HashMap<>();
+        LinkedHashMap<String,Long> incomeDistribution = new LinkedHashMap<>();
 
-        incomeDistribution.put("Below $25K", properties.getLess10K21()+properties.getK10To15K21()+properties.getK15To20K21()+properties.getK20To25K21());
+        incomeDistribution.put("Under $25K", properties.getLess10K21()+properties.getK10To15K21()+properties.getK15To20K21()+properties.getK20To25K21());
         incomeDistribution.put("25K-50K", properties.getK25To30K21() + properties.getK30To35K21() + properties.getK35To40K21() + properties.getK40To45K21() + properties.getK45To50K21());
         incomeDistribution.put("50K-100K", properties.getK50To60K21()+properties.getK60To75K21()+properties.getK75To100K21());
         incomeDistribution.put("100K-200K", properties.getK100To125K21()+properties.getK125To150K21()+properties.getK150To200K21());

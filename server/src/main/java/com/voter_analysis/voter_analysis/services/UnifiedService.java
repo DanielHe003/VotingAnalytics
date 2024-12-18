@@ -38,6 +38,7 @@ public class UnifiedService {
     private final EIAnalysisRepository eiAnalysisRepository;
     private final CongressionalRepresentativeRepository congressionalRepresentativeRepository;
     private final BoxWhiskerDataRepository boxWhiskerDataRepository;
+    private final DistrictPlanRepository districtPlanRepository;
    
 
     public UnifiedService(
@@ -56,7 +57,8 @@ public class UnifiedService {
             GinglesMapper ginglesMapper,
             EIAnalysisRepository eiAnalysisRepository,
             CongressionalRepresentativeRepository congressionalRepresentativeRepository,
-            BoxWhiskerDataRepository boxWhiskerDataRepository) {
+            BoxWhiskerDataRepository boxWhiskerDataRepository,
+            DistrictPlanRepository districtPlanRepository) {
         this.congressionalDistrictRepository = congressionalDistrictRepository;
         this.precinctRepository = precinctRepository;
         this.stateRepository = stateRepository;
@@ -73,6 +75,7 @@ public class UnifiedService {
         this.eiAnalysisRepository = eiAnalysisRepository;
         this.congressionalRepresentativeRepository = congressionalRepresentativeRepository;
         this.boxWhiskerDataRepository = boxWhiskerDataRepository;
+        this.districtPlanRepository = districtPlanRepository;
     }
     //Frequently accessed repo methods 
     @Cacheable(value = "precinctsByState", key = "#stateId")
@@ -107,9 +110,32 @@ public class UnifiedService {
     public List<GinglesAnalysis> getGinglesAnalysisByStateAndRegion(int stateId, String regionType) {
         return ginglesAnalysisRepository.findByStateIdAndRegionType(stateId, regionType);
     }
+    // CHANGED: New cached methods for district plans
+    @Cacheable(value = "districtPlansByState", key = "#stateId")
+    public List<DistrictPlan> getDistrictPlansByState(int stateId) {
+        return districtPlanRepository.findByStateId(stateId);
+    }
 
+    @Cacheable(value = "districtPlanByStateAndPlanId", key = "#stateId + '-' + #planId")
+    public DistrictPlan getDistrictPlanByStateAndPlanId(int stateId, String planId) {
+        return districtPlanRepository.findByStateIdAndPlanId(stateId, planId);
+    }
+    @Cacheable(value = "districtPlanByStateAndPlanId", key = "#stateId + '-' + #planNum")
+    public DistrictPlan getDistrictPlanByStateAndPlanId(int stateId, int planNum) {
+        return districtPlanRepository.findByStateIdAndPlanNum(stateId, planNum);
+    }
 
+    // CHANGED: New cached method for boxWhiskerData
+    @Cacheable(value = "boxWhiskerData", key = "#stateId + '-' + #analysisType + '-' + #groupName")
+    public BoxWhiskerData getBoxWhiskerDataFromRepo(int stateId, String analysisType, String groupName) {
+        return boxWhiskerDataRepository.findByStateIdAndAnalysisTypeAndGroupName(stateId, analysisType, groupName);
+    }
 
+    @Cacheable(value = "precinctByStateAndSrPrecKey", key = "#stateId + '-' + #srPrecKey")
+    public Precinct getPrecinctByStateAndSrPrecKey(int stateId, String srPrecKey) {
+        return precinctRepository.findByPropertiesStateIdAndPropertiesSrPrecKey(stateId, srPrecKey)
+            .orElseThrow(() -> new IllegalArgumentException("No precinct found for stateId: " + stateId + " and srPrecKey: " + srPrecKey));
+    }
 
     //Use case #1
     @Cacheable(value = "stateList")
@@ -141,7 +167,6 @@ public class UnifiedService {
     //Use case #3
     @Cacheable(value = "stateSummary", key = "#stateName")
     public StateSummaryDTO getStateSummary(String stateName){
-        // Map stateName to stateId (ignoring case)
         int stateId;
         switch (stateName.toLowerCase()) {
             case "alabama":
@@ -154,21 +179,38 @@ public class UnifiedService {
             default:
                 throw new IllegalArgumentException("Invalid state name: " + stateName);
         }
-
-        // Fetch state by ID and map to DTO
-        State state = getStateByStateName(stateName); // Ensure this method uses stateId appropriately
+    
+        State state = getStateByStateName(stateName);
         StateSummaryDTO dto = stateMapper.toStateSummaryDTO(state);
-
-        // Fetch congressional representatives for this state
+    
+        // Representatives
         List<CongressionalRepresentative> representatives = congressionalRepresentativeRepository.findByStateId(stateId);
-
-        // Summarize representatives by party
         Map<String, Long> partySummary = representatives.stream()
             .collect(Collectors.groupingBy(CongressionalRepresentative::getParty, Collectors.counting()));
-
-        // Add this summary to the DTO
         dto.setCongressionalPartySummary(partySummary);
-
+    
+        // Additional data:
+        // Population Density: from state.properties.density
+        dto.setPopulationDensity(state.getProperties().getDensity());
+    
+        // Political Lean of State:
+        // Simple logic: if pctDem > pctRep -> "Democratic", if pctRep > pctDem -> "Republican", else "Mixed"
+        if (dto.getPctDem() > dto.getPctRep()) {
+            dto.setPoliticalLean("Democratic");
+        } else if (dto.getPctRep() > dto.getPctDem()) {
+            dto.setPoliticalLean("Republican");
+        } else {
+            dto.setPoliticalLean("Mixed");
+        }
+    
+        // Number of Districts:
+        int numberOfDistricts = getCongressionalDistrictsByState(stateId).size();
+        dto.setNumberOfDistricts(numberOfDistricts);
+    
+        // Number of Precincts:
+        int numberOfPrecincts = getPrecinctsByState(stateId).size();
+        dto.setNumberOfPrecincts(numberOfPrecincts);
+    
         return dto;
     }
     //Use case 4-7 Retrieve paginated precinct geojson data
@@ -313,6 +355,45 @@ public class UnifiedService {
     
         return feature;
     }
+    //Use case #11: Compare two district plans 
+    @Cacheable(value = "allPlansForState", key = "#stateId")
+    public List<DistrictPlanDTO> getAllPlansForState(int stateId) {
+        List<DistrictPlan> plans = getDistrictPlansByState(stateId);
+        return plans.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    @Cacheable(value = "districtPlanSummary", key = "#stateId + '-' + #planId")
+    public DistrictPlanDTO getPlanSummary(int stateId, String planId) {
+        DistrictPlan plan = getDistrictPlanByStateAndPlanId(stateId, planId);
+        if (plan == null) return null;
+        return toDTO(plan);
+    }
+    
+    @Cacheable(value = "districtPlanGeojsonById", key = "#stateId + '-' + #planId")
+    public Object getPlanGeojson(int stateId, String planId) {
+        DistrictPlan plan = getDistrictPlanByStateAndPlanId(stateId, planId); 
+        if (plan == null) return null;
+        return plan.getGeojson();
+    }
+    
+    @Cacheable(value = "districtPlanGeojsonByNum", key = "#stateId + '-' + #planNum")
+    public Object getPlanGeojson(int stateId, int planNum) {
+        DistrictPlan plan = getDistrictPlanByStateAndPlanId(stateId, planNum); 
+        if (plan == null) return null;
+        return plan.getGeojson();
+    }
+    
+    private DistrictPlanDTO toDTO(DistrictPlan plan) {
+        return new DistrictPlanDTO(
+                plan.getPlanId(),
+                plan.getName(),
+                plan.getPlanNum(),
+                plan.getCategory()
+        );
+    }
+    
     
     //Use case #12
     @Cacheable(value = "raceGinglesData", key = "#stateId + '-' + #racialGroup")
@@ -331,9 +412,9 @@ public class UnifiedService {
                 .collect(Collectors.toList());
 
         return new ScatterPlotDTO<>(
-            "Percentage of demographic group: " + racialGroup,
+            "Percentage of demographic group: " + racialGroup.toUpperCase(),
             "Party Vote Share (%)",
-            "Party Vote Share vs. Percentage of demographic group: " + racialGroup,
+            "Party Vote Share vs. Percentage of demographic group: " + racialGroup.toUpperCase(),
             dataPoints
         );
                 
@@ -375,9 +456,9 @@ public class UnifiedService {
                 .collect(Collectors.toList());
 
         return new ScatterPlotDTO<>(
-                "Combined income and demographic group " + racialGroup,
+                "Combined income and demographic group " + racialGroup.toUpperCase(),
                 "Party Vote Share (%)",
-                "Party Vote Share vs. combined income and demographic group " + racialGroup,
+                "Party Vote Share vs. combined income and demographic group " + racialGroup.toUpperCase(),
                 dataPoints
         );
     }
@@ -546,7 +627,7 @@ public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup
 
     // Helper method to fetch and convert data
     private List<BoxWhiskerDataDTO> getBoxWhiskerData(int stateId, String analysisType, String groupName) {
-        BoxWhiskerData bwData = boxWhiskerDataRepository.findByStateIdAndAnalysisTypeAndGroupName(stateId, analysisType, groupName);
+        BoxWhiskerData bwData = getBoxWhiskerDataFromRepo(stateId, analysisType, groupName);
         if (bwData == null) {
             return List.of();
         }
@@ -563,6 +644,82 @@ public List<EIAnalysisDTO> getEconomicAnalysis(int stateId, String economicGroup
             return dto;
         }).collect(Collectors.toList());
     }
+    //use case 29
+    // In your UnifiedService class
+    @Cacheable(value = "districtSummary", key = "#stateId + '-' + #cdId")
+    public DistrictSummaryDTO getDistrictSummary(int stateId, int cdId) {
+        CongressionalDistrict district = getCongressionalDistrictByStateAndDistrict(stateId, cdId);
+        CongressionalDistrict.Properties props = district.getProperties();
+    
+        // Using LinkedHashMap to preserve insertion order
+        LinkedHashMap<String, Double> incomeDist = new LinkedHashMap<>();
+        incomeDist.put("Under $25K", props.getK10To15K21() + props.getK15To20K21() + props.getK20To25K21());
+        incomeDist.put("$25K-$50K", props.getK25To30K21() + props.getK30To35K21() + props.getK35To40K21() 
+                        + props.getK40To45K21() + props.getK45To50K21());
+        incomeDist.put("$50K-$100K", props.getK50To60K21() + props.getK60To75K21() + props.getK75To100K21());
+        incomeDist.put("$100K-$200K", props.getK100To125K21() + props.getK125To150K21() + props.getK150To200K21());
+        incomeDist.put("$200K+", props.getK200KMor21());
+    
+        DistrictSummaryDTO dto = new DistrictSummaryDTO();
+        dto.setPctDem(props.getPctDem());
+        dto.setPctRep(props.getPctRep());
+        dto.setDemVotes(props.getPrsDem01());
+        dto.setRepVotes(props.getPrsRep01());
+        dto.setTotalVotes(props.getTotVotes());
+    
+        dto.setTotalPopulation(props.getTotPop());
+        dto.setWhitePop(props.getPopWht());
+        dto.setBlackPop(props.getPopBlk());
+        dto.setHispanicPop(props.getPopHisLat());
+        dto.setAsianPop(props.getPopAsn());
+        dto.setAmericanIndianAlaskaNativePop(props.getPopAindalk());
+        dto.setHawaiianPacificIslanderPop(props.getPopHipi());
+        dto.setOtherPop(props.getPopOth());
+        dto.setTwoOrMorePop(props.getPopTwoMor());
+    
+        dto.setIncomeDistribution(incomeDist);
+        dto.setMedianIncome(props.getMednInc21());
+    
+        return dto;
+    }
+    
+    @Cacheable(value = "precinctSummary", key = "#stateId + '-' + #srPrecKey")
+    public PrecinctSummaryDTO getPrecinctSummary(int stateId, String srPrecKey) {
+        Precinct precinct = getPrecinctByStateAndSrPrecKey(stateId, srPrecKey);
+        Precinct.Properties props = precinct.getProperties();
+    
+        LinkedHashMap<String, Double> incomeDist = new LinkedHashMap<>();
+        incomeDist.put("Under $25K", props.getLess10K21() + props.getK10To15K21() + props.getK15To20K21() + props.getK20To25K21());
+        incomeDist.put("$25K-$50K", props.getK25To30K21() + props.getK30To35K21() + props.getK35To40K21()
+                        + props.getK40To45K21() + props.getK45To50K21());
+        incomeDist.put("$50K-$100K", props.getK50To60K21() + props.getK60To75K21() + props.getK75To100K21());
+        incomeDist.put("$100K-$200K", props.getK100To125K21() + props.getK125To150K21() + props.getK150To200K21());
+        incomeDist.put("$200K+", props.getK200KMor21());
+    
+        PrecinctSummaryDTO dto = new PrecinctSummaryDTO();
+        dto.setPctDem(props.getPctDem());
+        dto.setPctRep(props.getPctRep());
+        dto.setDemVotes(props.getPrsDem01());
+        dto.setRepVotes(props.getPrsRep01());
+        dto.setTotalVotes(props.getTotVotes());
+    
+        dto.setTotalPopulation(props.getTotPop());
+        dto.setWhitePop(props.getPopWht());
+        dto.setBlackPop(props.getPopBlk());
+        dto.setHispanicPop(props.getPopHisLat());
+        dto.setAsianPop(props.getPopAsn());
+        dto.setAmericanIndianAlaskaNativePop(props.getPopAindalk());
+        dto.setHawaiianPacificIslanderPop(props.getPopHipi());
+        dto.setOtherPop(props.getPopOth());
+        dto.setTwoOrMorePop(props.getPopTwoMor());
+    
+        dto.setIncomeDistribution(incomeDist);
+        dto.setMedianIncome(props.getMednInc21());
+    
+        return dto;
+    }
+    //Seawulf 7 ensemble measures 
+    
     
 
     
