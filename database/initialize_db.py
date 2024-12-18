@@ -316,7 +316,85 @@ def import_box_whisker_data(state_id, data_directory, state_name):
                 except Exception as e:
                     print(f"Error inserting {file_name}: {e}")
 
+def import_district_plans(state_id, data_directory, state_name):
+    """Import district plans for GUI-11 comparison."""
+    dp_dir = os.path.join(data_directory, 'district-plans')
+    if not os.path.exists(dp_dir):
+        print(f"District plans directory not found for state id {state_id}. Skipping.")
+        return
 
+    # Map directories to a naming scheme
+    # We'll assume directories like enacted, heavily-rural, max-income-deviation, min-income-deviation
+    # We'll create a friendly name pattern based on count and directory
+    category_map = {
+        'enacted': ('enacted', 'Current Plan'),
+        'heavily-rural': ('heavilyRural', 'Heavily Rural'),
+        'max-income-deviation': ('maxIncomeDeviation', 'Max Income Deviation'),
+        'min-income-deviation': ('minIncomeDeviation', 'Min Income Deviation'),
+        'heavily-suburban': ('heavilySuburban', 'Heavily Suburban'),
+        'heavily-urban': ('heavilyUrban', 'Heavily Urban')
+    }
+
+    # This may vary by state; if directories don't exist, skip them
+    for category_folder in os.listdir(dp_dir):
+        category_path = os.path.join(dp_dir, category_folder)
+        if not os.path.isdir(category_path):
+            continue
+
+        if category_folder not in category_map:
+            print(f"Unknown category {category_folder}, skipping.")
+            continue
+
+        base_id, base_name = category_map[category_folder]
+        index = 1
+
+        for file_name in os.listdir(category_path):
+            if file_name.endswith('.geojson'):
+                file_path = os.path.join(category_path, file_name)
+                print(f"Importing district plan: {file_name} from {category_folder} for state {state_id}")
+
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+
+                # Extract plan_num from name in the properties of first feature or from file_name
+                # The geojson has "plan_num" in properties of each feature.
+                # We'll just read the first feature to get plan_num
+                features = data.get('features', [])
+                if not features:
+                    print(f"No features in {file_name}, skipping.")
+                    continue
+
+                first_feature = features[0]
+                properties = first_feature.get('properties', {})
+                plan_num = properties.get('plan_num', None)
+
+                # Determine ID and name for this plan
+                # For enacted, just use 'enacted' and 'Current Plan'
+                # For others, we append a number to base_id and base_name
+                if base_id == 'enacted':
+                    plan_id = 'enacted'
+                    plan_name = base_name
+                else:
+                    plan_id = f"{base_id}{index}"
+                    plan_name = f"{base_name} {index}"
+                    index += 1
+
+                document = {
+                    "stateId": state_id,
+                    "category": category_folder,
+                    "planNum": plan_num,
+                    "id": plan_id,
+                    "name": plan_name,
+                    "geojson": data  # store entire geojson
+                }
+
+                try:
+                    db.district_plans.insert_one(document)
+                    print(f"Inserted district plan {plan_id} ({plan_name}) for {file_name}")
+                except BulkWriteError as bwe:
+                    print(f"Bulk write error for {file_name}: {bwe.details}")
+                except Exception as e:
+                    print(f"Error inserting {file_name}: {e}")
 
         
 def initialize_state_data(state, data_directory):
@@ -343,6 +421,7 @@ def initialize_state_data(state, data_directory):
     import_cd_representatives(state_id, data_directory,state)
     import_ei_analysis_data(state_id, data_directory, state)
     import_box_whisker_data(state_id, data_directory, state)
+    import_district_plans(state_id, data_directory, state)
 
 def initialize_db():
     """Initialize database: clear, load data, and then apply schemas."""

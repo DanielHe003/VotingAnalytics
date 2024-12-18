@@ -128,6 +128,35 @@ public class UnifiedController {
         return ResponseEntity.ok(districtMap);
     }
 
+    // Use case #11: List all available plans for a state
+    @GetMapping("/{stateId}/districtPlans")
+    public ResponseEntity<List<DistrictPlanDTO>> getAllDistrictPlans(
+            @PathVariable int stateId) {
+        List<DistrictPlanDTO> plans = unifiedService.getAllPlansForState(stateId);
+        return ResponseEntity.ok(plans);
+    }
+    // GUI-11: Get the GeoJSON for a particular plan
+    @GetMapping("/{stateId}/districtPlans/{planId}/geojson")
+    public ResponseEntity<Object> getDistrictPlanGeojson(
+            @PathVariable int stateId,
+            @PathVariable String planId) {
+        Object geojson = unifiedService.getPlanGeojson(stateId, planId);
+        if (geojson == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(geojson);
+    }
+    @GetMapping("/{stateId}/districtPlans/num/{planNum}/geojson")
+    public ResponseEntity<Object> getDistrictPlanGeojson(
+            @PathVariable int stateId,
+            @PathVariable int planNum) {
+        Object geojson = unifiedService.getPlanGeojson(stateId, planNum);
+        if (geojson == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(geojson);
+    }
+
     //Use case #12
     @GetMapping("/states/{stateId}/gingles/race/{demographicGroup}")
     public ResponseEntity<ScatterPlotDTO<RaceGinglesDTO>> getRaceGinglesData(
@@ -190,6 +219,7 @@ public class UnifiedController {
         List<EIAnalysisDTO> results = unifiedService.getEconomicAnalysis(stateId, economicGroup, candidateName, regionType);
         return ResponseEntity.ok(results);
     }
+
     
 
  // Use Case #17: Candidate results for region groups
@@ -231,7 +261,25 @@ public class UnifiedController {
         List<BoxWhiskerDataDTO> results = unifiedService.getRegionBoxWhiskerData(stateId, groupName);
         return ResponseEntity.ok(results);
     }
+    
+    //Use case #29
+    // In UnifiedController class
+    @GetMapping("/states/{stateId}/districts/{cdId}/summary")
+    public ResponseEntity<DistrictSummaryDTO> getDistrictDataSummary(
+            @PathVariable int stateId,
+            @PathVariable int cdId) {
+        DistrictSummaryDTO summary = unifiedService.getDistrictSummary(stateId, cdId);
+        return ResponseEntity.ok(summary);
+    }
 
-
+    //Use case #30
+    // In UnifiedController class
+    @GetMapping("/states/{stateId}/precincts/{srPrecKey}/summary")
+    public ResponseEntity<PrecinctSummaryDTO> getPrecinctDataSummary(
+            @PathVariable int stateId,
+            @PathVariable String srPrecKey) {
+        PrecinctSummaryDTO summary = unifiedService.getPrecinctSummary(stateId, srPrecKey);
+        return ResponseEntity.ok(summary);
+    }
 
 }
